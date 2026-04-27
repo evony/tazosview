@@ -20,11 +20,14 @@ export async function hashPassword(password: string): Promise<string> {
   return hashPasswordSync(password, salt);
 }
 
+export function isBcryptHash(hash: string): boolean {
+  return hash.startsWith('$2');
+}
+
 export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
   // Support both old bcrypt hashes and new scrypt hashes
-  if (storedHash.startsWith('$2')) {
-    // Legacy bcrypt hash - use simple comparison as fallback
-    // In production, you should migrate these hashes
+  if (isBcryptHash(storedHash)) {
+    // Legacy bcrypt hash — verify via bcryptjs, then caller should migrate to scrypt
     try {
       const bcrypt = await import('bcryptjs');
       return bcrypt.compare(password, storedHash);

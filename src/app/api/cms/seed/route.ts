@@ -37,6 +37,29 @@ export async function POST(request: Request) {
       // Registration payment settings
       { key: 'registration_admin_wa_link', value: '', type: 'text' },
       { key: 'registration_payment_instructions', value: 'Silakan transfer biaya pendaftaran sesuai ketentuan yang berlaku ke salah satu metode pembayaran di atas, lalu kirim bukti pembayaran ke admin via WhatsApp.', type: 'text' },
+      // Cara Bermain (How It Works) settings
+      { key: 'howitworks_label', value: 'Cara Bermain', type: 'text' },
+      { key: 'howitworks_title', value: 'Bagaimana Cara Kerjanya?', type: 'text' },
+      { key: 'howitworks_subtitle', value: 'Empat langkah sederhana untuk menjadi champion', type: 'text' },
+      { key: 'howitworks_step_1_title', value: 'Daftar', type: 'text' },
+      { key: 'howitworks_step_1_description', value: 'Daftar sebagai peserta dan pilih divisi Male atau Female', type: 'text' },
+      { key: 'howitworks_step_2_title', value: 'Tarkam', type: 'text' },
+      { key: 'howitworks_step_2_description', value: 'Ikuti tournament mingguan dan raih kemenangan', type: 'text' },
+      { key: 'howitworks_step_3_title', value: 'Kumpulkan Poin', type: 'text' },
+      { key: 'howitworks_step_3_description', value: 'Setiap kemenangan memberikan poin untuk peringkat', type: 'text' },
+      { key: 'howitworks_step_4_title', value: 'Jadi Champion', type: 'text' },
+      { key: 'howitworks_step_4_description', value: 'Raih gelar Season Champion dan MVP', type: 'text' },
+      // CTA settings
+      { key: 'cta_title', value: 'Siap Menjadi Champion?', type: 'text' },
+      { key: 'cta_description', value: 'Bergabung sekarang dan tunjukkan skill-mu di arena Tarkam IDM. Ribuan pemain sudah menunggu!', type: 'text' },
+      { key: 'cta_button_primary_text', value: 'Masuk Arena', type: 'text' },
+      { key: 'cta_button_secondary_text', value: 'Daftar Sekarang', type: 'text' },
+      { key: 'cta_badge_1_value', value: '12+', type: 'text' },
+      { key: 'cta_badge_1_label', value: 'Club Terdaftar', type: 'text' },
+      { key: 'cta_badge_2_value', value: '120+', type: 'text' },
+      { key: 'cta_badge_2_label', value: 'Pemain Aktif', type: 'text' },
+      { key: 'cta_badge_3_value', value: '2', type: 'text' },
+      { key: 'cta_badge_3_label', value: 'Season', type: 'text' },
     ];
 
     for (const s of defaultSettings) {
@@ -56,8 +79,9 @@ export async function POST(request: Request) {
       { slug: 'champions', title: 'Season Champion', subtitle: 'Aula Champion', description: 'Juara terbaru dari setiap divisi', order: 5 },
       { slug: 'mvp', title: 'MVP Arena', subtitle: 'Hall of Fame', description: 'Pemain terbaik dari setiap divisi', order: 6 },
       { slug: 'clubs', title: 'Club & Peserta', subtitle: 'Liga', description: 'Daftar club dan peserta liga', order: 7 },
-      { slug: 'cta', title: 'Join Community', subtitle: 'Call to Action', description: 'Ajakan bergabung ke komunitas', order: 8 },
-      { slug: 'footer', title: 'Footer', subtitle: 'Informasi', description: 'Bagian bawah website dengan informasi tambahan', order: 9 },
+      { slug: 'howitworks', title: 'Cara Bermain', subtitle: 'Panduan', description: 'Langkah-langkah cara bermain di IDM League', order: 8 },
+      { slug: 'cta', title: 'Join Community', subtitle: 'Call to Action', description: 'Ajakan bergabung ke komunitas', order: 9 },
+      { slug: 'footer', title: 'Footer', subtitle: 'Informasi', description: 'Bagian bawah website dengan informasi tambahan', order: 10 },
     ];
 
     for (const s of defaultSections) {

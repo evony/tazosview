@@ -283,7 +283,7 @@ export function DivisionRivalryWidget({ setSelectedPlayer }: DivisionRivalryWidg
         <div className={`flex items-center justify-between px-3 py-2 rounded-lg ${dt.bgSubtle}`}>
           <div className="flex items-center gap-2">
             <Users className={`w-3.5 h-3.5 ${dt.neonText}`} />
-            <span className="text-[10px] text-muted-foreground">Total Pemain Divisi</span>
+            <span className="text-[10px] text-muted-foreground">Total Pemain Tarkam</span>
           </div>
           <span className={`text-xs font-bold tabular-nums ${dt.neonGradient}`}>{totalPlayers}</span>
         </div>

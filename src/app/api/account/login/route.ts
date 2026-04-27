@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { verifyPassword, createSessionToken } from '@/lib/auth';
+import { verifyPassword, createSessionToken, hashPassword, isBcryptHash } from '@/lib/auth';
 
 const PLAYER_SESSION_COOKIE = 'idm-player-session';
 const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
@@ -56,11 +56,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update last login
-    await db.account.update({
-      where: { id: account.id },
-      data: { lastLoginAt: new Date() },
-    });
+    // Migrate bcrypt hash to scrypt on successful login
+    if (isBcryptHash(account.passwordHash)) {
+      try {
+        const newHash = await hashPassword(password);
+        await db.account.update({
+          where: { id: account.id },
+          data: { passwordHash: newHash, lastLoginAt: new Date() },
+        });
+      } catch (migrateError) {
+        console.error('Player hash migration error (non-critical):', migrateError);
+        // Still update last login even if migration fails
+        await db.account.update({
+          where: { id: account.id },
+          data: { lastLoginAt: new Date() },
+        });
+      }
+    } else {
+      // Update last login
+      await db.account.update({
+        where: { id: account.id },
+        data: { lastLoginAt: new Date() },
+      });
+    }
 
     // Create session token (use 'player' role to distinguish from admin)
     const token = createSessionToken(account.id, 'player');

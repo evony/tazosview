@@ -50,7 +50,7 @@ export function NoSeasonState({ division }: NoSeasonStateProps) {
 
           {/* Division badge */}
           <Badge className={`${dt.casinoBadge} px-3 py-1 mb-4 stagger-item stagger-d1`}>
-            {division === 'male' ? '🕺 Divisi Male' : '💃 Divisi Female'}
+            {division === 'male' ? '🕺 Tarkam Male' : '💃 Tarkam Female'}
           </Badge>
 
           {/* Main heading */}
@@ -60,7 +60,7 @@ export function NoSeasonState({ division }: NoSeasonStateProps) {
 
           {/* Description */}
           <p className="stagger-item stagger-d3 text-sm text-muted-foreground max-w-md mb-8 leading-relaxed">
-            Belum ada season aktif untuk divisi {division === 'male' ? 'Male' : 'Female'} saat ini.
+            Belum ada season aktif untuk tarkam {division === 'male' ? 'Male' : 'Female'} saat ini.
             Season baru akan dimulai oleh admin, dan kamu bisa mendaftar sebagai peserta begitu pendaftaran dibuka.
           </p>
 

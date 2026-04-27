@@ -47,8 +47,7 @@ export function ClubLogoImage({
 
   // Reset error state when src changes (e.g., new logo uploaded)
   useEffect(() => {
-    const timer = setTimeout(() => setErrorStage(0), 0);
-    return () => clearTimeout(timer);
+    setTimeout(() => setErrorStage(0), 0);
   }, [src]);
 
   const handleError = () => {

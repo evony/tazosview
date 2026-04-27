@@ -95,14 +95,14 @@ export function TierProgress({
   const [animatedProgress, setAnimatedProgress] = useState(0);
 
   useEffect(() => {
-    const mountTimer = setTimeout(() => setMounted(true), 0);
+    setTimeout(() => setMounted(true), 0);
     // Animate progress based on tier position (B=0%, A=50%, S=100%)
-    const animTimer = setTimeout(() => {
+    const timer = setTimeout(() => {
       const tierIdx = getTierIndex(currentTier);
       const baseProgress = (tierIdx / (TIER_ORDER.length - 1)) * 100;
       setAnimatedProgress(Math.min(100, baseProgress));
     }, 50);
-    return () => { clearTimeout(mountTimer); clearTimeout(animTimer); };
+    return () => clearTimeout(timer);
   }, [currentTier]);
 
   const colors = getColors(currentTier, division);

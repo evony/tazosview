@@ -73,7 +73,7 @@ function FeedCard({ item, index }: { item: FeedItem; index: number }) {
         )}
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm">{item.author?.name || 'IDM League'}</span>
+            <span className="font-semibold text-sm">{item.author?.name || 'Tarkam IDM'}</span>
             {getIcon()}
           </div>
           <span className="text-xs text-muted-foreground">{item.timestamp}</span>

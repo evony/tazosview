@@ -29,3 +29,31 @@ Stage Summary:
 - 80+ React components with rich animations
 - 40+ API endpoints for full CRUD operations
 - Admin panel, player accounts, tournament management, club system all functional
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Update project from tay1.tar (user upload) while preserving tournament engine flow
+
+Work Log:
+- Extracted tay1.tar to /tmp/tay1-update for analysis
+- Identified key differences: new AuditLog model, community dashboard, auth system, admin panels, new API routes, new landing sections
+- Preserved ALL tournament engine files (approve, generate-bracket, generate-teams, save-spin-results, score, finalize, start-match, register, bracket-view, tournament-manager, team-spin-reveal, etc.)
+- Updated Prisma schema with new AuditLog model
+- Copied lib files (audit.ts, logger.ts, points-system.ts, validations/auth.ts, auth/middleware.ts, auth/permissions.ts, auth/session.ts)
+- Updated store.ts (AppView now includes "community" alongside "dashboard")
+- Copied all non-tournament API routes and added new ones (admin/audit-logs, admin/users, admin/players, admin/update-credentials, auth/me, auth/refresh, auth/register, leaderboard, league/standings, matches, teams, users, whatsapp/bot, whatsapp/commands, whatsapp/logs, reset)
+- Copied new IDM components (community-dashboard/*, landing/cta-section, experiences-section, highlights-section, how-it-works-section, sawer, hero, champions, gallery, mvp, the-dream, ticker, footer, club-peserta, login-page)
+- Copied new top-level components (AuthDialog, TournamentBracket, auth/AuthDialog, bracket/TournamentBracket, layout/Footer, layout/Navbar, theme-provider)
+- Copied new contexts (AuthContext), hooks (use-community-theme, use-shell-theme), types (index.ts)
+- Fixed 8 lint errors (react-hooks/set-state-in-effect)
+- Fixed incompatible API routes that referenced non-existent models (db.user, db.session, db.tournamentParticipant, etc.) by adapting them to our existing Player/Account/Admin schema
+- Removed incompatible routes (tournaments/[id]/bracket, matches/[id]/score) that used different schema structures - our tournament engine uses tournaments/[id]/generate-bracket and tournaments/[id]/score instead
+- All API endpoints verified working: stats, leaderboard, teams, users, etc.
+- Lint passes cleanly with 0 errors
+
+Stage Summary:
+- Project successfully updated with tay1.tar content
+- Tournament engine flow completely preserved (registration -> approve -> assign tier -> team generate spin -> bracket generation -> winner finalization -> prize finalization)
+- New features added: AuditLog, community dashboard, enhanced auth, admin management, WhatsApp integration stubs, leaderboard API
+- Incompatible API routes adapted to work with existing schema

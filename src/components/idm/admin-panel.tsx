@@ -20,6 +20,9 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { TierBadge } from './tier-badge';
+import { AdminPlayersTab } from './admin/tabs/admin-players-tab';
+import { AdminKeuanganTab } from './admin/tabs/admin-keuangan-tab';
+import { AdminLigaSkorTab } from './admin/tabs/admin-liga-skor-tab';
 import { CmsPanel } from './cms-panel';
 import { TournamentManager } from './tournament-manager';
 import { RankingPanel } from './ranking-panel';
@@ -270,17 +273,17 @@ export function AdminPanel() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-donations', storeDivision] }); qc.invalidateQueries({ queryKey: ['feed'] }); toast.success('Donasi dihapus'); },
   });
 
-  const savePaymentSetting = useMutation({
-    mutationFn: async (data: { key: string; value: string; type?: string }) => {
+  // Batch save payment settings — single API call instead of 8 sequential calls
+  const savePaymentSettingsBatch = useMutation({
+    mutationFn: async (items: { key: string; value: string; type?: string }[]) => {
       const res = await authFetch('/api/cms/settings', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({ items }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
       return res.json();
     },
     onSuccess: () => {
-      // Reset local form state so fields show fresh data from server after refetch
       setPaymentForm(null);
       qc.invalidateQueries({ queryKey: ['admin-cms-settings'] });
       toast.success('Setting pembayaran disimpan!');
@@ -440,8 +443,9 @@ export function AdminPanel() {
   const categoryTabMap: Record<string, string[]> = {
     dashboard: ['dashboard'],
     tournament: ['pemain', 'season-tarkam', 'turnamen', 'keuangan'],
+    konten: ['konten'],
     league: ['liga-season', 'liga-club', 'liga-poin', 'liga-skor'],
-    system: ['sponsor', 'achievement', 'konten', 'pengaturan'],
+    system: ['sponsor', 'achievement', 'pengaturan'],
   };
 
   const [searchPlayer, setSearchPlayer] = useState('');
@@ -571,10 +575,11 @@ export function AdminPanel() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" aria-label="Admin panel navigation">
         {/* Mobile: Grouped category navigation */}
         <div className="sm:hidden space-y-2">
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-5 gap-1">
             {([
               { key: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
               { key: 'tournament', icon: Music, label: 'Turnamen' },
+              { key: 'konten', icon: Globe, label: 'Konten' },
               { key: 'league', icon: Crown, label: 'Liga' },
               { key: 'system', icon: Sliders, label: 'Sistem' },
             ] as const).map(cat => (
@@ -643,12 +648,13 @@ export function AdminPanel() {
           </div>
         </div>
 
-        {/* Desktop: Compact 4-category navigation */}
+        {/* Desktop: Compact 5-category navigation */}
         <div className="hidden sm:block space-y-2">
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-5 gap-1.5">
             {([
               { key: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
               { key: 'tournament', icon: Music, label: 'Turnamen' },
+              { key: 'konten', icon: Globe, label: 'Konten' },
               { key: 'league', icon: Crown, label: 'Liga' },
               { key: 'system', icon: Sliders, label: 'Sistem' },
             ] as const).map(cat => (
@@ -724,177 +730,21 @@ export function AdminPanel() {
 
         {/* ====== PEMAIN TAB ====== */}
         <TabsContent value="pemain" className="admin-tab-enter">
-          <div className="space-y-3">
-            {/* Pending Registrations */}
-            {pendingRegistrations?.length > 0 && (
-              <Card className="border-yellow-500/20 bg-yellow-500/5">
-                <CardContent className="p-4">
-                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2 text-yellow-500">
-                    <Clock className="w-4 h-4" /> Pendaftaran Menunggu Persetujuan ({pendingRegistrations.length})
-                  </h3>
-                  <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
-                    {pendingRegistrations.map((p: { id: string; name: string; gamertag: string; division: string; city: string; phone: string | null; joki: string | null; createdAt: string }, index) => (
-                      <div key={p.id} className="p-3 rounded-xl bg-card border border-yellow-500/10"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="text-sm font-semibold">{p.name}</p>
-                              <Badge className={`text-[9px] border-0 ${p.division === 'male' ? 'bg-idm-male/10 text-idm-male' : 'bg-idm-female/10 text-idm-female'}`}>
-                                {p.division === 'male' ? '🕺 Male' : '💃 Female'}
-                              </Badge>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-                              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{p.city || '-'}</span>
-                              {p.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{p.phone}</span>}
-                              {p.joki && <span className="flex items-center gap-1">🎮 Joki: {p.joki}</span>}
-                              <span>Gamertag: <span className="font-medium text-foreground">{p.gamertag}</span></span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <Select onValueChange={(tier) => setConfirmDialog({
-                              open: true,
-                              title: 'Setujui Pendaftaran?',
-                              description: `Setujui "${p.name}" sebagai tier ${tier} di division ${p.division}.`,
-                              onConfirm: () => approveRegistration.mutate({ playerId: p.id, tier })
-                            })}>
-                              <SelectTrigger className="w-20 h-7 text-[10px]"><SelectValue placeholder="Setujui" /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="S">Sebagai S</SelectItem>
-                                <SelectItem value="A">Sebagai A</SelectItem>
-                                <SelectItem value="B">Sebagai B</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 touch-icon text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                              onClick={() => setConfirmDialog({
-                                open: true,
-                                title: 'Tolak Pendaftaran?',
-                                description: `Tolak pendaftaran "${p.name}". Player akan ditandai sebagai rejected.`,
-                                onConfirm: () => rejectRegistration.mutate(p.id)
-                              })}>
-                              <X className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Player Management Header */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Cari pemain..."
-                  value={searchPlayer}
-                  onChange={(e) => setSearchPlayer(e.target.value)}
-                  className="pl-9 bg-white/[0.07] border-white/[0.08] focus:border-idm-gold-warm/30 focus:bg-white/[0.10] transition-colors"
-                />
-              </div>
-              <Button onClick={openNewPlayerForm} size="sm" className="shrink-0 text-[11px] h-8 sm:h-9">
-                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" /> <span className="hidden xs:inline">Tambah </span>Player
-              </Button>
-            </div>
-
-            {/* Player list */}
-            <div className="space-y-1 sm:space-y-1.5 max-h-[500px] overflow-y-auto custom-scrollbar">
-              {filteredPlayers.map((p: {
-                id: string;
-                gamertag: string;
-                name: string;
-                avatar?: string | null;
-                tier: string;
-                division: string;
-                points: number;
-                totalWins: number;
-                streak: number;
-                totalMvp: number;
-                matches: number;
-                isActive: boolean;
-                city: string;
-                phone: string | null;
-                joki: string | null;
-                clubMembers?: Array<{ profile: { id: string; name: string; logo?: string | null } }>;
-              }, index) => {
-                const avatarSrc = getAvatarUrl(p.gamertag, p.division as 'male' | 'female', p.avatar);
-                return (
-                <div key={p.id} className={`flex items-center justify-between p-2 sm:p-3 rounded-xl bg-card border border-border/50 ${dt.casinoGlow} transition-colors hover:border-border/80`}
-                >
-                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                    <div className="relative group shrink-0">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden">
-                        <Image src={avatarSrc} alt={p.gamertag} width={40} height={40} className="w-full h-full object-cover" />
-                      </div>
-                      <button
-                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => openAvatarPicker(p.id)}
-                        title="Ganti avatar"
-                      >
-                        <Camera className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-                      </button>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                        <p className="text-xs sm:text-sm font-medium truncate">{p.gamertag}</p>
-                        <Badge className={`text-[8px] sm:text-[9px] border-0 ${p.division === 'male' ? 'bg-idm-male/10 text-idm-male' : 'bg-idm-female/10 text-idm-female'}`}>
-                          {p.division === 'male' ? '🕺' : '💃'}
-                        </Badge>
-                        <TierBadge tier={p.tier} />
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-1 sm:gap-x-2 gap-y-0.5 text-[9px] sm:text-[10px] text-muted-foreground">
-                        <span className="font-medium text-foreground truncate max-w-[80px] sm:max-w-none">{p.name}</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span>{p.points}pts</span>
-                        <span>•</span>
-                        <span>{p.totalWins}W</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span className="hidden sm:inline">{p.totalMvp} MVP</span>
-                        {p.streak > 1 && <span className="text-orange-400 flex items-center gap-0.5"><Flame className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{p.streak}</span>}
-                        {p.clubMembers?.[0]?.profile && (
-                          <Badge className="text-[8px] sm:text-[9px] border-0 bg-muted text-muted-foreground truncate max-w-[60px] sm:max-w-none">{p.clubMembers[0].profile.name}</Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                    <Select value={p.tier} onValueChange={(tier) => updateTier.mutate({ playerId: p.id, tier })}>
-                      <SelectTrigger className="w-12 sm:w-14 h-7 text-[10px] sm:text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="S">S</SelectItem>
-                        <SelectItem value="A">A</SelectItem>
-                        <SelectItem value="B">B</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 w-7 p-0 touch-icon text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
-                      onClick={() => openEditPlayerForm(p)}
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 w-7 p-0 touch-icon text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                      onClick={() => setConfirmDialog({
-                        open: true,
-                        title: 'Hapus Player?',
-                        description: `Hapus "${p.name}" (@${p.gamertag}). Player akan dinonaktifkan dan tidak muncul di daftar.`,
-                        onConfirm: () => deletePlayer.mutate(p.id)
-                      })}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                );
-              })}
-            </div>
-          </div>
+          <AdminPlayersTab
+            pendingRegistrations={pendingRegistrations || []}
+            approveRegistration={approveRegistration}
+            rejectRegistration={rejectRegistration}
+            filteredPlayers={filteredPlayers}
+            searchPlayer={searchPlayer}
+            setSearchPlayer={setSearchPlayer}
+            openNewPlayerForm={openNewPlayerForm}
+            openEditPlayerForm={openEditPlayerForm}
+            openAvatarPicker={openAvatarPicker}
+            updateTier={updateTier}
+            deletePlayer={deletePlayer}
+            setConfirmDialog={setConfirmDialog}
+            dt={dt}
+          />
         </TabsContent>
 
         {/* ====== TURNAMEN TAB ====== */}
@@ -1053,6 +903,13 @@ export function AdminPanel() {
           </div>
         </TabsContent>
 
+        {/* ====== KONTEN TAB ====== */}
+        <TabsContent value="konten" className="admin-tab-enter">
+          <div className="space-y-4">
+            <CmsPanel />
+          </div>
+        </TabsContent>
+
         {/* ====== SEASON TARKAM TAB ====== */}
         <TabsContent value="season-tarkam" className="admin-tab-enter">
           <div className="space-y-4">
@@ -1083,343 +940,31 @@ export function AdminPanel() {
 
         {/* ====== LIGA SKOR TAB ====== */}
         <TabsContent value="liga-skor" className="admin-tab-enter">
-          <div className="space-y-4">
-            {/* League Match Scoring */}
-            <Card className={dt.casinoCard}>
-              <div className={dt.casinoBar} />
-              <CardContent className="p-4 relative z-10">
-                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <Trophy className={`w-4 h-4 ${dt.neonText}`} /> Skor League Match
-                </h3>
-                <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
-                  {stats?.leagueMatches?.filter((m: { status: string }) => m.status === 'upcoming').map((m: { id: string; week: number; club1: { name: string }; club2: { name: string }; format: string }) => (
-                    <div key={m.id} className="p-3 rounded-lg bg-muted/50 border border-border/30 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold truncate">Week {m.week}: {m.club1.name} vs {m.club2.name}</p>
-                        <Badge className={`${dt.casinoBadge}`}>{m.format}</Badge>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                        <Button size="sm" variant="outline" className="h-9 text-[10px] min-h-[44px]" disabled={scoreLeagueMatch.isPending || scorePlayoffMatch.isPending}
-                          onClick={() => setConfirmDialog({
-                            open: true,
-                            title: 'Konfirmasi Skor',
-                            description: `Set skor Week ${m.week}: ${m.club1.name} 2-0 ${m.club2.name}`,
-                            onConfirm: () => scoreLeagueMatch.mutate({ matchId: m.id, score1: 2, score2: 0 })
-                          })}>
-                          2-0 {m.club1.name.slice(0, 3)}
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-9 text-[10px] min-h-[44px]" disabled={scoreLeagueMatch.isPending || scorePlayoffMatch.isPending}
-                          onClick={() => setConfirmDialog({
-                            open: true,
-                            title: 'Konfirmasi Skor',
-                            description: `Set skor Week ${m.week}: ${m.club1.name} 2-1 ${m.club2.name}`,
-                            onConfirm: () => scoreLeagueMatch.mutate({ matchId: m.id, score1: 2, score2: 1 })
-                          })}>
-                          2-1
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-9 text-[10px] min-h-[44px]" disabled={scoreLeagueMatch.isPending || scorePlayoffMatch.isPending}
-                          onClick={() => setConfirmDialog({
-                            open: true,
-                            title: 'Konfirmasi Skor',
-                            description: `Set skor Week ${m.week}: ${m.club1.name} 0-2 ${m.club2.name}`,
-                            onConfirm: () => scoreLeagueMatch.mutate({ matchId: m.id, score1: 0, score2: 2 })
-                          })}>
-                          0-2 {m.club2.name.slice(0, 3)}
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-9 text-[10px] min-h-[44px]" disabled={scoreLeagueMatch.isPending || scorePlayoffMatch.isPending}
-                          onClick={() => setConfirmDialog({
-                            open: true,
-                            title: 'Konfirmasi Skor',
-                            description: `Set skor Week ${m.week}: ${m.club1.name} 1-2 ${m.club2.name}`,
-                            onConfirm: () => scoreLeagueMatch.mutate({ matchId: m.id, score1: 1, score2: 2 })
-                          })}>
-                          1-2
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  {stats?.leagueMatches?.filter((m: { status: string }) => m.status === 'upcoming').length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-4">Tidak ada league match mendatang</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Playoff Match Scoring */}
-            <Card className={dt.casinoCard}>
-              <div className={dt.casinoBar} />
-              <CardContent className="p-4 relative z-10">
-                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <Crown className="w-4 h-4 text-yellow-500" /> Skor Playoff Match
-                </h3>
-                <div className="space-y-2">
-                  {stats?.playoffMatches?.map((m: { id: string; round: string; club1: { name: string }; club2: { name: string }; status: string; format: string; score1: number | null; score2: number | null }) => (
-                    <div key={m.id} className={`p-3 rounded-lg border ${m.status === 'upcoming' ? 'bg-muted/50 border-border/30' : `${dt.bg} ${dt.border}`}`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <div>
-                          <Badge className="text-[9px] border-0 bg-yellow-500/10 text-yellow-500">
-                            {m.round.replace(/_/g, ' ').toUpperCase()}
-                          </Badge>
-                          <p className="text-xs font-semibold mt-1">{m.club1.name} vs {m.club2.name}</p>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground">{m.format}</span>
-                      </div>
-                      {m.status === 'upcoming' ? (
-                        <div className="grid grid-cols-3 gap-1.5 mt-2">
-                          {[`3-0 ${m.club1.name.slice(0,3)}`, `3-1`, `3-2`, `0-3 ${m.club2.name.slice(0,3)}`, `1-3`, `2-3`].map((label, i) => {
-                            const scores = [[3,0],[3,1],[3,2],[0,3],[1,3],[2,3]][i];
-                            return (
-                              <Button key={i} size="sm" variant="outline" className="h-9 text-[10px] min-h-[44px]" disabled={scoreLeagueMatch.isPending || scorePlayoffMatch.isPending}
-                                onClick={() => setConfirmDialog({
-                                  open: true,
-                                  title: 'Konfirmasi Skor Playoff',
-                                  description: `Set skor ${m.round.replace(/_/g, ' ')}: ${m.club1.name} ${scores[0]}-${scores[1]} ${m.club2.name}`,
-                                  onConfirm: () => scorePlayoffMatch.mutate({ matchId: m.id, score1: scores[0], score2: scores[1] })
-                                })}>
-                                {label}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <p className={`text-sm font-bold ${dt.neonText} mt-1 casino-score`}>{m.score1} - {m.score2}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <AdminLigaSkorTab
+            stats={stats}
+            scoreLeagueMatch={scoreLeagueMatch}
+            scorePlayoffMatch={scorePlayoffMatch}
+            setConfirmDialog={setConfirmDialog}
+            dt={dt}
+          />
         </TabsContent>
 
         {/* ====== KEUANGAN TAB ====== */}
         <TabsContent value="keuangan" className="admin-tab-enter">
-          <div className="space-y-4">
-            {/* Pending Donations — Approval Queue */}
-            {donations?.donations?.filter((d: { status: string }) => d.status === 'pending').length > 0 && (
-              <Card className="border-yellow-500/20 bg-yellow-500/5">
-                <CardContent className="p-4">
-                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2 text-yellow-500">
-                    <Clock className="w-4 h-4" /> Menunggu Persetujuan ({donations.donations.filter((d: { status: string }) => d.status === 'pending').length})
-                  </h3>
-                  <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
-                    {donations.donations.filter((d: { status: string }) => d.status === 'pending').map((d: { id: string; donorName: string; amount: number; message: string | null; type: string; createdAt: string }, index) => (
-                      <div key={d.id} className="p-3 rounded-xl bg-card border border-yellow-500/10">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <Gift className="w-4 h-4 text-yellow-500 shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-semibold">{d.donorName}</p>
-                                <Badge className="text-[9px] border-0 bg-[#22d3ee]/10 text-[#22d3ee]">{d.type === 'season' ? 'Donasi' : 'Sawer'}</Badge>
-                              </div>
-                              {d.message && <p className="text-[10px] text-muted-foreground truncate">{d.message}</p>}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-sm font-bold text-yellow-500">{formatCurrency(d.amount)}</span>
-                            <Button size="sm" className="h-7 text-[10px] bg-green-600 hover:bg-green-700 text-white px-2"
-                              onClick={() => approveDonation.mutate({ id: d.id, status: 'approved' })}
-                              disabled={approveDonation.isPending}>
-                              <CheckCircle2 className="w-3 h-3 mr-1" /> Approve
-                            </Button>
-                            <Button size="sm" variant="ghost" className="h-7 text-[10px] text-red-500 hover:text-red-400 hover:bg-red-500/10 px-2"
-                              onClick={() => approveDonation.mutate({ id: d.id, status: 'rejected' })}
-                              disabled={approveDonation.isPending}>
-                              <XCircle className="w-3 h-3 mr-1" /> Tolak
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Add Donation */}
-            <Card className={dt.casinoCard}>
-              <div className={dt.casinoBar} />
-              <CardContent className="p-4 relative z-10">
-                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <Plus className={`w-4 h-4 ${dt.neonText}`} /> Tambah Donasi Manual
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
-                  <Input placeholder="Nama Donatur" value={newDonation.donorName} onChange={(e) => setNewDonation(p => ({ ...p, donorName: e.target.value }))} />
-                  <Input placeholder="Jumlah (IDR)" type="number" value={newDonation.amount} onChange={(e) => setNewDonation(p => ({ ...p, amount: e.target.value }))} />
-                  <Select value={newDonation.type} onValueChange={(v) => setNewDonation(p => ({ ...p, type: v }))}>
-                    <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="season">Donasi</SelectItem>
-                      <SelectItem value="weekly">Sawer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input placeholder="Pesan" value={newDonation.message} onChange={(e) => setNewDonation(p => ({ ...p, message: e.target.value }))} />
-                  <Button size="sm" disabled={!newDonation.donorName || !newDonation.amount || addDonation.isPending}
-                    onClick={() => { addDonation.mutate({ donorName: newDonation.donorName, amount: parseInt(newDonation.amount) || 0, message: newDonation.message, type: newDonation.type }); setNewDonation({ donorName: '', amount: '', message: '', type: 'season' }); }}>
-                    {addDonation.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Plus className="w-3 h-3 mr-1" />} Add
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* All Donations List */}
-            <Card className="border border-border/50">
-              <CardContent className="p-4">
-                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <Gift className="w-4 h-4 text-idm-gold-warm" /> Semua Donasi
-                </h3>
-                <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
-                  {donations?.donations?.length > 0 ? donations.donations.map((d: { id: string; donorName: string; amount: number; message: string | null; type: string; status: string; createdAt: string }, index) => (
-                    <div key={d.id} className={`flex items-center justify-between p-2.5 rounded-lg border ${
-                      d.status === 'approved' ? 'bg-card border-green-500/10' :
-                      d.status === 'rejected' ? 'bg-card border-red-500/10 opacity-50' :
-                      'bg-card border-yellow-500/10'
-                    }`}>
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Gift className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-medium truncate">{d.donorName}</p>
-                            <Badge className={`text-[8px] border-0 ${d.type === 'season' ? 'bg-[#22d3ee]/10 text-[#22d3ee]' : 'bg-idm-gold-warm/10 text-idm-gold-warm'}`}>{d.type === 'season' ? 'Donasi' : 'Sawer'}</Badge>
-                            {d.status === 'approved' && <Badge className="text-[8px] border-0 bg-green-500/10 text-green-500">✓</Badge>}
-                            {d.status === 'rejected' && <Badge className="text-[8px] border-0 bg-red-500/10 text-red-500">✗</Badge>}
-                          </div>
-                          {d.message && <p className="text-[10px] text-muted-foreground truncate">{d.message}</p>}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs font-bold">{formatCurrency(d.amount)}</span>
-                        {d.status === 'pending' && (
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0 touch-icon text-green-500 hover:bg-green-500/10"
-                            onClick={() => approveDonation.mutate({ id: d.id, status: 'approved' })}>
-                            <CheckCircle2 className="w-3 h-3" />
-                          </Button>
-                        )}
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 touch-icon text-red-500 hover:bg-red-500/10"
-                          onClick={() => setConfirmDialog({ open: true, title: 'Hapus Donasi?', description: `Hapus donasi dari "${d.donorName}" sebesar ${formatCurrency(d.amount)}?`, onConfirm: () => deleteDonation.mutate(d.id) })}>
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  )) : (
-                    <p className="text-xs text-muted-foreground text-center py-4">Belum ada donasi</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Payment Settings */}
-            <Card className="border border-border/50">
-              <CardContent className="p-4 space-y-3">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-idm-gold-warm" /> Pembayaran Donasi
-                  <Badge className="text-[8px] border-0 bg-cyan-500/10 text-cyan-400">Payment</Badge>
-                </h3>
-                <p className="text-[10px] text-muted-foreground">QRIS menggunakan QR code image, e-wallet menggunakan nomor handphone untuk transfer.</p>
-                <div className="space-y-3">
-                  {/* QRIS — QR code image */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-idm-gold-warm" /> QRIS (Universal)
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <Input value={paymentForm.donation_qris_image || ''} onChange={(e) => updatePaymentForm({ donation_qris_image: e.target.value })} className="text-xs flex-1" placeholder="URL gambar QR code" />
-                      <Button type="button" variant="outline" size="sm" className="h-8 text-[10px] shrink-0" onClick={() => setQrisPickerOpen(true)}>Upload</Button>
-                    </div>
-                    {paymentForm.donation_qris_image && (
-                      <div className="w-20 h-20 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
-                        <img src={paymentForm.donation_qris_image} alt="QRIS Preview" className="w-full h-full object-contain" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="h-px bg-border/20" />
-                  <p className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">E-Wallet (Nomor HP)</p>
-
-                  {/* DANA — phone number */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#108ee9]" /> DANA
-                    </label>
-                    <Input value={paymentForm.donation_dana_number || ''} onChange={(e) => updatePaymentForm({ donation_dana_number: e.target.value })} className="text-sm" placeholder="Contoh: 081234567890" />
-                  </div>
-                  {/* OVO — phone number */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#4c3494]" /> OVO
-                    </label>
-                    <Input value={paymentForm.donation_ovo_number || ''} onChange={(e) => updatePaymentForm({ donation_ovo_number: e.target.value })} className="text-sm" placeholder="Contoh: 081234567890" />
-                  </div>
-                  {/* ShopeePay — phone number */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#ee4d2d]" /> ShopeePay
-                    </label>
-                    <Input value={paymentForm.donation_shopeepay_number || ''} onChange={(e) => updatePaymentForm({ donation_shopeepay_number: e.target.value })} className="text-sm" placeholder="Contoh: 081234567890" />
-                  </div>
-
-                  <div className="h-px bg-border/20" />
-
-                  {/* Holder */}
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Nama Penerima (a.n.)</label>
-                    <Input value={paymentForm.donation_payment_holder || ''} onChange={(e) => updatePaymentForm({ donation_payment_holder: e.target.value })} className="text-sm" placeholder="Contoh: Admin IDM League" />
-                  </div>
-                  {/* Notes */}
-                  <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Catatan Pembayaran</label>
-                    <Textarea value={paymentForm.donation_payment_notes || ''} onChange={(e) => updatePaymentForm({ donation_payment_notes: e.target.value })} className="text-sm" placeholder="Contoh: Konfirmasi ke admin via WhatsApp" rows={2} />
-                  </div>
-                </div>
-                <Button size="sm" className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
-                  onClick={() => {
-                    savePaymentSetting.mutate({ key: 'donation_qris_image', value: paymentForm.donation_qris_image || '', type: 'image' });
-                    savePaymentSetting.mutate({ key: 'donation_dana_number', value: paymentForm.donation_dana_number || '', type: 'text' });
-                    savePaymentSetting.mutate({ key: 'donation_ovo_number', value: paymentForm.donation_ovo_number || '', type: 'text' });
-                    savePaymentSetting.mutate({ key: 'donation_shopeepay_number', value: paymentForm.donation_shopeepay_number || '', type: 'text' });
-                    savePaymentSetting.mutate({ key: 'donation_payment_holder', value: paymentForm.donation_payment_holder || '', type: 'text' });
-                    savePaymentSetting.mutate({ key: 'donation_payment_notes', value: paymentForm.donation_payment_notes || '', type: 'text' });
-                    savePaymentSetting.mutate({ key: 'registration_admin_wa_link', value: paymentForm.registration_admin_wa_link || '', type: 'text' });
-                    savePaymentSetting.mutate({ key: 'registration_payment_instructions', value: paymentForm.registration_payment_instructions || '', type: 'text' });
-                  }}
-                  disabled={savePaymentSetting.isPending}>
-                  {savePaymentSetting.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />} Simpan Pembayaran
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Registration Payment Settings */}
-            <Card className="border border-idm-gold-warm/20 bg-idm-gold-warm/[0.02]">
-              <CardContent className="p-4 space-y-3">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <UserPlus className="w-4 h-4 text-idm-gold-warm" /> Pembayaran Registrasi
-                  <Badge className="text-[8px] border-0 bg-idm-gold-warm/10 text-idm-gold-warm">Registration</Badge>
-                </h3>
-                <p className="text-[10px] text-muted-foreground">Pengaturan info pembayaran yang ditampilkan setelah peserta berhasil mendaftar. Metode pembayaran (DANA/OVO/ShopeePay/QRIS) menggunakan data dari kartu "Pembayaran Donasi" di atas.</p>
-
-                <div className="space-y-3">
-                  {/* Admin WhatsApp Link */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <MessageCircle className="w-3 h-3 text-green-500" /> Link WhatsApp Admin
-                    </label>
-                    <Input value={paymentForm.registration_admin_wa_link || ''} onChange={(e) => updatePaymentForm({ registration_admin_wa_link: e.target.value })} className="text-sm" placeholder="Contoh: https://wa.me/6281234567890" />
-                    <p className="text-[10px] text-muted-foreground">Link WA admin untuk peserta mengirim bukti pembayaran. Format: https://wa.me/62xxxxxxxxxx</p>
-                  </div>
-
-                  {/* Payment Instructions */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <FileText className="w-3 h-3 text-idm-gold-warm" /> Instruksi Pembayaran
-                    </label>
-                    <Textarea value={paymentForm.registration_payment_instructions || ''} onChange={(e) => updatePaymentForm({ registration_payment_instructions: e.target.value })} className="text-sm" placeholder="Instruksi untuk peserta setelah mendaftar..." rows={3} />
-                    <p className="text-[10px] text-muted-foreground">Instruksi yang ditampilkan setelah pendaftaran berhasil. Jangan tuliskan nominal — cukup "sesuai ketentuan yang berlaku".</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <AdminKeuanganTab
+            donations={donations}
+            addDonation={addDonation}
+            approveDonation={approveDonation}
+            deleteDonation={deleteDonation}
+            newDonation={newDonation}
+            setNewDonation={setNewDonation}
+            paymentForm={paymentForm}
+            updatePaymentForm={updatePaymentForm}
+            savePaymentSettingsBatch={savePaymentSettingsBatch}
+            setQrisPickerOpen={setQrisPickerOpen}
+            setConfirmDialog={setConfirmDialog}
+            dt={dt}
+          />
         </TabsContent>
 
         {/* ====== SPONSOR TAB ====== */}
@@ -1434,13 +979,6 @@ export function AdminPanel() {
           <div className="space-y-4">
             <AdminAchievementPanel />
             <AdminSkinPanel />
-          </div>
-        </TabsContent>
-
-        {/* ====== KONTEN TAB ====== */}
-        <TabsContent value="konten" className="admin-tab-enter">
-          <div className="space-y-4">
-            <CmsPanel />
           </div>
         </TabsContent>
 

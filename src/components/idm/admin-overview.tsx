@@ -123,32 +123,30 @@ export function AdminOverview({ division }: AdminOverviewProps) {
         })}
       </div>
 
-      {/* Season Progress & Tier Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Season Progress */}
-        <div className="stagger-item-subtle stagger-d0">
-          <Card className={dt.casinoCard}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Calendar className={`w-4 h-4 ${dt.text}`} />
-                Season Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
+      {/* Season Progress — full width compact */}
+      <div className="stagger-item-subtle stagger-d0">
+        <Card className={dt.casinoCard}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Calendar className={`w-4 h-4 ${dt.text}`} />
+              Season Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-6">
+              <div className="flex-1">
                 <div className="flex justify-between text-xs mb-1.5">
                   <span className="text-muted-foreground">Week {stats?.seasonProgress?.completedWeeks || 0} of {stats?.seasonProgress?.totalWeeks || 10}</span>
                   <span className="font-medium">{stats?.seasonProgress?.percentage || 0}%</span>
                 </div>
                 <Progress value={stats?.seasonProgress?.percentage || 0} className="h-2" />
               </div>
-
               {/* Week indicators */}
-              <div className="flex gap-1">
+              <div className="flex gap-1 shrink-0">
                 {Array.from({ length: stats?.seasonProgress?.totalWeeks || 10 }).map((_, i) => (
                   <div
                     key={i}
-                    className={`flex-1 h-1.5 rounded-full ${
+                    className={`w-3 h-1.5 rounded-full ${
                       i < (stats?.seasonProgress?.completedWeeks || 0)
                         ? division === 'male' ? 'bg-idm-male' : 'bg-idm-female'
                         : 'bg-muted'
@@ -156,17 +154,20 @@ export function AdminOverview({ division }: AdminOverviewProps) {
                   />
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
+      {/* Tier Distribution + Top Players + Recent Champions — 3 cards in one row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Tier Distribution */}
         <div className="stagger-item-subtle stagger-d1">
           <Card className={dt.casinoCard}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Activity className={`w-4 h-4 ${dt.text}`} />
-                Player Tier Distribution
+                Tier Distribution
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -182,7 +183,7 @@ export function AdminOverview({ division }: AdminOverviewProps) {
                     <div key={tier}>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-muted-foreground">{label}</span>
-                        <span className="font-medium">{count} players ({percentage}%)</span>
+                        <span className="font-medium">{count} ({percentage}%)</span>
                       </div>
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div
@@ -197,10 +198,7 @@ export function AdminOverview({ division }: AdminOverviewProps) {
             </CardContent>
           </Card>
         </div>
-      </div>
 
-      {/* Top Players & Recent Champions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Top Players */}
         <div className="stagger-item-subtle stagger-d2">
           <Card className={dt.casinoCard}>

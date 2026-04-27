@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { hexToRgba } from '@/lib/utils';
 
 /* ═══════════════════════════════════════════════
-   IDM League — Reusable Skeleton Components
+   Tarkam IDM — Reusable Skeleton Components
    Elegant shimmer placeholders for loading states
    ═══════════════════════════════════════════════ */
 

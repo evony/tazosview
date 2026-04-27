@@ -384,7 +384,7 @@ export function UnifiedLoginModal({ open, onOpenChange, defaultTab = 'peserta' }
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-background border-border/50">
-        <DialogTitle className="sr-only">Login IDM League</DialogTitle>
+        <DialogTitle className="sr-only">Login Tarkam IDM</DialogTitle>
         {/* Top accent bar — gradient changes based on active tab */}
         <div className={`h-1 w-full bg-gradient-to-r ${
           activeTab === 'admin'

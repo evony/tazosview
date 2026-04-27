@@ -214,8 +214,8 @@ export function Dashboard() {
               <div className="flex sm:hidden flex-col items-end gap-1">
                 <div className="flex items-center gap-1.5">
                   <ShareButton
-                    title={t?.name || 'IDM League'}
-                    description={`Week ${t?.weekNumber || '-'} — ${division === 'male' ? 'Male' : 'Female'} Division`}
+                    title={t?.name || 'Tarkam IDM'}
+                    description={`Week ${t?.weekNumber || '-'} — ${division === 'male' ? 'Male' : 'Female'} Tarkam`}
                     variant="icon"
                   />
                   <StatusBadge status={t?.status || 'registration'} />
@@ -226,7 +226,7 @@ export function Dashboard() {
 
             {/* Title — pushed up close to badges on desktop */}
             <div className="mt-2 sm:mt-3 lg:mt-4">
-              <h2 className={`text-lg sm:text-3xl lg:text-5xl font-black ${dt.neonGradient} leading-tight tracking-tight`}>{t?.name || 'IDM League Babak'}</h2>
+              <h2 className={`text-lg sm:text-3xl lg:text-5xl font-black ${dt.neonGradient} leading-tight tracking-tight`}>{t?.name || 'Tarkam IDM Babak'}</h2>
               <p className="text-[10px] sm:text-xs lg:text-base text-muted-foreground mt-1.5">{data.season?.name}</p>
             </div>
 
@@ -253,8 +253,8 @@ export function Dashboard() {
             {/* Top row: Share + Status — aligned left */}
             <div className="flex items-center gap-2">
               <ShareButton
-                title={t?.name || 'IDM League'}
-                description={`Week ${t?.weekNumber || '-'} — ${division === 'male' ? 'Male' : 'Female'} Division`}
+                title={t?.name || 'Tarkam IDM'}
+                description={`Week ${t?.weekNumber || '-'} — ${division === 'male' ? 'Male' : 'Female'} Tarkam`}
                 variant="icon"
               />
               <StatusBadge status={t?.status || 'registration'} />

@@ -1,0 +1,359 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { useMemo, useState } from 'react';
+import {
+  Users, Building2, Award, Shield, Flame,
+  ChevronDown, ChevronUp, Search,
+} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table';
+import { TierBadge } from '../tier-badge';
+import { SkinBadgesRow, SkinName } from '../skin-renderer';
+import { getPrimarySkin } from '@/lib/skin-utils';
+import { ClubLogoImage } from '../club-logo-image';
+import { getAvatarUrl, clubToString } from '@/lib/utils';
+import { getDivisionTheme } from '@/hooks/use-division-theme';
+import { useCommunityTheme } from '@/hooks/use-community-theme';
+import { useAppStore } from '@/lib/store';
+import type { StatsData, TopPlayer } from '@/types/stats';
+
+/* ═══════════════════════════════════════════════════════
+   COMMUNITY LEADERBOARD — Same Toornament style as division standings
+   ═══════════════════════════════════════════════════════ */
+interface CommunityLeaderboardProps {
+  maleData?: StatsData;
+  femaleData?: StatsData;
+  leagueData?: {
+    clubs?: Array<{
+      id: string;
+      name: string;
+      logo?: string | null;
+      wins: number;
+      losses: number;
+      points: number;
+      gameDiff: number;
+      memberCount: number;
+    }>;
+  };
+  onPlayerClick: (player: TopPlayer & { division?: string }, division: 'male' | 'female') => void;
+  onClubClick?: (club: StatsData['clubs'][0]) => void;
+}
+
+type DivisionFilter = 'all' | 'male' | 'female';
+
+export function CommunityLeaderboard({
+  maleData,
+  femaleData,
+  leagueData,
+  onPlayerClick,
+  onClubClick,
+}: CommunityLeaderboardProps) {
+  const dt = useCommunityTheme();
+  const division = useAppStore(s => s.division);
+  const [leaderboardSort, setLeaderboardSort] = useState<'players' | 'clubs'>('players');
+  const [divisionFilter, setDivisionFilter] = useState<DivisionFilter>('all');
+  const [showAllPlayers, setShowAllPlayers] = useState(false);
+  const [showAllClubs, setShowAllClubs] = useState(false);
+
+  // Skin maps from both divisions
+  const skinMap = {
+    ...maleData?.skinMap,
+    ...femaleData?.skinMap,
+  };
+
+  // Merge top players from both divisions, re-sort by points
+  const mergedPlayers = useMemo(() => {
+    let male = (maleData?.topPlayers || []).map(p => ({ ...p, division: 'male' as const }));
+    let female = (femaleData?.topPlayers || []).map(p => ({ ...p, division: 'female' as const }));
+
+    if (divisionFilter === 'male') female = [];
+    if (divisionFilter === 'female') male = [];
+
+    return [...male, ...female].sort((a, b) => b.points - a.points);
+  }, [maleData, femaleData, divisionFilter]);
+
+  const displayedPlayers = showAllPlayers ? mergedPlayers : mergedPlayers.slice(0, 10);
+  const clubs = leagueData?.clubs || [];
+  const displayedClubs = showAllClubs ? clubs : clubs.slice(0, 6);
+
+  return (
+    <div className="space-y-4">
+      {/* Filter bar: Player/Club toggle + Division filter */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Player/Club toggle */}
+        <div className={`flex items-center gap-1 p-1 rounded-lg ${dt.bgSubtle} ${dt.border}`}>
+          <button
+            onClick={() => setLeaderboardSort('players')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${leaderboardSort === 'players' ? `${dt.bg} ${dt.text} shadow-sm` : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Users className="w-3 h-3" /> Pemain
+          </button>
+          <button
+            onClick={() => setLeaderboardSort('clubs')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${leaderboardSort === 'clubs' ? `${dt.bg} ${dt.text} shadow-sm` : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Shield className="w-3 h-3" /> Klub
+          </button>
+        </div>
+
+        {/* Division filter pills — only shown for players */}
+        {leaderboardSort === 'players' && (
+          <div className={`flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/10`}>
+            {([
+              { key: 'all', label: 'Semua' },
+              { key: 'male', label: '🕺 Male' },
+              { key: 'female', label: '💃 Female' },
+            ] as const).map(f => (
+              <button
+                key={f.key}
+                onClick={() => setDivisionFilter(f.key)}
+                className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all ${
+                  divisionFilter === f.key
+                    ? f.key === 'male'
+                      ? 'bg-idm-male text-white shadow-sm'
+                      : f.key === 'female'
+                      ? 'bg-idm-female text-white shadow-sm'
+                      : `${dt.bg} ${dt.text} shadow-sm`
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ═══ Player Leaderboard — Toornament clean table ═══ */}
+      {leaderboardSort === 'players' && (
+        <Card className={`${dt.casinoCard} overflow-hidden`}>
+          <div className={dt.casinoBar} />
+          {/* Header bar */}
+          <div className={`flex items-center gap-2.5 px-4 py-3 border-b ${dt.borderSubtle}`}>
+            <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
+              <Award className={`w-3 h-3 ${dt.neonText}`} />
+            </div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider">Peringkat Player</h3>
+            <Badge className={`${dt.casinoBadge} ml-auto text-[9px]`}>TOP {displayedPlayers?.length || 10}</Badge>
+          </div>
+          {/* Table */}
+          <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className={`hover:bg-transparent border-b ${dt.border} bg-muted/30`}>
+                    <TableHead className="w-10 text-center text-[10px] font-semibold">#</TableHead>
+                    <TableHead className="text-[10px] font-semibold min-w-[120px]">Player</TableHead>
+                    <TableHead className="w-14 text-center text-[10px] font-semibold">Tier</TableHead>
+                    <TableHead className="w-20 text-center text-[10px] font-semibold">Divisi</TableHead>
+                    <TableHead className="w-14 text-right text-[10px] font-semibold">Pts</TableHead>
+                    <TableHead className="w-10 text-center text-[10px] font-semibold">W</TableHead>
+                    <TableHead className="w-10 text-center text-[10px] font-semibold hidden sm:table-cell">L</TableHead>
+                    <TableHead className="w-14 text-center text-[10px] font-semibold hidden md:table-cell">Streak</TableHead>
+                    <TableHead className="w-10 text-center text-[10px] font-semibold hidden sm:table-cell">MVP</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {displayedPlayers?.map((p, idx) => {
+                    const losses = p.matches - p.totalWins;
+                    const playerDivision = (p.division || 'male') as 'male' | 'female';
+                    const playerDt = getDivisionTheme(playerDivision);
+                    const playerSkins = skinMap[p.id];
+                    const primarySkin = playerSkins && playerSkins.length > 0 ? getPrimarySkin(playerSkins) : null;
+                    const trendUp = p.streak > 1;
+
+                    return (
+                      <TableRow
+                        key={p.id}
+                        className={`standings-row-enter standings-row-glass ${idx % 2 === 0 ? 'standings-row-glass-even' : 'standings-row-glass-odd'} ${playerDivision === 'male' ? 'standings-row-glow-male' : 'standings-row-glow-female'} cursor-pointer transition-all duration-200 border-b ${playerDt.borderSubtle} ${
+                          idx < 3 ? `${playerDt.bgSubtle}` : ''
+                        }`}
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                        onClick={() => onPlayerClick(p, playerDivision)}
+                      >
+                        <TableCell className="text-center">
+                          <span className={`w-6 h-6 rounded-full inline-flex items-center justify-center text-[10px] font-bold ${
+                            idx === 0 ? 'rank-badge-gold-enhanced text-black' :
+                            idx === 1 ? 'rank-badge-silver-enhanced text-black' :
+                            idx === 2 ? 'rank-badge-bronze-enhanced text-black' :
+                            'text-muted-foreground'
+                          }`}>
+                            {idx + 1}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-7 h-7 rounded-full ${playerDt.iconBg} flex items-center justify-center text-[9px] font-bold ${playerDt.text} shrink-0 ${
+                              idx === 0 ? 'avatar-ring-gold' :
+                              idx === 1 ? 'avatar-ring-silver' :
+                              idx === 2 ? 'avatar-ring-bronze' : ''
+                            }`}>
+                              {p.gamertag.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <SkinName skin={primarySkin}>
+                                  <p className="text-xs font-medium truncate">{p.gamertag}</p>
+                                </SkinName>
+                                {playerSkins && playerSkins.length > 0 && <SkinBadgesRow skins={playerSkins} />}
+                              </div>
+                              {clubToString(p.club as any) && <p className="text-[9px] text-muted-foreground truncate">{clubToString(p.club as any)}</p>}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className={`tier-badge-glow ${p.tier === 'S' ? 'tier-badge-glow-s' : p.tier === 'A' ? 'tier-badge-glow-a' : p.tier === 'B' ? 'tier-badge-glow-b' : ''} rounded`}>
+                            <TierBadge tier={p.tier} />
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge className={`${playerDt.badgeBg} text-[8px] border`}>
+                            {playerDivision === 'male' ? '🕺 Male' : '💃 Female'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className={`font-bold text-xs ${idx < 3 ? playerDt.neonText : ''}`}>{p.points}</span>
+                          {trendUp && <span className="trend-up text-green-400 text-[9px] ml-0.5">↑</span>}
+                        </TableCell>
+                        <TableCell className="text-center text-xs text-green-500 font-medium">{p.totalWins}</TableCell>
+                        <TableCell className="text-center text-xs text-red-500 font-medium hidden sm:table-cell">{losses > 0 ? losses : 0}</TableCell>
+                        <TableCell className="text-center text-xs hidden md:table-cell">
+                          {p.streak > 1 ? (
+                            <span className="text-orange-400 font-semibold flex items-center gap-0.5 justify-center"><Flame className="w-3 h-3" />{p.streak}</span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center text-xs hidden sm:table-cell">
+                          {p.totalMvp > 0 ? (
+                            <span className="text-yellow-500 font-semibold">{p.totalMvp}</span>
+                          ) : (
+                            <span className="text-muted-foreground">0</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+          {/* Show more / less toggle */}
+          {mergedPlayers.length > 10 && (
+            <div className={`flex items-center justify-center py-2 border-t ${dt.borderSubtle}`}>
+              <button
+                onClick={() => setShowAllPlayers(!showAllPlayers)}
+                className={`flex items-center gap-1 text-[10px] font-medium ${dt.text} hover:underline cursor-pointer`}
+              >
+                {showAllPlayers ? <><ChevronUp className="w-3 h-3" /> Tampilkan Sedikit</> : <><ChevronDown className="w-3 h-3" /> Tampilkan Semua ({mergedPlayers.length})</>}
+              </button>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* ═══ Club Standings — Toornament clean table ═══ */}
+      {leaderboardSort === 'clubs' && (
+        <Card className={`${dt.casinoCard} overflow-hidden`}>
+          <div className={dt.casinoBar} />
+          <div className={`flex items-center gap-2.5 px-4 py-3 border-b ${dt.borderSubtle}`}>
+            <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
+              <Shield className={`w-3 h-3 ${dt.neonText}`} />
+            </div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider">Klasemen Club</h3>
+            <Badge className={`${dt.casinoBadge} ml-auto text-[9px]`}>{clubs.length} Clubs</Badge>
+          </div>
+          {clubs.length > 0 ? (
+            <>
+              <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className={`hover:bg-transparent border-b ${dt.border} bg-muted/30`}>
+                        <TableHead className="w-10 text-center text-[10px] font-semibold">#</TableHead>
+                        <TableHead className="text-[10px] font-semibold min-w-[140px]">Club</TableHead>
+                        <TableHead className="w-10 text-center text-[10px] font-semibold">W</TableHead>
+                        <TableHead className="w-10 text-center text-[10px] font-semibold hidden sm:table-cell">L</TableHead>
+                        <TableHead className="w-12 text-center text-[10px] font-semibold hidden md:table-cell">Selisih</TableHead>
+                        <TableHead className="w-14 text-right text-[10px] font-semibold">Pts</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {displayedClubs?.map((club, idx) => (
+                        <TableRow
+                          key={club.id}
+                          className={`standings-row-enter standings-row-glass ${idx % 2 === 0 ? 'standings-row-glass-even' : 'standings-row-glass-odd'} ${division === 'male' ? 'standings-row-glow-male' : 'standings-row-glow-female'} cursor-pointer transition-all duration-200 border-b ${dt.borderSubtle} ${
+                            idx < 4 ? `${dt.bgSubtle}` : ''
+                          }`}
+                          style={{ animationDelay: `${idx * 50}ms` }}
+                          onClick={() => onClubClick?.(club as StatsData['clubs'][0])}
+                        >
+                          <TableCell className="text-center">
+                            <span className={`w-6 h-6 rounded-full inline-flex items-center justify-center text-[10px] font-bold ${
+                              idx === 0 ? 'rank-badge-gold-enhanced text-black' :
+                              idx === 1 ? 'rank-badge-silver-enhanced text-black' :
+                              idx === 2 ? 'rank-badge-bronze-enhanced text-black' :
+                              'text-muted-foreground'
+                            }`}>
+                              {idx + 1}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0">
+                                {club.logo ? (
+                                  <ClubLogoImage clubName={club.name} dbLogo={club.logo} alt={club.name} width={28} height={28} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className={`w-full h-full ${dt.iconBg} flex items-center justify-center`}>
+                                    <Shield className={`w-3.5 h-3.5 ${dt.text}`} />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <span className="text-xs font-semibold truncate">{club.name}</span>
+                                {club.memberCount > 0 && <p className="text-[9px] text-muted-foreground">{club.memberCount} anggota</p>}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center text-xs text-green-500 font-medium">{club.wins}</TableCell>
+                          <TableCell className="text-center text-xs text-red-500 font-medium hidden sm:table-cell">{club.losses}</TableCell>
+                          <TableCell className="text-center text-xs hidden md:table-cell">
+                            <span className={club.gameDiff > 0 ? 'text-green-500' : club.gameDiff < 0 ? 'text-red-500' : 'text-muted-foreground'}>
+                              {club.gameDiff > 0 ? '+' : ''}{club.gameDiff}
+                            </span>
+                          </TableCell>
+                          <TableCell className={`text-right font-bold text-xs ${idx === 0 ? dt.neonGradient : idx < 4 ? dt.neonText : ''}`}>{club.points}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+              {clubs.length > 6 && (
+                <div className={`flex items-center justify-center py-2 border-t ${dt.borderSubtle}`}>
+                  <button
+                    onClick={() => setShowAllClubs(!showAllClubs)}
+                    className={`flex items-center gap-1 text-[10px] font-medium ${dt.text} hover:underline cursor-pointer`}
+                  >
+                    {showAllClubs ? <><ChevronUp className="w-3 h-3" /> Tampilkan Sedikit</> : <><ChevronDown className="w-3 h-3" /> Tampilkan Semua ({clubs.length})</>}
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="p-4">
+              <div className={`p-6 rounded-xl ${dt.bgSubtle} ${dt.border} text-center`}>
+                <Shield className={`w-8 h-8 mx-auto mb-2 opacity-30 ${dt.text}`} />
+                <p className="text-sm text-muted-foreground">Belum ada club terdaftar</p>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+    </div>
+  );
+}

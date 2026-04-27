@@ -378,6 +378,16 @@ export async function GET(request: Request) {
         };
       }
     }
+    // Enrich champion club with name + logo from ClubProfile
+    let championClub: { id: string; name: string; logo: string | null } | null = null;
+    if (s.championClubId) {
+      const profile = await db.clubProfile.findUnique({
+        where: { id: s.championClubId },
+        select: { id: true, name: true, logo: true },
+      });
+      if (profile) championClub = profile;
+    }
+
     return {
       id: s.id,
       name: s.name,
@@ -389,6 +399,7 @@ export async function GET(request: Request) {
       championClubId: s.championClubId,
       championPlayerId: s.championPlayerId,
       championPlayer,
+      championClub,
     };
   }));
 

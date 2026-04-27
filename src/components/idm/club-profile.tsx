@@ -317,7 +317,7 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
         onClick={(e) => e.stopPropagation()}
       >
           {/* ── Header Banner ── */}
-          <div className="relative h-80">
+          <div className="relative h-[32rem]">
             {/* Unified club banner — use league/gold theme */}
             <Image src={club.bannerImage || '/bg-section.jpg'} alt="" fill sizes="100vw" className="absolute inset-0 object-cover" aria-hidden="true" />
 
@@ -368,14 +368,14 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
                 isChampion ? 'bg-yellow-500/5' : ''
               }`}>
                 {club.logo ? (
-                  <div className="relative" style={{ width: 120, height: 120 }}>
+                  <div className="relative" style={{ width: 140, height: 140 }}>
                     {isChampion && (
                       <>
                         <div className="absolute rounded-full animate-pulse" style={{ inset: -8, border: '2px solid rgba(234, 179, 8, 0.3)', boxShadow: '0 0 20px rgba(234, 179, 8, 0.15), 0 0 40px rgba(234, 179, 8, 0.05)' }} />
                         <div className="absolute rounded-full" style={{ inset: -4, border: '1px solid rgba(234, 179, 8, 0.15)' }} />
                       </>
                     )}
-                    <ClubLogoImage clubName={club.name} dbLogo={club.logo} alt={club.name} width={120} height={120} className="w-full h-full object-cover" style={isChampion ? { filter: 'drop-shadow(0 0 12px rgba(234, 179, 8, 0.2))' } : undefined} />
+                    <ClubLogoImage clubName={club.name} dbLogo={club.logo} alt={club.name} width={140} height={140} className="w-full h-full object-cover" style={isChampion ? { filter: 'drop-shadow(0 0 12px rgba(234, 179, 8, 0.2))' } : undefined} />
                     {isChampion && (
                       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl">
                         <div className="absolute inset-0" style={{ background: 'linear-gradient(105deg, transparent 40%, rgba(250, 204, 21, 0.08) 45%, rgba(250, 204, 21, 0.15) 50%, rgba(250, 204, 21, 0.08) 55%, transparent 60%)', animation: 'clubLogoShimmer 3s ease-in-out infinite' }} />
@@ -383,21 +383,21 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
                     )}
                   </div>
                 ) : (
-                  <ClubLogo name={club.name} size={120} isChampion={isChampion} />
+                  <ClubLogo name={club.name} size={140} isChampion={isChampion} />
                 )}
               </div>
             </div>
           </div>
 
           {/* ── Content ── */}
-          <div className="px-4 pt-20 pb-6">
+          <div className="px-4 pt-22 pb-6">
             {/* Name & Division */}
             <div className="text-center mb-4">
               <h2 className="text-xl font-black" style={{ background: 'linear-gradient(135deg, var(--idm-gold-warm), #f5d78e, var(--idm-gold-warm))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{club.name}</h2>
               <div className="flex items-center justify-center gap-2 mt-2">
                 {/* Club badge — unified, no division split */}
                 <Badge className="bg-idm-gold-warm/10 text-idm-gold-warm text-[10px] border-0">
-                  <Shield className="w-3 h-3 mr-1" /> Club IDM League
+                  <Shield className="w-3 h-3 mr-1" /> Club Tarkam IDM
                 </Badge>
                 <Badge className="bg-white/5 text-muted-foreground text-[10px] border-0">
                   <Users className="w-3 h-3 mr-1" /> {members.length} Pemain
@@ -415,7 +415,7 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
                   ? 'Juara League — Club terbaik dengan performa luar biasa'
                   : rank === 2
                   ? 'Juara 2 — Pesaing kuat yang mengejar gelar'
-                  : 'Club kompetitif di season IDM League'
+                  : 'Club kompetitif di season Tarkam IDM'
                 }
               </p>
             </div>

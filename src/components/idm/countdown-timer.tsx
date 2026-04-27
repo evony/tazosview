@@ -18,7 +18,7 @@ export function CountdownTimer({ targetDate, className = '' }: CountdownTimerPro
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { const t = setTimeout(() => setMounted(true), 0); return () => clearTimeout(t); }, []);
+  useEffect(() => { setTimeout(() => setMounted(true), 0) }, []);
 
   useEffect(() => {
     if (!mounted) return;

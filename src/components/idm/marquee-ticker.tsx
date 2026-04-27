@@ -2,10 +2,13 @@
 
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Users, Shield, Wallet, Swords, Trophy, Calendar } from 'lucide-react';
-import Pusher from 'pusher-js';
 import { hexToRgba, formatCurrency } from '@/lib/utils';
 import type { StatsData } from '@/types/stats';
+
+/* ═══════════════════════════════════════════════════════════════
+   TARKAM IDM — ESPN-STYLE MARQUEE TICKER
+   Stats + Live Feed in one seamless scrolling bar
+   ═══════════════════════════════════════════════════════════════ */
 
 /* ========== Feed Item Types ========== */
 interface FeedItem {
@@ -39,14 +42,14 @@ function formatTimeAgo(timestamp: string): string {
 
 /* ========== Fallback Demo Items (shown when no data) ========== */
 const DEMO_ITEMS: FeedItem[] = [
-  { id: 'demo-1', type: 'champion', icon: '🏆', title: 'Team Alpha Juara Week 5!', subtitle: 'Male Division', timestamp: new Date().toISOString(), division: 'male', accent: '#d4a853' },
+  { id: 'demo-1', type: 'champion', icon: '🏆', title: 'Team Alpha Juara Week 5!', subtitle: 'Divisi Male', timestamp: new Date().toISOString(), division: 'male', accent: '#d4a853' },
   { id: 'demo-2', type: 'donation', icon: '💰', title: 'CommunityPartner menyawer Rp500rb', subtitle: 'Donasi Weekly', timestamp: new Date().toISOString(), accent: '#22c55e' },
   { id: 'demo-3', type: 'score', icon: '⚽', title: 'Club A 3–1 Club B', subtitle: 'Week 5 • Club A menang!', timestamp: new Date().toISOString(), division: 'male', accent: '#06b6d4' },
-  { id: 'demo-4', type: 'mvp', icon: '⭐', title: 'Dancer_X MVP Week 5!', subtitle: 'Male Division', timestamp: new Date().toISOString(), division: 'male', accent: '#eab308' },
+  { id: 'demo-4', type: 'mvp', icon: '⭐', title: 'Dancer_X MVP Week 5!', subtitle: 'Divisi Male', timestamp: new Date().toISOString(), division: 'male', accent: '#eab308' },
   { id: 'demo-5', type: 'transfer', icon: '🔄', title: 'StarPlayer pindah ke Club C', subtitle: 'Dari Club A → Club C', timestamp: new Date().toISOString(), division: 'female', accent: '#a855f7' },
-  { id: 'demo-6', type: 'registration', icon: '🆕', title: 'NewDancer mendaftar sebagai pemain', subtitle: 'Female Division', timestamp: new Date().toISOString(), division: 'female', accent: '#22d3ee' },
+  { id: 'demo-6', type: 'registration', icon: '🆕', title: 'NewDancer mendaftar sebagai pemain', subtitle: 'Divisi Female', timestamp: new Date().toISOString(), division: 'female', accent: '#22d3ee' },
   { id: 'demo-7', type: 'donation', icon: '💰', title: 'AnonDonor menyawer Rp1jt', subtitle: 'Donasi Season', timestamp: new Date().toISOString(), accent: '#22c55e' },
-  { id: 'demo-8', type: 'champion', icon: '🏆', title: 'Team Omega Juara Week 4!', subtitle: 'Female Division', timestamp: new Date().toISOString(), division: 'female', accent: '#d4a853' },
+  { id: 'demo-8', type: 'champion', icon: '🏆', title: 'Team Omega Juara Week 4!', subtitle: 'Divisi Female', timestamp: new Date().toISOString(), division: 'female', accent: '#d4a853' },
   { id: 'demo-9', type: 'score', icon: '⚽', title: 'Club D 2–2 Club E', subtitle: 'Week 5 • Seru!', timestamp: new Date().toISOString(), division: 'female', accent: '#06b6d4' },
   { id: 'demo-10', type: 'donation', icon: '💎', title: 'VIPSupporter menyawer Rp250rb', subtitle: 'Donasi Season', timestamp: new Date().toISOString(), accent: '#22c55e' },
 ];
@@ -209,19 +212,25 @@ export function MarqueeTicker({ maleData, femaleData, leagueData }: UnifiedMarqu
     const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
     if (!pusherKey || !pusherCluster) return;
 
-    const pusher = new Pusher(pusherKey, {
-      cluster: pusherCluster,
-    });
+    let pusher: any;
+    let channel: any;
 
-    const channel = pusher.subscribe('idm-feed');
-    channel.bind('feed-updated', () => {
-      qc.invalidateQueries({ queryKey: ['feed'] });
+    import('pusher-js').then(({ default: PusherJS }) => {
+      pusher = new PusherJS(pusherKey, { cluster: pusherCluster });
+      channel = pusher.subscribe('idm-feed');
+      channel.bind('feed-updated', () => {
+        qc.invalidateQueries({ queryKey: ['feed'] });
+      });
+    }).catch(() => {
+      // Pusher not available — graceful fallback
     });
 
     return () => {
-      channel.unbind_all();
-      channel.unsubscribe();
-      pusher.disconnect();
+      if (channel) {
+        channel.unbind_all();
+        channel.unsubscribe();
+      }
+      if (pusher) pusher.disconnect();
     };
   }, [qc]);
 
@@ -233,16 +242,35 @@ export function MarqueeTicker({ maleData, femaleData, leagueData }: UnifiedMarqu
     const totalPlayers = (maleData?.totalPlayers || 0) + (femaleData?.totalPlayers || 0);
     const totalPrizePool = (maleData?.totalPrizePool || 0) + (femaleData?.totalPrizePool || 0);
     const totalMatches = leagueData?.stats?.totalMatches || (maleData?.recentMatches?.length || 0) + (femaleData?.recentMatches?.length || 0);
+    const totalClubs = leagueData?.stats?.totalClubs || (maleData?.clubs?.length || 0) + (femaleData?.clubs?.length || 0);
+    const completedMatches = leagueData?.stats?.completedMatches || 0;
     const seasonInfo = leagueData?.ligaChampion
       ? `Season ${leagueData.ligaChampion.seasonNumber}`
-      : leagueData?.preSeason ? 'Pre-Season' : 'Current Season';
+      : leagueData?.preSeason ? 'Pre-Season' : 'Season Berjalan';
+
+    // Only show stat cards with meaningful values — hide zero-value stats to avoid looking empty
+    stats.push(
+      { id: 'stat-players', type: 'stat', icon: '👥', title: `${totalPlayers}`, subtitle: 'Total Pemain', timestamp: new Date().toISOString(), accent: '#22d3ee', numericValue: totalPlayers },
+      { id: 'stat-clubs', type: 'stat', icon: '🏛️', title: `${totalClubs}`, subtitle: 'Total Klub', timestamp: new Date().toISOString(), accent: '#d4a853', numericValue: totalClubs },
+    );
+
+    // Only show Prize Pool if non-zero
+    if (totalPrizePool > 0) {
+      stats.push({ id: 'stat-prize', type: 'stat', icon: '💰', title: formatCurrency(totalPrizePool), subtitle: 'Hadiah', timestamp: new Date().toISOString(), accent: '#22c55e', numericValue: totalPrizePool });
+    }
+
+    // Only show Matches if non-zero
+    if (totalMatches > 0) {
+      stats.push({ id: 'stat-matches', type: 'stat', icon: '⚔️', title: `${totalMatches}`, subtitle: 'Pertandingan', timestamp: new Date().toISOString(), accent: '#a855f7', numericValue: totalMatches });
+    }
+
+    // Show completed matches stat if available
+    if (completedMatches > 0 && completedMatches !== totalMatches) {
+      stats.push({ id: 'stat-completed', type: 'stat', icon: '✅', title: `${completedMatches}`, subtitle: 'Selesai', timestamp: new Date().toISOString(), accent: '#22c55e', numericValue: completedMatches });
+    }
 
     stats.push(
-      { id: 'stat-players', type: 'stat', icon: '👥', title: `${totalPlayers}`, subtitle: 'Total Players', timestamp: new Date().toISOString(), accent: '#22d3ee', numericValue: totalPlayers },
-      { id: 'stat-prize', type: 'stat', icon: '💰', title: formatCurrency(totalPrizePool), subtitle: 'Prize Pool', timestamp: new Date().toISOString(), accent: '#22c55e', numericValue: totalPrizePool },
-      { id: 'stat-matches', type: 'stat', icon: '⚔️', title: `${totalMatches}`, subtitle: 'Matches', timestamp: new Date().toISOString(), accent: '#a855f7', numericValue: totalMatches },
-      { id: 'stat-season', type: 'stat', icon: '📅', title: seasonInfo, subtitle: 'Current Season', timestamp: new Date().toISOString(), accent: '#f59e0b' },
-      { id: 'stat-champ', type: 'stat', icon: '🏆', title: leagueData?.ligaChampion?.name || 'TBD', subtitle: 'Reigning Champion', timestamp: new Date().toISOString(), accent: '#d4a853' },
+      { id: 'stat-season', type: 'stat', icon: '📅', title: seasonInfo, subtitle: 'Season Berjalan', timestamp: new Date().toISOString(), accent: '#f59e0b' },
     );
 
     const feedItems = (data?.items && data.items.length > 0) ? data.items : DEMO_ITEMS;

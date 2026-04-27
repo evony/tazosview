@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Crown, Flame, Zap, Trophy, Music, Shield, ChevronLeft, ChevronRight, Calendar, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { TierBadge } from '../tier-badge';
@@ -13,9 +12,6 @@ import type { StatsData, TopPlayer, SeasonInfo, SeasonChampionPlayer } from '@/t
 
 /* ═══════════════════════════════════════════════════════════════
    PlayerSpotlight — Featured #1 ranked player or Season Champion
-   - Active season: shows ranking #1 player
-   - Completed season: shows champion player (championPlayerId)
-   - Season selector for browsing past seasons
    ═══════════════════════════════════════════════════════════════ */
 
 interface PlayerSpotlightProps {
@@ -34,14 +30,14 @@ const DIVISION_CONFIG = {
     accentLight: '#22d3ee',
     accentFaint: '#67e8f9',
     icon: Music,
-    label: 'Male',
+    label: 'Tarkam Male',
   },
   female: {
     accent: '#a855f7',
     accentLight: '#c084fc',
     accentFaint: '#e9d5ff',
     icon: Shield,
-    label: 'Female',
+    label: 'Tarkam Female',
   },
 } as const;
 
@@ -65,14 +61,14 @@ function StatItem({
           {value}
         </span>
       </div>
-      <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">
+      <span className="text-[10px] text-[#a09880]/70 uppercase tracking-wider font-semibold">
         {label}
       </span>
     </div>
   );
 }
 
-/* ─── Season Selector — paginated, same style as MVP section ─── */
+/* ─── Season Selector — paginated ─── */
 function SpotlightSeasonSelector({
   seasons,
   selectedSeasonId,
@@ -104,7 +100,7 @@ function SpotlightSeasonSelector({
           onClick={() => onSeasonPageChange(Math.max(0, seasonPage - 1))}
           disabled={seasonPage === 0}
           className="shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-all disabled:opacity-25 disabled:cursor-not-allowed hover:scale-110 cursor-pointer"
-          style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.70)', border: '1px solid rgba(255,255,255,0.10)' }}
+          style={{ backgroundColor: 'rgba(212,168,83,0.08)', color: 'rgba(212,168,83,0.70)', border: '1px solid rgba(212,168,83,0.15)' }}
           aria-label="Previous seasons"
         >
           <ChevronLeft className="w-2.5 h-2.5" />
@@ -128,9 +124,9 @@ function SpotlightSeasonSelector({
                 border: `1px solid ${hexToRgba(accent, 0.50)}`,
                 boxShadow: `0 0 12px ${hexToRgba(accent, 0.25)}`,
               } : {
-                backgroundColor: 'rgba(255,255,255,0.05)',
-                color: 'rgba(255,255,255,0.60)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: 'rgba(212,168,83,0.06)',
+                color: 'rgba(160,152,128,0.80)',
+                border: '1px solid rgba(212,168,83,0.10)',
               }}
               aria-label={`Season ${s.number}`}
               aria-pressed={isActive}
@@ -149,7 +145,7 @@ function SpotlightSeasonSelector({
           onClick={() => onSeasonPageChange(Math.min(totalSeasonPages - 1, seasonPage + 1))}
           disabled={seasonPage === totalSeasonPages - 1}
           className="shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-all disabled:opacity-25 disabled:cursor-not-allowed hover:scale-110 cursor-pointer"
-          style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.70)', border: '1px solid rgba(255,255,255,0.10)' }}
+          style={{ backgroundColor: 'rgba(212,168,83,0.08)', color: 'rgba(212,168,83,0.70)', border: '1px solid rgba(212,168,83,0.15)' }}
           aria-label="Next seasons"
         >
           <ChevronRight className="w-2.5 h-2.5" />
@@ -163,20 +159,19 @@ function SpotlightSeasonSelector({
 function SpotlightCardSkeleton({ accent }: { accent: string }) {
   return (
     <div
-      className="perspective-card card-shine relative rounded-2xl overflow-hidden border p-6"
+      className="relative rounded-xl overflow-hidden border p-6 bg-[#0d0a14]"
       style={{
-        borderColor: hexToRgba(accent, 0.15),
-        background: `linear-gradient(135deg, rgba(12,10,6,0.95), rgba(12,10,6,0.85))`,
+        borderColor: hexToRgba(accent, 0.10),
       }}
       aria-hidden="true"
     >
       <div
         className="absolute top-0 left-0 right-0 h-0.5 z-20"
-        style={{ background: `linear-gradient(to right, transparent, ${accent}, transparent)` }}
+        style={{ background: 'linear-gradient(to right, transparent, #d4a853, transparent)' }}
       />
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: `radial-gradient(ellipse at 50% 30%, ${hexToRgba(accent, 0.06)}, transparent 60%)` }}
+        style={{ background: `radial-gradient(ellipse at 50% 30%, ${hexToRgba(accent, 0.05)}, transparent 60%)` }}
       />
       <div className="relative z-10 flex flex-col items-center text-center space-y-4">
         <div className="skeleton-shimmer w-24 h-24 sm:w-28 sm:h-28 rounded-full" />
@@ -187,7 +182,7 @@ function SpotlightCardSkeleton({ accent }: { accent: string }) {
         </div>
         <div className="grid grid-cols-2 gap-3 w-full">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-lg bg-white/[0.02] border border-white/[0.05] p-3 space-y-2">
+            <div key={i} className="rounded-lg bg-[#d4a853]/[0.03] border border-[#d4a853]/[0.08] p-3 space-y-2">
               <div className="skeleton-shimmer h-6 w-10 mx-auto rounded" />
               <div className="skeleton-shimmer h-2 w-12 mx-auto rounded" />
             </div>
@@ -219,10 +214,9 @@ function SpotlightCard({
 
   return (
     <div
-      className="perspective-card card-shine hover-scale-md relative rounded-2xl overflow-hidden border p-6 cursor-pointer group transition-all duration-300"
+      className="relative rounded-xl overflow-hidden border p-6 cursor-pointer group transition-all duration-300 bg-[#0d0a14]"
       style={{
-        borderColor: isChampion ? hexToRgba('#e5be4a', 0.35) : hexToRgba(cfg.accent, 0.15),
-        background: `linear-gradient(135deg, rgba(12,10,6,0.95), rgba(12,10,6,0.85))`,
+        borderColor: isChampion ? 'rgba(212,168,83,0.25)' : hexToRgba(cfg.accent, 0.10),
       }}
       role="button"
       tabIndex={0}
@@ -235,27 +229,27 @@ function SpotlightCard({
         }
       }}
     >
-      {/* Accent top line — gold for champion, division color for #1 */}
+      {/* Gold accent top line */}
       <div
         className="absolute top-0 left-0 right-0 h-0.5 z-20 transition-all duration-300 group-hover:opacity-100 opacity-70"
-        style={{ background: `linear-gradient(to right, transparent, ${isChampion ? '#e5be4a' : cfg.accent}, transparent)` }}
+        style={{ background: 'linear-gradient(to right, transparent, #d4a853, transparent)' }}
       />
 
       {/* Animated radial background glow */}
       <div
         className="absolute inset-0 pointer-events-none transition-all duration-500 group-hover:opacity-100 opacity-60"
-        style={{ background: `radial-gradient(ellipse at 50% 30%, ${hexToRgba(isChampion ? '#e5be4a' : cfg.accent, 0.08)}, transparent 60%)` }}
+        style={{ background: `radial-gradient(ellipse at 50% 30%, ${hexToRgba(isChampion ? '#d4a853' : cfg.accent, 0.07)}, transparent 60%)` }}
       />
 
       {/* Hover glow shadow */}
       <div
         className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ boxShadow: `0 0 60px ${hexToRgba(isChampion ? '#e5be4a' : cfg.accent, 0.15)}, 0 0 30px ${hexToRgba(isChampion ? '#e5be4a' : cfg.accent, 0.08)}` }}
+        style={{ boxShadow: `0 0 50px ${hexToRgba(isChampion ? '#d4a853' : cfg.accent, 0.12)}, 0 0 25px ${hexToRgba(isChampion ? '#d4a853' : cfg.accent, 0.06)}` }}
       />
 
       {/* Glassmorphism shine overlay */}
-      <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.03] to-transparent" />
+      <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.02] to-transparent" />
       </div>
 
       {/* Content */}
@@ -266,12 +260,12 @@ function SpotlightCard({
             className="absolute -inset-1.5 rounded-full transition-all duration-300 group-hover:scale-105"
             style={{
               background: isChampion
-                ? `conic-gradient(from 0deg, ${hexToRgba('#e5be4a', 0.6)}, ${hexToRgba('#e5be4a', 0.1)}, ${hexToRgba('#d4a853', 0.5)}, ${hexToRgba('#e5be4a', 0.1)}, ${hexToRgba('#e5be4a', 0.6)})`
-                : `conic-gradient(from 0deg, ${hexToRgba(cfg.accent, 0.4)}, ${hexToRgba(cfg.accent, 0.1)}, ${hexToRgba('#e5be4a', 0.3)}, ${hexToRgba(cfg.accent, 0.1)}, ${hexToRgba(cfg.accent, 0.4)})`,
+                ? `conic-gradient(from 0deg, ${hexToRgba('#d4a853', 0.5)}, ${hexToRgba('#d4a853', 0.1)}, ${hexToRgba('#d4a853', 0.4)}, ${hexToRgba('#d4a853', 0.1)}, ${hexToRgba('#d4a853', 0.5)})`
+                : `conic-gradient(from 0deg, ${hexToRgba(cfg.accent, 0.35)}, ${hexToRgba(cfg.accent, 0.1)}, ${hexToRgba('#d4a853', 0.25)}, ${hexToRgba(cfg.accent, 0.1)}, ${hexToRgba(cfg.accent, 0.35)})`,
               filter: `blur(3px)`,
             }}
           />
-          <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 transition-all duration-300 group-hover:border-opacity-60" style={{ borderColor: isChampion ? '#e5be4a' : cfg.accent }}>
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 transition-all duration-300 group-hover:border-opacity-60" style={{ borderColor: isChampion ? '#d4a853' : cfg.accent }}>
             <Image
               src={getAvatarUrl(player.gamertag, division, player.avatar)}
               alt={player.gamertag}
@@ -285,17 +279,17 @@ function SpotlightCard({
             className="absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center z-10 shadow-lg"
             style={{
               background: isChampion
-                ? `linear-gradient(135deg, #e5be4a, #d4a853)`
+                ? `linear-gradient(135deg, #d4a853, #e5be4a)`
                 : `linear-gradient(135deg, ${cfg.accent}, ${cfg.accentLight})`,
               boxShadow: isChampion
-                ? `0 0 16px ${hexToRgba('#e5be4a', 0.4)}`
+                ? `0 0 16px ${hexToRgba('#d4a853', 0.4)}`
                 : `0 0 12px ${hexToRgba(cfg.accent, 0.3)}`,
             }}
           >
             {isChampion ? (
-              <Crown className="w-4 h-4 text-[#0c0a06]" />
+              <Crown className="w-4 h-4 text-[#0d0a14]" />
             ) : (
-              <Star className="w-4 h-4 text-[#0c0a06]" />
+              <Star className="w-4 h-4 text-[#0d0a14]" />
             )}
           </div>
         </div>
@@ -311,9 +305,9 @@ function SpotlightCard({
             <Badge
               className="text-[10px] font-bold uppercase tracking-wider border px-2.5 py-0.5"
               style={{
-                backgroundColor: hexToRgba('#e5be4a', 0.25),
-                color: '#e5be4a',
-                borderColor: hexToRgba('#e5be4a', 0.40),
+                backgroundColor: hexToRgba('#d4a853', 0.20),
+                color: '#d4a853',
+                borderColor: hexToRgba('#d4a853', 0.35),
               }}
             >
               <Crown className="w-3 h-3 mr-1" />
@@ -324,9 +318,9 @@ function SpotlightCard({
           <Badge
             className="text-[10px] font-bold uppercase tracking-wider border px-2.5 py-0.5"
             style={{
-              backgroundColor: hexToRgba(cfg.accent, 0.2),
+              backgroundColor: hexToRgba(cfg.accent, 0.15),
               color: cfg.accentLight,
-              borderColor: hexToRgba(cfg.accent, 0.35),
+              borderColor: hexToRgba(cfg.accent, 0.30),
             }}
           >
             <DivisionIcon className="w-3 h-3 mr-1" />
@@ -336,16 +330,16 @@ function SpotlightCard({
 
         {/* Stats 2x2 grid */}
         <div className="grid grid-cols-2 gap-2.5 w-full mt-1">
-          <div className="rounded-lg bg-white/[0.02] border border-white/[0.05] px-2 py-2 transition-all duration-200 group-hover:bg-white/[0.04]">
-            <StatItem icon={Zap} value={player.points} label="Points" valueColor={isChampion ? '#e5be4a' : cfg.accentLight} />
+          <div className="rounded-lg bg-[#d4a853]/[0.03] border border-[#d4a853]/[0.08] px-2 py-2 transition-all duration-200 group-hover:bg-[#d4a853]/[0.06]">
+            <StatItem icon={Zap} value={player.points} label="Points" valueColor={isChampion ? '#d4a853' : cfg.accentLight} />
           </div>
-          <div className="rounded-lg bg-white/[0.02] border border-white/[0.05] px-2 py-2 transition-all duration-200 group-hover:bg-white/[0.04]">
+          <div className="rounded-lg bg-[#d4a853]/[0.03] border border-[#d4a853]/[0.08] px-2 py-2 transition-all duration-200 group-hover:bg-[#d4a853]/[0.06]">
             <StatItem icon={Trophy} value={player.totalWins} label="Wins" valueColor="#4ade80" />
           </div>
-          <div className="rounded-lg bg-white/[0.02] border border-white/[0.05] px-2 py-2 transition-all duration-200 group-hover:bg-white/[0.04]">
-            <StatItem icon={Crown} value={player.totalMvp} label="MVP" valueColor="#e5be4a" />
+          <div className="rounded-lg bg-[#d4a853]/[0.03] border border-[#d4a853]/[0.08] px-2 py-2 transition-all duration-200 group-hover:bg-[#d4a853]/[0.06]">
+            <StatItem icon={Crown} value={player.totalMvp} label="MVP" valueColor="#d4a853" />
           </div>
-          <div className="rounded-lg bg-white/[0.02] border border-white/[0.05] px-2 py-2 transition-all duration-200 group-hover:bg-white/[0.04]">
+          <div className="rounded-lg bg-[#d4a853]/[0.03] border border-[#d4a853]/[0.08] px-2 py-2 transition-all duration-200 group-hover:bg-[#d4a853]/[0.06]">
             <StatItem icon={Flame} value={player.streak} label="Streak" valueColor="#fb923c" />
           </div>
         </div>
@@ -353,8 +347,8 @@ function SpotlightCard({
         {/* Club name */}
         {player.club && (
           <div className="flex items-center gap-1.5 mt-1">
-            <Shield className="w-3 h-3 text-muted-foreground/50" />
-            <span className="text-xs text-muted-foreground/70 font-medium">
+            <Shield className="w-3 h-3 text-[#a09880]/50" />
+            <span className="text-xs text-[#a09880]/70 font-medium">
               {clubToString(player.club)}
             </span>
           </div>
@@ -364,9 +358,9 @@ function SpotlightCard({
         <button
           className="mt-2 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 border"
           style={{
-            backgroundColor: hexToRgba(isChampion ? '#e5be4a' : cfg.accent, 0.15),
-            color: isChampion ? '#e5be4a' : cfg.accentLight,
-            borderColor: hexToRgba(isChampion ? '#e5be4a' : cfg.accent, 0.3),
+            backgroundColor: hexToRgba(isChampion ? '#d4a853' : cfg.accent, 0.12),
+            color: isChampion ? '#d4a853' : cfg.accentLight,
+            borderColor: hexToRgba(isChampion ? '#d4a853' : cfg.accent, 0.25),
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -392,7 +386,6 @@ function DivisionSpotlightCard({
   setSelectedPlayer: (player: StatsData['topPlayers'][0] & { division?: string } | null) => void;
 }) {
   const allSeasons = data.allSeasons || [];
-  const isMale = division === 'male';
   const cfg = DIVISION_CONFIG[division];
 
   // Default to latest season
@@ -410,12 +403,9 @@ function DivisionSpotlightCard({
   const hasChampion = isSeasonCompleted && selectedSeason?.championPlayer;
 
   // Determine which player to show
-  // - Completed season with champion → show champion
-  // - Active season or no champion → show #1 ranked player
   const championPlayer = hasChampion ? selectedSeason!.championPlayer : null;
   const topPlayer = data.topPlayers?.[0] || null;
 
-  // Convert SeasonChampionPlayer to TopPlayer-compatible format for the card
   const displayPlayer: (TopPlayer | SeasonChampionPlayer) | null = championPlayer || topPlayer;
   const isChampion = !!championPlayer;
 
@@ -429,13 +419,12 @@ function DivisionSpotlightCard({
   if (!displayPlayer && !allSeasons.length) {
     return (
       <div
-        className="relative rounded-2xl overflow-hidden border p-8 flex flex-col items-center justify-center min-h-[400px]"
+        className="relative rounded-xl overflow-hidden border p-8 flex flex-col items-center justify-center min-h-[400px] bg-[#0d0a14]"
         style={{
-          borderColor: hexToRgba(cfg.accent, 0.15),
-          background: `linear-gradient(135deg, rgba(12,10,6,0.95), rgba(12,10,6,0.85))`,
+          borderColor: hexToRgba(cfg.accent, 0.10),
         }}
       >
-        <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 30%, ${hexToRgba(cfg.accent, 0.06)}, transparent 60%)` }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 30%, ${hexToRgba(cfg.accent, 0.05)}, transparent 60%)` }} />
         <div className="relative z-10">
           <AnimatedEmptyState
             icon={Star}
@@ -449,15 +438,11 @@ function DivisionSpotlightCard({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Player Card */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={selectedSeasonId}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.25, ease: 'easeInOut' }}
-        >
+      {/* Player Card — CSS transition replaces AnimatePresence + motion.div */}
+      <div
+        key={selectedSeasonId}
+        className="animate-fade-enter-sm"
+      >
           {displayPlayer ? (
             <SpotlightCard
               player={displayPlayer}
@@ -468,44 +453,42 @@ function DivisionSpotlightCard({
             />
           ) : (
             <div
-              className="relative rounded-2xl overflow-hidden border p-8 flex flex-col items-center justify-center min-h-[400px]"
+              className="relative rounded-xl overflow-hidden border p-8 flex flex-col items-center justify-center min-h-[400px] bg-[#0d0a14]"
               style={{
-                borderColor: hexToRgba(cfg.accent, 0.15),
-                background: `linear-gradient(135deg, rgba(12,10,6,0.95), rgba(12,10,6,0.85))`,
+                borderColor: hexToRgba(cfg.accent, 0.10),
               }}
             >
-              <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 30%, ${hexToRgba(cfg.accent, 0.06)}, transparent 60%)` }} />
-              <Crown className="relative z-10 w-12 h-12 mb-3 opacity-30" style={{ color: cfg.accent }} />
-              <p className="relative z-10 text-sm font-bold text-white/70">
+              <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 30%, ${hexToRgba(cfg.accent, 0.05)}, transparent 60%)` }} />
+              <Crown className="relative z-10 w-12 h-12 mb-3 opacity-25" style={{ color: cfg.accent }} />
+              <p className="relative z-10 text-sm font-bold text-[#a09880]">
                 {isSeasonCompleted ? 'Belum ada juara di season ini' : 'Belum ada pemain terdaftar'}
               </p>
-              <p className="relative z-10 text-xs text-muted-foreground/60 mt-1">
+              <p className="relative z-10 text-xs text-[#a09880]/60 mt-1">
                 {isSeasonCompleted ? 'Admin belum menetapkan juara season' : 'Turnamen belum dimulai'}
               </p>
             </div>
           )}
-        </motion.div>
-      </AnimatePresence>
+      </div>
 
       {/* Season Selector */}
       {allSeasons.length > 1 && (
-        <div className="rounded-xl p-3 border" style={{ backgroundColor: 'rgba(12,10,6,0.80)', borderColor: hexToRgba(cfg.accent, 0.12) }}>
+        <div className="rounded-xl p-3 border bg-[#0d0a14] border-[rgba(212,168,83,0.10)]">
           <SpotlightSeasonSelector
             seasons={allSeasons}
             selectedSeasonId={selectedSeasonId}
             onSelect={handleSeasonChange}
-            accent={isChampion ? '#e5be4a' : cfg.accent}
-            accentLight={isChampion ? '#e5be4a' : cfg.accentLight}
+            accent={isChampion ? '#d4a853' : cfg.accent}
+            accentLight={isChampion ? '#d4a853' : cfg.accentLight}
             seasonPage={seasonPage}
             onSeasonPageChange={setSeasonPage}
           />
 
           {/* Status indicator */}
           <div className="flex items-center justify-between gap-2 px-0.5 mt-2">
-            <span className="text-[9px] text-muted-foreground flex items-center gap-1">
+            <span className="text-[9px] text-[#a09880] flex items-center gap-1">
               {isChampion ? (
                 <>
-                  <Crown className="w-2.5 h-2.5 text-idm-gold-warm" />
+                  <Crown className="w-2.5 h-2.5 text-[#d4a853]" />
                   Juara Season {selectedSeason?.number}
                 </>
               ) : isSeasonCompleted ? (
@@ -520,7 +503,7 @@ function DivisionSpotlightCard({
                 </>
               )}
             </span>
-            <span className="text-[9px] text-muted-foreground/60">
+            <span className="text-[9px] text-[#a09880]/60">
               S{selectedSeason?.number || 1} • {selectedSeason?.tournamentCount || 0} weeks
             </span>
           </div>
@@ -548,30 +531,29 @@ export function PlayerSpotlight({
       id="spotlight"
       role="region"
       aria-label="Player Spotlight"
-      className="stagger-item py-16 sm:py-24 px-4 relative overflow-hidden"
+      className="stagger-item py-16 sm:py-24 px-4 relative overflow-hidden bg-[#0d0d1a]"
     >
-      {/* Background — subtle dark gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-[#0a0806]/30 to-background" />
-
-      {/* Bilateral ambient glows — cyan left, purple right */}
+      {/* Subtle radial glows */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div
           className="absolute top-1/3 left-0 w-[400px] h-[400px] rounded-full"
-          style={{ background: `radial-gradient(circle, ${hexToRgba('#06b6d4', 0.06)} 0%, transparent 60%)` }}
+          style={{ background: `radial-gradient(circle, ${hexToRgba('#06b6d4', 0.04)} 0%, transparent 60%)` }}
         />
         <div
           className="absolute bottom-1/3 right-0 w-[400px] h-[400px] rounded-full"
-          style={{ background: `radial-gradient(circle, ${hexToRgba('#a855f7', 0.06)} 0%, transparent 60%)` }}
+          style={{ background: `radial-gradient(circle, ${hexToRgba('#a855f7', 0.04)} 0%, transparent 60%)` }}
         />
       </div>
+      {/* Gold dot pattern */}
+      <div className="absolute inset-0 opacity-[0.010]" style={{ backgroundImage: 'radial-gradient(circle, rgba(212,168,83,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
       <div className="relative z-10 max-w-5xl mx-auto">
         {/* Section Header */}
         <SectionHeader
           icon={Star}
-          label="Bintang Liga"
-          title="Bintang Liga"
-          subtitle="Pemain terbaik dari setiap divisi — Juara season atau peringkat #1 saat ini"
+          label="Bintang Tarkam"
+          title="Bintang Tarkam"
+          subtitle="Pemain terbaik dari setiap Tarkam — Juara season atau peringkat #1 saat ini"
         />
 
         {/* Loading State */}
@@ -595,7 +577,7 @@ export function PlayerSpotlight({
         {!isDataLoading && hasAnyData && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
             {/* Vertical Gold Divider */}
-            <div className="hidden md:block absolute top-12 bottom-12 left-1/2 w-px bg-gradient-to-b from-transparent via-idm-gold-warm/30 to-transparent z-10" />
+            <div className="hidden md:block absolute top-12 bottom-12 left-1/2 w-px bg-gradient-to-b from-transparent via-[#d4a853]/25 to-transparent z-10" />
 
             {/* Male Division Card */}
             <div className="stagger-item-fast" style={{ animationDelay: '0ms' }}>

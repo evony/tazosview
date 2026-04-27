@@ -21,8 +21,7 @@ export function usePWA() {
 
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
-      const timer = setTimeout(() => setIsInstalled(true), 0);
-      return () => clearTimeout(timer);
+      setTimeout(() => setIsInstalled(true), 0);
     }
 
     // Listen for install prompt

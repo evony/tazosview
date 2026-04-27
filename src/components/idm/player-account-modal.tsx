@@ -228,7 +228,7 @@ export function PlayerAccountModal({ open, onOpenChange }: PlayerAccountModalPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-background border-border/50">
-        <DialogTitle className="sr-only">Akun Pemain IDM League</DialogTitle>
+        <DialogTitle className="sr-only">Akun Pemain Tarkam IDM</DialogTitle>
         {/* Top accent bar */}
         <div className={`h-1 w-full bg-gradient-to-r ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'}`} />
 
@@ -281,7 +281,7 @@ export function PlayerAccountModal({ open, onOpenChange }: PlayerAccountModalPro
                   <Sparkles className="w-4 h-4 text-idm-gold shrink-0 mt-0.5" />
                   <div>
                     <p className="text-[10px] text-muted-foreground">
-                      Akun pemain terhubung ke data turnamen IDM League.
+                      Akun pemain terhubung ke data turnamen Tarkam IDM.
                       Dapatkan skin eksklusif untuk pemenang juara & MVP! 🏆
                     </p>
                   </div>

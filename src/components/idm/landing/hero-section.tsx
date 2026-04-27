@@ -1,370 +1,442 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { type MotionValue } from 'framer-motion';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Crown, Users, Shield, Wallet, Swords, ChevronDown } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Zap, Star, UserPlus, Eye, ArrowRight } from 'lucide-react';
 import { MarqueeTicker } from '../marquee-ticker';
-import { StatCard, stagger, scaleIn, fadeUp } from './shared';
-import { formatCurrency } from '@/lib/utils';
 import type { StatsData } from '@/types/stats';
 
-/**
- * Extracts YouTube video ID and start time from various URL formats
- */
-function parseYouTubeUrl(url: string): { id: string; startTime: number } | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-  ];
-  let id: string | null = null;
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) { id = match[1]; break; }
-  }
-  if (!id) return null;
-
-  let startTime = 0;
-  try {
-    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
-    const t = urlObj.searchParams.get('t');
-    if (t) {
-      const seconds = parseInt(t.replace(/s$/, ''), 10);
-      if (!isNaN(seconds)) startTime = seconds;
-    }
-  } catch {
-    const tMatch = url.match(/[?&]t=(\d+)s?/);
-    if (tMatch) startTime = parseInt(tMatch[1], 10);
-  }
-
-  return { id, startTime };
-}
+/* ═══════════════════════════════════════════════════════════════
+   TARKAM IDM — TARKAM ARENA HERO
+   International esports tournament aesthetic
+   Inspired by Valorant Champions / LoL Worlds / BLAST Premier
+   ═══════════════════════════════════════════════════════════════ */
 
 interface HeroSectionProps {
-  heroRef: React.RefObject<HTMLElement | null>;
-  heroY: MotionValue<string>;
-  heroScale: MotionValue<number>;
-  heroOpacity: MotionValue<number>;
-  contentY: MotionValue<string>;
-  heroMidY: MotionValue<string>;
-  cmsLogo: string;
-  cmsSiteTitle: string;
-  cmsHeroTitle: string;
-  cmsHeroSubtitle: string;
-  cmsHeroTagline: string;
-  cmsHeroBgDesktop: string;
-  cmsHeroBgMobile: string;
-  cmsHeroBgVideo?: string;
-  cmsSections: Record<string, any>;
-  leagueData: any;
-  nextSeason: number;
   maleData: StatsData | undefined;
+  femaleData: StatsData | undefined;
+  leagueData: any;
+  cmsSections: Record<string, any>;
+  cmsSettings: Record<string, string>;
+  onEnterApp: (division: 'male' | 'female') => void;
+  onEnterCommunity: () => void;
   onRegister: () => void;
-  onVideoPlay?: (url: string, title: string) => void;
   onViewBracket: (division: 'male' | 'female') => void;
+  onVideoPlay?: (url: string, title: string) => void;
 }
 
+/* ─── Floating Particle System ─── */
+interface Particle {
+  id: number;
+  x: number;
+  size: number;
+  duration: number;
+  delay: number;
+  opacity: number;
+}
+
+function useParticles(count: number): Particle[] {
+  return useMemo(() =>
+    Array.from({ length: count }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      size: 1.5 + Math.random() * 3,
+      duration: 6 + Math.random() * 8,
+      delay: Math.random() * 6,
+      opacity: 0.15 + Math.random() * 0.35,
+    })),
+    [count]
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN HERO SECTION
+   ═══════════════════════════════════════════════════════════════ */
+
 export function HeroSection({
-  heroRef, heroY, heroScale, heroOpacity, contentY, heroMidY,
-  cmsSiteTitle, cmsHeroTitle, cmsHeroSubtitle, cmsHeroTagline,
-  cmsHeroBgDesktop, cmsHeroBgMobile, cmsHeroBgVideo, cmsSections, leagueData,
-  nextSeason, maleData, onRegister, onVideoPlay, onViewBracket
+  maleData,
+  femaleData,
+  leagueData,
+  cmsSections,
+  cmsSettings,
+  onEnterApp,
+  onEnterCommunity,
+  onRegister,
+  onViewBracket,
+  onVideoPlay,
 }: HeroSectionProps) {
+  /* ─── Extract CMS content ─── */
+  const siteTitle = cmsSettings.site_title || 'TARKAM IDM';
+  const heroTitle = cmsSettings.hero_title || 'TARKAM ARENA';
+  const heroSubtitle = cmsSettings.hero_subtitle || 'Idol Meta · Fan Made Edition';
+  const heroTagline = cmsSettings.hero_tagline || 'Tempat dancer terbaik berkompetisi. Tournament mingguan, kompetisi profesional, dan podium yang menunggu.';
+  const heroBgDesktop = cmsSettings.hero_bg_desktop || '';
+  const heroBgMobile = cmsSettings.hero_bg_mobile || '';
+  const heroBgVideo = cmsSettings.hero_bg_video || '';
+
+  /* ─── Bracket picker state ─── */
+  const [showBracketPicker, setShowBracketPicker] = useState(false);
+
+  /* ─── Compute stats ─── */
+  const malePlayers = maleData?.totalPlayers || 0;
+  const femalePlayers = femaleData?.totalPlayers || 0;
+
+  /* ─── Particles ─── */
+  const particles = useParticles(28);
+
   return (
     <>
-      {/* ========== HERO SECTION — Cinematic Parallax ========== */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background — Video OR Image OR gradient dark (CMS is source of truth) */}
-        {cmsHeroBgVideo ? (() => {
-          const ytInfo = parseYouTubeUrl(cmsHeroBgVideo);
-          const ytId = ytInfo?.id ?? null;
-          return ytId ? (
-            /* YouTube embed — cinematic background */
-            <motion.div className="absolute inset-0" style={{ y: heroY, scale: heroScale }}>
-              <div className="absolute inset-0 w-full h-full overflow-hidden">
-                <iframe
-                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1${ytInfo?.startTime ? `&start=${ytInfo.startTime}` : ''}`}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[260%] sm:w-[120%] h-[260%] sm:h-[120%] min-w-full min-h-full border-0 pointer-events-none"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                  aria-hidden="true"
-                  title="Hero background video"
-                />
-              </div>
-              <div className="absolute inset-0 bg-black/55" />
-            </motion.div>
-          ) : (
-            /* Cloudinary / direct MP4 — autoplay background */
-            <motion.div className="absolute inset-0" style={{ y: heroY, scale: heroScale }}>
-              <video
-                src={cmsHeroBgVideo}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                className="absolute inset-0 w-full h-full object-cover"
-                aria-hidden="true"
-              />
-              <div className="absolute inset-0 bg-black/55" />
-            </motion.div>
-          );
-        })() : cmsHeroBgDesktop || cmsHeroBgMobile ? (
-          /* Static image background */
-          <>
-            {cmsHeroBgDesktop && (
-              <motion.div className="absolute inset-0 hidden sm:block" style={{ y: heroY, scale: heroScale }}>
-                <Image src={cmsHeroBgDesktop} alt="" fill priority sizes="100vw" className="object-cover" aria-hidden="true" />
-                <div className="absolute inset-0 bg-black/55" />
-              </motion.div>
-            )}
-            {cmsHeroBgMobile && (
-              <motion.div className="absolute inset-0 sm:hidden" style={{ y: heroY, scale: heroScale }}>
-                <Image src={cmsHeroBgMobile} alt="" fill priority sizes="100vw" className="object-cover object-top" aria-hidden="true" />
-                <div className="absolute inset-0 bg-black/55" />
-              </motion.div>
-            )}
-          </>
-        ) : null /* No CMS media set — gradient dark background from overlay layers serves as cinematic base */}
+      {/* ═══════════════ HERO SECTION ═══════════════ */}
+      <section
+        id="hero"
+        className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+        aria-label="Tarkam IDM Hero"
+      >
+        {/* ── Background Layers ── */}
 
-        {/* Layer 2: Mid-depth gold haze */}
-        <motion.div
-          className="absolute inset-0"
+        {/* Base: Deep dark gradient — parallax slow layer */}
+        <div
+          className="absolute inset-0 parallax-hero-bg"
           style={{
-            y: heroMidY,
-            background: 'radial-gradient(ellipse at 50% 60%, rgba(212,168,83,0.08) 0%, transparent 70%)',
+            background: `linear-gradient(180deg, #0a0a14 0%, #0d0d1a 40%, #0c0a06 100%)`,
           }}
         />
 
-        {/* Vignette Effect — darkens edges for cinematic depth */}
-        <div className="hero-vignette absolute inset-0 pointer-events-none" aria-hidden="true" />
+        {/* CMS Video Background — takes priority over images when set */}
+        {heroBgVideo ? (
+          (() => {
+            // Detect YouTube URL and extract video ID + optional start time
+            const ytMatch = heroBgVideo.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            const startTimeMatch = heroBgVideo.match(/[?&]t=(\d+)/);
+            const startTime = startTimeMatch ? `&start=${startTimeMatch[1]}` : '';
 
-        {/* CRT Scanline Overlay — esports vibe */}
-        <div className="hero-scanline" aria-hidden="true" />
-
-        {/* Hero Content */}
-        <motion.div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto w-full" style={{ opacity: heroOpacity, y: contentY }}>
-          <motion.div initial="hidden" animate="visible" variants={stagger}>
-            {/* Decorative top accent line */}
-            <motion.div variants={scaleIn} className="mb-6">
-              <div className="flex items-center justify-center gap-3">
-                <div className="h-px w-16 sm:w-28 bg-gradient-to-r from-transparent to-idm-gold-warm/60" />
-                <div className="w-2 h-2 rounded-full bg-idm-gold-warm/70 shadow-[0_0_8px_rgba(212,168,83,0.4)]" />
-                <div className="h-px w-16 sm:w-28 bg-gradient-to-l from-transparent to-idm-gold-warm/60" />
-              </div>
-            </motion.div>
-
-            {/* Brand Label */}
-            <motion.div variants={fadeUp}>
-              <motion.p
-                initial={{ opacity: 0, letterSpacing: '0.5em' }}
-                animate={{ opacity: 1, letterSpacing: '0.25em' }}
-                transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="text-xs sm:text-sm text-idm-gold-warm/60 font-bold tracking-widest uppercase"
-              >
-                {cmsSiteTitle}
-              </motion.p>
-            </motion.div>
-
-            {/* Main Title — with parallax offset + breathing glow */}
-            <motion.div variants={fadeUp} className="hero-title-parallax relative">
-              {/* Breathing/pulsing glow behind title */}
-              <div className="hero-title-glow" aria-hidden="true" />
-              <motion.h1
-                initial={{ opacity: 0, letterSpacing: '0.05em' }}
-                animate={{ opacity: 1, letterSpacing: '-0.02em' }}
-                transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 text-3xl sm:text-5xl lg:text-6xl text-gradient-fury font-bold tracking-tight uppercase mt-2"
-              >
-                {cmsHeroTitle}
-              </motion.h1>
-              {/* Animated underline below title */}
-              <span className="hero-animated-underline" aria-hidden="true" />
-              <motion.p
-                initial={{ opacity: 0, letterSpacing: '0.3em' }}
-                animate={{ opacity: 1, letterSpacing: '0.15em' }}
-                transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="text-lg sm:text-2xl lg:text-3xl text-[#e8d5a3] font-light tracking-widest uppercase mt-1"
-              >
-                {cmsHeroSubtitle}
-              </motion.p>
-            </motion.div>
-
-            {/* Animated Badges — Dynamic status badges */}
-            <motion.div variants={fadeUp} className="flex items-center justify-center gap-2.5 mt-6 flex-wrap">
-              {(cmsSections.hero?.cards?.length > 0
-                ? cmsSections.hero.cards.filter((c: { isActive: boolean }) => c.isActive).map((c: { title: string; order: number }) => ({ text: c.title, glow: c.order === 1 }))
-                : [
-                    { text: leagueData?.ligaChampion ? `Season ${leagueData.ligaChampion.seasonNumber} — Completed` : 'Liga IDM', glow: true },
-                    { text: 'Weekly Tournament', glow: false },
-                    { text: leagueData?.ligaChampion ? `Liga IDM — S${nextSeason} Menunggu Dana` : leagueData?.preSeason ? 'Liga IDM — Pre-Season' : leagueData?.hasData ? 'Liga IDM' : 'Liga IDM — Segera', glow: false },
-                  ]
-              ).map((badge: { text: string; glow: boolean }, i: number) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.6 + i * 0.08, duration: 0.3 }}
-                >
-                  <Badge className={`bg-idm-gold-warm/10 text-idm-gold-warm text-xs border border-idm-gold-warm/20 px-4 py-2 ${badge.glow ? 'glow-pulse' : ''}`}>
-                    {badge.text}
-                  </Badge>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* Champion Badge — Season Winner */}
-            {leagueData?.ligaChampion && (
-              <motion.div
-                variants={fadeUp}
-                className="flex items-center justify-center mt-3"
-              >
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-idm-gold-warm/20 bg-idm-gold-warm/5">
-                  <Crown className="w-3.5 h-3.5 text-idm-gold-warm" />
-                  <span className="text-[10px] font-bold text-idm-gold-warm/80">S{leagueData.ligaChampion.seasonNumber} Champion:</span>
-                  {leagueData.ligaChampion.logo ? (
-                    <img src={leagueData.ligaChampion.logo} alt="" className="w-4 h-4 rounded object-cover" />
-                  ) : null}
-                  <span className="text-[10px] font-black text-white">{leagueData.ligaChampion.name}</span>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Tagline */}
-            <motion.p variants={fadeUp} className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-10 mt-8 leading-relaxed">
-              {cmsHeroTagline}
-            </motion.p>
-
-            {/* Hero CTA — Register Button + Lihat Bracket */}
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-              {/* Primary CTA: Daftar Sekarang */}
-              <motion.button
-                onClick={onRegister}
-                aria-label="Register now for IDM League"
-                className="group relative cursor-pointer"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {/* Gradient border + shimmer behind button */}
-                <div className="hero-btn-glow absolute inset-0 rounded-sm" aria-hidden="true" />
-                <div className="hero-btn-gradient-border">
-                <div className="relative px-5 py-3 sm:px-10 sm:py-5 border-2 border-idm-gold-warm/60 rounded-sm transform -rotate-3 transition-all duration-300 group-hover:rotate-0 group-hover:scale-105 group-hover:border-idm-gold-warm/80">
-                  <div className="absolute inset-0 bg-idm-gold-warm/5 group-hover:bg-idm-gold-warm/10 transition-colors duration-300" />
-                  <div className="relative z-10">
-                    <span className="font-bold text-base sm:text-xl tracking-wider sm:tracking-widest text-idm-gold-warm group-hover:text-[#f0c674] transition-colors">
-                      DAFTAR SEKARANG
-                    </span>
-                    <div className="flex items-center justify-center gap-2 mt-1 sm:mt-1.5">
-                      <div className="h-px flex-1 bg-idm-gold-warm/30" />
-                      <span className="text-[10px] sm:text-[10px] text-idm-gold-warm/50 tracking-widest">GABUNG IDM LEAGUE</span>
-                      <div className="h-px flex-1 bg-idm-gold-warm/30" />
-                    </div>
+            if (ytMatch) {
+              // YouTube embed — autoplay, muted, loop, no controls
+              return (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <div className="absolute inset-0" style={{ width: '177.78vh', height: '56.25vw', minWidth: '100%', minHeight: '100%', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&fs=0&iv_load_policy=3${startTime}`}
+                      title="Hero background video"
+                      allow="autoplay; encrypted-media"
+                      className="w-full h-full"
+                      style={{ border: 'none', opacity: 0.3 }}
+                      aria-hidden="true"
+                    />
                   </div>
-                  {/* Corner brackets */}
-                  <div className="absolute top-0.5 left-0.5 sm:top-1 sm:left-1 w-2 h-2 sm:w-3 sm:h-3 border-t-2 border-l-2 border-idm-gold-warm/40 group-hover:border-idm-gold-warm/60 transition-colors" />
-                  <div className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-2 h-2 sm:w-3 sm:h-3 border-t-2 border-r-2 border-idm-gold-warm/40 group-hover:border-idm-gold-warm/60 transition-colors" />
-                  <div className="absolute bottom-0.5 left-0.5 sm:bottom-1 sm:left-1 w-2 h-2 sm:w-3 sm:h-3 border-b-2 border-l-2 border-idm-gold-warm/40 group-hover:border-idm-gold-warm/60 transition-colors" />
-                  <div className="absolute bottom-0.5 right-0.5 sm:bottom-1 sm:right-1 w-2 h-2 sm:w-3 sm:h-3 border-b-2 border-r-2 border-idm-gold-warm/40 group-hover:border-idm-gold-warm/60 transition-colors" />
                 </div>
-                </div>
-              </motion.button>
-
-              {/* Secondary CTA: Lihat Bracket — Popover with Male/Female */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    aria-label="View bracket"
-                    className="group relative cursor-pointer transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    <div className="relative px-5 py-3 sm:px-8 sm:py-5 border-2 border-white/20 rounded-sm transform rotate-1.5 transition-all duration-300 group-hover:rotate-0 group-hover:border-white/40 bg-white/[0.04] group-hover:bg-white/[0.08]">
-                      <div className="relative z-10 flex items-center gap-2">
-                        <span className="font-bold text-base sm:text-xl tracking-wider sm:tracking-widest text-white/80 group-hover:text-white transition-colors">
-                          LIHAT BRACKET
-                        </span>
-                        <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-white/50 group-hover:text-white/80 transition-all group-hover:translate-y-0.5" />
-                      </div>
-                      <div className="flex items-center justify-center gap-2 mt-1 sm:mt-1.5">
-                        <div className="h-px flex-1 bg-white/15" />
-                        <span className="text-[10px] sm:text-[10px] text-white/30 tracking-widest">MALE & FEMALE</span>
-                        <div className="h-px flex-1 bg-white/15" />
-                      </div>
-                      {/* Corner brackets — subtle */}
-                      <div className="absolute top-0.5 left-0.5 sm:top-1 sm:left-1 w-2 h-2 sm:w-3 sm:h-3 border-t-2 border-l-2 border-white/15 group-hover:border-white/30 transition-colors" />
-                      <div className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-2 h-2 sm:w-3 sm:h-3 border-t-2 border-r-2 border-white/15 group-hover:border-white/30 transition-colors" />
-                      <div className="absolute bottom-0.5 left-0.5 sm:bottom-1 sm:left-1 w-2 h-2 sm:w-3 sm:h-3 border-b-2 border-l-2 border-white/15 group-hover:border-white/30 transition-colors" />
-                      <div className="absolute bottom-0.5 right-0.5 sm:bottom-1 sm:right-1 w-2 h-2 sm:w-3 sm:h-3 border-b-2 border-r-2 border-white/15 group-hover:border-white/30 transition-colors" />
-                    </div>
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="center"
-                  sideOffset={8}
-                  className="w-56 p-2 bg-background/95 backdrop-blur-xl border border-idm-gold-warm/20 rounded-lg shadow-2xl"
+              );
+            }
+            // Direct video URL (MP4, WebM, etc.)
+            return (
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover opacity-30"
+                  aria-hidden="true"
                 >
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold px-2 py-1.5">Pilih Divisi</p>
-                  <button
-                    onClick={() => onViewBracket('male')}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-idm-male/10 transition-all duration-200 cursor-pointer group"
-                  >
-                    <span className="w-8 h-8 rounded-lg bg-idm-male/20 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">🕺</span>
-                    <div className="text-left">
-                      <span className="text-sm font-semibold text-foreground">Male Division</span>
-                      <span className="block text-[10px] text-muted-foreground">Bracket Male</span>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => onViewBracket('female')}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-idm-female/10 transition-all duration-200 cursor-pointer group mt-0.5"
-                  >
-                    <span className="w-8 h-8 rounded-lg bg-idm-female/20 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">💃</span>
-                    <div className="text-left">
-                      <span className="text-sm font-semibold text-foreground">Female Division</span>
-                      <span className="block text-[10px] text-muted-foreground">Bracket Female</span>
-                    </div>
-                  </button>
-                </PopoverContent>
-              </Popover>
-            </motion.div>
+                  <source src={heroBgVideo} type="video/mp4" />
+                  <source src={heroBgVideo} type="video/webm" />
+                </video>
+              </div>
+            );
+          })()
+        ) : (
+          /* Fallback: CMS Background Images (only shown when no video) */
+          (heroBgDesktop || heroBgMobile) ? (
+            <>
+              {heroBgDesktop && (
+                <div className="absolute inset-0 hidden sm:block">
+                  <Image src={heroBgDesktop} alt="" fill priority sizes="100vw" className="object-cover opacity-30" aria-hidden="true" />
+                </div>
+              )}
+              {heroBgMobile && (
+                <div className="absolute inset-0 sm:hidden">
+                  <Image src={heroBgMobile} alt="" fill priority sizes="100vw" className="object-cover object-top opacity-30" aria-hidden="true" />
+                </div>
+              )}
+            </>
+          ) : null
+        )}
 
-            {/* Quick Stats — Animated Counters */}
-            <motion.div variants={fadeUp} className="mt-8 sm:mt-14 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 max-w-2xl mx-auto">
-              <StatCard icon={Users} value={`${maleData?.totalPlayers || 0}`} label="Players" delay={0} />
-              <StatCard icon={Shield} value={`${leagueData?.stats?.totalClubs || maleData?.clubs?.length || 0}`} label="Club" delay={0.1} />
-              <StatCard icon={Wallet} value={formatCurrency(maleData?.totalPrizePool || 0)} label="Prize Pool" delay={0.2} />
-              <StatCard icon={Swords} value={leagueData?.ligaChampion ? `S${leagueData.ligaChampion.seasonNumber} Done` : leagueData?.preSeason ? 'Pre-Season' : `${maleData?.seasonProgress?.completedWeeks || 0} Week`} label={leagueData?.ligaChampion ? 'Liga IDM' : leagueData?.preSeason ? 'Liga IDM' : 'Weekly'} delay={0.3} />
-            </motion.div>
-          </motion.div>
-        </motion.div>
+        {/* Mid-depth radial gold haze — parallax mid layer */}
+        {!heroBgVideo && (
+          <div
+            className="absolute inset-0 pointer-events-none parallax-hero-mid"
+            style={{
+              background: 'radial-gradient(ellipse at 50% 45%, rgba(212,168,83,0.07) 0%, transparent 65%)',
+            }}
+          />
+        )}
 
-        {/* Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-24 sm:bottom-8 left-1/2 -translate-x-1/2 z-10"
-          aria-hidden="true"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 0.5 }}
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="flex flex-col items-center gap-2"
-          >
-            <span className="text-[10px] text-idm-gold-warm/50 uppercase tracking-widest font-semibold">Jelajahi</span>
-            <div className="w-6 h-10 rounded-full border-2 border-idm-gold-warm/20 flex items-start justify-center p-1.5">
-              <motion.div
-                animate={{ y: [0, 12, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-1.5 h-1.5 rounded-full bg-idm-gold-warm/60"
-              />
+        {/* Top-left cyan glow (Male) — parallax slow layer */}
+        {!heroBgVideo && (
+          <div
+            className="absolute inset-0 pointer-events-none parallax-hero-slow"
+            style={{
+              background: 'radial-gradient(ellipse at 15% 30%, rgba(6,182,212,0.04) 0%, transparent 50%)',
+            }}
+          />
+        )}
+
+        {/* Bottom-right purple glow (Female) — parallax slow layer */}
+        {!heroBgVideo && (
+          <div
+            className="absolute inset-0 pointer-events-none parallax-hero-slow"
+            style={{
+              background: 'radial-gradient(ellipse at 85% 70%, rgba(168,85,247,0.04) 0%, transparent 50%)',
+            }}
+          />
+        )}
+
+        {/* Vignette overlay — ALWAYS visible (keeps text readable over video/images) */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: heroBgVideo
+              ? 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.65) 100%)'
+              : 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%)',
+          }}
+        />
+
+        {/* Grid overlay — subtle esports tech feel — only when no video */}
+        {!heroBgVideo && (
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.015]"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(212,168,83,0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212,168,83,0.3) 1px, transparent 1px)
+              `,
+              backgroundSize: '60px 60px',
+            }}
+          />
+        )}
+
+        {/* ── Floating Particles — parallax fastest layer ── */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden parallax-particles" aria-hidden="true">
+          {particles.map((p) => (
+            <div
+              key={p.id}
+              className="absolute rounded-full hero-particle"
+              style={{
+                left: `${p.x}%`,
+                width: p.size,
+                height: p.size,
+                background: `radial-gradient(circle, rgba(212,168,83,${p.opacity}) 0%, rgba(212,168,83,${p.opacity * 0.3}) 60%, transparent 100%)`,
+                boxShadow: `0 0 ${p.size * 3}px rgba(212,168,83,${p.opacity * 0.3})`,
+                '--duration': `${p.duration}s`,
+                '--delay': `${p.delay}s`,
+                '--p-opacity': p.opacity,
+              } as React.CSSProperties}
+            />
+          ))}
+        </div>
+
+        {/* ═══════════════ HERO CONTENT ═══════════════ */}
+        <div className="relative z-10 text-center px-4 sm:px-6 max-w-5xl mx-auto w-full flex-1 flex flex-col items-center justify-center py-20 sm:py-24">
+
+          {/* ── Decorative top accent ── */}
+          <div className="hero-enter-1 mb-5 sm:mb-7">
+            <div className="flex items-center justify-center gap-3">
+              <div className="h-px w-12 sm:w-24 bg-gradient-to-r from-transparent to-idm-gold-warm/50" />
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-idm-gold-warm/20 bg-idm-gold-warm/[0.06]">
+                <Star className="w-3 h-3 text-idm-gold-warm/80" />
+                <span className="text-[10px] sm:text-[11px] text-idm-gold-warm/80 font-bold tracking-[0.2em] uppercase">
+                  {siteTitle}
+                </span>
+                <Star className="w-3 h-3 text-idm-gold-warm/80" />
+              </div>
+              <div className="h-px w-12 sm:w-24 bg-gradient-to-l from-transparent to-idm-gold-warm/50" />
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+
+          {/* ── Main Title — Gold gradient ── */}
+          <div className="hero-enter-2 relative mb-3 sm:mb-4">
+            {/* Breathing glow behind title */}
+            <div
+              className="absolute inset-0 -top-8 -bottom-8 pointer-events-none animate-pulse"
+              style={{
+                background: 'radial-gradient(ellipse at 50% 50%, rgba(212,168,83,0.08) 0%, transparent 70%)',
+              }}
+              aria-hidden="true"
+            />
+
+            <h1
+              className="relative text-5xl sm:text-6xl md:text-7xl font-black tracking-tight uppercase leading-[1.05]"
+              style={{
+                background: 'linear-gradient(135deg, #f5e6c8 0%, #d4a853 30%, #e5be4a 50%, #f5d77a 70%, #d4a853 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: 'none',
+                filter: 'drop-shadow(0 2px 12px rgba(212,168,83,0.15))',
+              }}
+            >
+              {heroTitle}
+            </h1>
+
+            {/* Animated underline */}
+            <div className="hero-underline mx-auto mt-3 sm:mt-4 h-[2px] rounded-full" style={{ background: 'linear-gradient(90deg, transparent, #d4a853, transparent)' }} />
+          </div>
+
+          {/* ── Subtitle ── */}
+          <p className="hero-enter-3 text-base sm:text-xl lg:text-2xl text-[#e8d5a3]/80 font-light tracking-widest uppercase mb-2">
+            {heroSubtitle}
+          </p>
+
+          {/* ── Tagline ── */}
+          <p className="hero-enter-4 text-sm sm:text-base text-muted-foreground/70 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
+            {heroTagline}
+          </p>
+
+          {/* ═══════════════ CTA BUTTONS ═══════════════ */}
+          <div className="hero-enter-5 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-lg mx-auto mb-8 sm:mb-10">
+            {/* Pendaftaran — Primary CTA → Registration */}
+            <button
+              onClick={onRegister}
+              className="btn-press group relative w-full sm:w-auto cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
+            >
+              {/* Glow background */}
+              <div className="absolute -inset-1 rounded-2xl blur-lg opacity-0 group-hover:opacity-60 transition-opacity duration-500" style={{ background: 'rgba(16,185,129,0.25)' }} />
+              <div className="relative flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl font-bold text-sm tracking-wide uppercase transition-all duration-300"
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #10b981 100%)',
+                  color: '#ffffff',
+                  boxShadow: '0 4px 20px rgba(16,185,129,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                }}
+              >
+                <UserPlus className="w-4 h-4" />
+                Pendaftaran
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </button>
+
+            {/* Lihat Bracket — Secondary CTA → Bracket Picker */}
+            <button
+              onClick={() => setShowBracketPicker(true)}
+              className="btn-press group relative w-full sm:w-auto cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-idm-gold-warm/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
+            >
+              {/* Glow on hover */}
+              <div className="absolute -inset-1 rounded-2xl blur-lg opacity-0 group-hover:opacity-40 transition-opacity duration-500" style={{ background: 'rgba(212,168,83,0.15)' }} />
+              <div className="relative flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl font-bold text-sm tracking-wide uppercase border transition-all duration-300"
+                style={{
+                  background: 'rgba(212,168,83,0.08)',
+                  borderColor: 'rgba(212,168,83,0.3)',
+                  color: '#d4a853',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(212,168,83,0.1)',
+                }}
+              >
+                <Eye className="w-4 h-4" />
+                Lihat Bracket
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </button>
+          </div>
+
+          {/* ═══════════════ BRACKET DIVISION PICKER ═══════════════ */}
+          {showBracketPicker && (
+            <div className="w-full max-w-sm mx-auto mb-8 sm:mb-10" style={{ animation: 'reveal-fade-up 0.25s cubic-bezier(0.16,1,0.3,1) both' }}>
+              <div className="relative rounded-2xl border border-idm-gold-warm/20 bg-[#0d0d1a]/95 p-4 shadow-2xl">
+                  {/* Close hint */}
+                  <button
+                    onClick={() => setShowBracketPicker(false)}
+                    className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    aria-label="Close picker"
+                  >
+                    ✕
+                  </button>
+
+                  <p className="text-xs text-idm-gold-warm/70 uppercase tracking-wider font-bold text-center mb-3">Pilih Divisi</p>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Male */}
+                    <button
+                      onClick={() => { setShowBracketPicker(false); onViewBracket('male'); }}
+                      className="btn-press group relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-300"
+                      style={{
+                        background: 'rgba(6,182,212,0.06)',
+                        borderColor: 'rgba(6,182,212,0.2)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(6,182,212,0.5)';
+                        e.currentTarget.style.background = 'rgba(6,182,212,0.12)';
+                        e.currentTarget.style.boxShadow = '0 0 20px rgba(6,182,212,0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(6,182,212,0.2)';
+                        e.currentTarget.style.background = 'rgba(6,182,212,0.06)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(6,182,212,0.15)' }}>
+                        <Zap className="w-5 h-5 text-cyan-400" />
+                      </div>
+                      <div className="text-center">
+                        <span className="text-sm font-bold text-cyan-400">Male</span>
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{malePlayers} Players</p>
+                      </div>
+                    </button>
+
+                    {/* Female */}
+                    <button
+                      onClick={() => { setShowBracketPicker(false); onViewBracket('female'); }}
+                      className="btn-press group relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-300"
+                      style={{
+                        background: 'rgba(168,85,247,0.06)',
+                        borderColor: 'rgba(168,85,247,0.2)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(168,85,247,0.5)';
+                        e.currentTarget.style.background = 'rgba(168,85,247,0.12)';
+                        e.currentTarget.style.boxShadow = '0 0 20px rgba(168,85,247,0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)';
+                        e.currentTarget.style.background = 'rgba(168,85,247,0.06)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.15)' }}>
+                        <Star className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="text-center">
+                        <span className="text-sm font-bold text-purple-400">Female</span>
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">{femalePlayers} Players</p>
+                      </div>
+                    </button>
+                  </div>
+              </div>
+            </div>
+          )}
+
+
+        </div>
+
+        {/* ── Scroll Indicator ── */}
+        <div className="absolute bottom-8 sm:bottom-10 left-1/2 -translate-x-1/2 z-10" style={{ animation: 'reveal-fade-up 0.5s 2s cubic-bezier(0.16,1,0.3,1) both' }} aria-hidden="true">
+          <div className="scroll-bounce flex flex-col items-center gap-2">
+            <span className="text-[10px] text-idm-gold-warm/40 uppercase tracking-[0.2em] font-semibold">Explore</span>
+            <div className="w-6 h-10 rounded-full border-2 border-idm-gold-warm/15 flex items-start justify-center p-1.5">
+              <div className="scroll-dot w-1.5 h-1.5 rounded-full bg-idm-gold-warm/50" />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom fade gradient to next section */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(to top, #0c0a06, transparent)',
+          }}
+        />
       </section>
 
-      {/* ========== UNIFIED MARQUEE — Stats + Live Feed ========== */}
+      {/* ═══════════════ MARQUEE TICKER ═══════════════ */}
       <div className="relative z-40 py-2.5 bg-background/90 border-y border-idm-gold-warm/10">
-        <MarqueeTicker maleData={maleData} femaleData={undefined} leagueData={leagueData} />
+        <MarqueeTicker maleData={maleData} femaleData={femaleData} leagueData={leagueData} />
       </div>
     </>
   );

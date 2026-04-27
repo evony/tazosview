@@ -3,36 +3,115 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
-  Settings, Database, RefreshCw, Trash2, Download, Upload,
-  Shield, Clock, AlertTriangle, Loader2, Check, X
+  Settings, Database, RefreshCw, Trash2, Download,
+  Shield, Clock, AlertTriangle, Loader2, ChevronDown, ChevronUp, Filter
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
 import { useAppStore } from '@/lib/store';
 
-interface ActivityLog {
+interface AuditLogEntry {
   id: string;
+  adminId?: string | null;
+  adminName?: string | null;
   action: string;
   entity: string;
-  entityId?: string;
-  details?: string;
-  adminId?: string;
-  adminName?: string;
+  entityId?: string | null;
+  details?: string | null;
+  metadata?: string | null;
   createdAt: string;
 }
+
+// Action icon/color map
+const ACTION_STYLES: Record<string, { bg: string; text: string; icon: string }> = {
+  create: { bg: 'bg-green-500/10', text: 'text-green-500', icon: '+' },
+  update: { bg: 'bg-blue-500/10', text: 'text-blue-500', icon: '✎' },
+  delete: { bg: 'bg-red-500/10', text: 'text-red-500', icon: '×' },
+  approve: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', icon: '✓' },
+  reject: { bg: 'bg-orange-500/10', text: 'text-orange-500', icon: '✗' },
+  login: { bg: 'bg-purple-500/10', text: 'text-purple-500', icon: '→' },
+  export: { bg: 'bg-cyan-500/10', text: 'text-cyan-500', icon: '↓' },
+  reseed: { bg: 'bg-red-500/10', text: 'text-red-500', icon: '↻' },
+};
+
+const ENTITY_LABELS: Record<string, string> = {
+  player: 'Player',
+  tournament: 'Turnamen',
+  season: 'Season',
+  donation: 'Donasi',
+  sponsor: 'Sponsor',
+  achievement: 'Achievement',
+  skin: 'Skin',
+  cms: 'Konten',
+  match: 'Match',
+  club: 'Club',
+  admin: 'Admin',
+  auth: 'Auth',
+};
 
 export function AdminSettingsPanel() {
   const dt = useDivisionTheme();
   const qc = useQueryClient();
   const { adminAuth } = useAppStore();
   const [isExporting, setIsExporting] = useState(false);
+  const [logFilter, setLogFilter] = useState<string>('all');
+  const [showAllLogs, setShowAllLogs] = useState(false);
+
+  // ─── Fetch real audit logs from API ───
+  const { data: auditData, isLoading: isLoadingLogs } = useQuery({
+    queryKey: ['admin-audit-logs', logFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams({ limit: '100' });
+      if (logFilter !== 'all') params.set('entity', logFilter);
+      const res = await fetch(`/api/admin/audit-logs?${params}`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch audit logs');
+      return res.json() as Promise<{ logs: AuditLogEntry[]; total: number }>;
+    },
+    refetchInterval: 30000, // Refresh every 30s
+  });
+
+  const auditLogs = auditData?.logs || [];
+  const displayLogs = showAllLogs ? auditLogs : auditLogs.slice(0, 10);
+
+  // ─── Fetch persisted settings for toggles ───
+  const { data: adminSettings } = useQuery({
+    queryKey: ['admin-settings-toggles'],
+    queryFn: async () => {
+      const res = await fetch('/api/cms/settings', { credentials: 'include' });
+      const d = await res.json();
+      return (d?.map || {}) as Record<string, string>;
+    },
+  });
+
+  const autoRefresh = adminSettings?.admin_auto_refresh !== 'false'; // default true
+  const donationNotif = adminSettings?.admin_donation_notif !== 'false'; // default true
+  const soundEffects = adminSettings?.admin_sound_effects === 'true'; // default false
+
+  // Save a toggle setting
+  const saveToggle = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      const res = await fetch('/api/cms/settings', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value, type: 'text' }),
+      });
+      if (!res.ok) throw new Error('Failed to save setting');
+      return res.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-settings-toggles'] });
+    },
+    onError: () => toast.error('Gagal menyimpan setting'),
+  });
 
   // Reseed database
   const reseedDatabase = useMutation({
@@ -70,7 +149,6 @@ export function AdminSettingsPanel() {
         data.leagueMatches = await res.json();
       }
 
-      // Create download
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -111,7 +189,6 @@ export function AdminSettingsPanel() {
         filename = 'donations';
       }
 
-      // Convert to CSV
       const csvRows = [
         headers.join(','),
         ...data.map(row => headers.map(h => {
@@ -141,13 +218,6 @@ export function AdminSettingsPanel() {
       setIsExporting(false);
     }
   };
-
-  // Mock activity logs (would come from API in real implementation)
-  const activityLogs: ActivityLog[] = [
-    { id: '1', action: 'create', entity: 'player', details: 'Added new player "ShadowDancer"', adminName: adminAuth.admin?.username, createdAt: new Date().toISOString() },
-    { id: '2', action: 'update', entity: 'match', details: 'Updated score for Week 5', adminName: adminAuth.admin?.username, createdAt: new Date(Date.now() - 3600000).toISOString() },
-    { id: '3', action: 'delete', entity: 'sponsor', details: 'Removed sponsor "Old Brand"', adminName: adminAuth.admin?.username, createdAt: new Date(Date.now() - 7200000).toISOString() },
-  ];
 
   return (
     <div className="space-y-4">
@@ -194,45 +264,17 @@ export function AdminSettingsPanel() {
             <div>
               <Label className="text-xs text-muted-foreground mb-2 block">Export Data</Label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => exportData('players')}
-                  disabled={isExporting}
-                >
-                  <Download className="w-3 h-3 mr-1" />
-                  Players
+                <Button variant="outline" size="sm" className="text-xs" onClick={() => exportData('players')} disabled={isExporting}>
+                  <Download className="w-3 h-3 mr-1" />Players
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => exportData('tournaments')}
-                  disabled={isExporting}
-                >
-                  <Download className="w-3 h-3 mr-1" />
-                  Tournaments
+                <Button variant="outline" size="sm" className="text-xs" onClick={() => exportData('tournaments')} disabled={isExporting}>
+                  <Download className="w-3 h-3 mr-1" />Tournaments
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => exportData('all')}
-                  disabled={isExporting}
-                >
-                  <Download className="w-3 h-3 mr-1" />
-                  All Data
+                <Button variant="outline" size="sm" className="text-xs" onClick={() => exportData('all')} disabled={isExporting}>
+                  <Download className="w-3 h-3 mr-1" />All Data
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => exportToCSV('players')}
-                  disabled={isExporting}
-                >
-                  <Download className="w-3 h-3 mr-1" />
-                  CSV
+                <Button variant="outline" size="sm" className="text-xs" onClick={() => exportToCSV('players')} disabled={isExporting}>
+                  <Download className="w-3 h-3 mr-1" />CSV
                 </Button>
               </div>
             </div>
@@ -278,7 +320,7 @@ export function AdminSettingsPanel() {
         </Card>
       </div>
 
-      {/* Settings */}
+      {/* Settings — Persisted via CMS Settings API */}
       <div className="stagger-item-subtle stagger-d2">
         <Card className={dt.casinoCard}>
           <CardHeader className="pb-2">
@@ -293,56 +335,119 @@ export function AdminSettingsPanel() {
                 <p className="text-sm font-medium">Auto-refresh Dashboard</p>
                 <p className="text-xs text-muted-foreground">Refresh data setiap 30 detik</p>
               </div>
-              <Switch defaultChecked />
+              <Switch
+                checked={autoRefresh}
+                onCheckedChange={(checked) => saveToggle.mutate({ key: 'admin_auto_refresh', value: String(checked) })}
+                disabled={saveToggle.isPending}
+              />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Notifikasi Donasi</p>
                 <p className="text-xs text-muted-foreground">Tampilkan popup saat ada donasi baru</p>
               </div>
-              <Switch defaultChecked />
+              <Switch
+                checked={donationNotif}
+                onCheckedChange={(checked) => saveToggle.mutate({ key: 'admin_donation_notif', value: String(checked) })}
+                disabled={saveToggle.isPending}
+              />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Sound Effects</p>
                 <p className="text-xs text-muted-foreground">Efek suara untuk event</p>
               </div>
-              <Switch />
+              <Switch
+                checked={soundEffects}
+                onCheckedChange={(checked) => saveToggle.mutate({ key: 'admin_sound_effects', value: String(checked) })}
+                disabled={saveToggle.isPending}
+              />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Activity Log */}
+      {/* Activity Log — Real data from /api/admin/audit-logs */}
       <div className="stagger-item-subtle stagger-d3">
         <Card className={dt.casinoCard}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Clock className={`w-4 h-4 ${dt.text}`} />
-              Activity Log
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Clock className={`w-4 h-4 ${dt.text}`} />
+                Activity Log
+                {auditData?.total ? (
+                  <Badge className="text-[9px] border-0 bg-idm-gold-warm/10 text-idm-gold-warm">{auditData.total}</Badge>
+                ) : null}
+              </CardTitle>
+              {/* Filter by entity */}
+              <Select value={logFilter} onValueChange={setLogFilter}>
+                <SelectTrigger className="w-28 h-7 text-[10px]">
+                  <Filter className="w-3 h-3 mr-1" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua</SelectItem>
+                  <SelectItem value="player">Player</SelectItem>
+                  <SelectItem value="tournament">Turnamen</SelectItem>
+                  <SelectItem value="season">Season</SelectItem>
+                  <SelectItem value="donation">Donasi</SelectItem>
+                  <SelectItem value="match">Match</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="auth">Auth</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
-              {activityLogs.map((log) => (
-                <div key={log.id} className="flex items-start gap-3 p-2 rounded-lg bg-muted/30">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${
-                    log.action === 'create' ? 'bg-green-500/10 text-green-500' :
-                    log.action === 'update' ? 'bg-blue-500/10 text-blue-500' :
-                    'bg-red-500/10 text-red-500'
-                  }`}>
-                    {log.action === 'create' ? '+' : log.action === 'update' ? '✎' : '×'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium capitalize">{log.action} {log.entity}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{log.details}</p>
-                  </div>
-                  <div className="text-[10px] text-muted-foreground shrink-0">
-                    {new Date(log.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </div>
-              ))}
-            </div>
+            {isLoadingLogs ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : auditLogs.length === 0 ? (
+              <div className="text-center py-8 text-xs text-muted-foreground">
+                Belum ada activity log
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto custom-scrollbar">
+                {displayLogs.map((log) => {
+                  const style = ACTION_STYLES[log.action] || { bg: 'bg-muted', text: 'text-muted-foreground', icon: '•' };
+                  return (
+                    <div key={log.id} className="flex items-start gap-3 p-2 rounded-lg bg-muted/30">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0 ${style.bg} ${style.text}`}>
+                        {style.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-medium capitalize">
+                            {log.action} {ENTITY_LABELS[log.entity] || log.entity}
+                          </p>
+                          {log.adminName && (
+                            <span className="text-[9px] text-idm-gold-warm/60">oleh {log.adminName}</span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground truncate">{log.details || '—'}</p>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground shrink-0">
+                        {new Date(log.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  );
+                })}
+                {/* Show more/less toggle */}
+                {auditLogs.length > 10 && (
+                  <button
+                    onClick={() => setShowAllLogs(!showAllLogs)}
+                    className="w-full flex items-center justify-center gap-1 py-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showAllLogs ? (
+                      <><ChevronUp className="w-3 h-3" />Tampilkan Lebih Sedikit</>
+                    ) : (
+                      <><ChevronDown className="w-3 h-3" />Lihat Semua ({auditLogs.length})</>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -66,11 +66,11 @@ export function MatchDetailModal({ matchId, onClose, preview }: MatchDetailModal
 
   useEffect(() => {
     if (!matchId) {
-      const timer = setTimeout(() => setDetail(null), 0);
-      return () => clearTimeout(timer);
+      setTimeout(() => setDetail(null), 0);
+      return;
     }
     let cancelled = false;
-    const loadingTimer = setTimeout(() => setLoading(true), 0);
+    setTimeout(() => setLoading(true), 0);
     fetch(`/api/league-matches/${matchId}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
@@ -78,10 +78,9 @@ export function MatchDetailModal({ matchId, onClose, preview }: MatchDetailModal
       })
       .catch(() => {})
       .finally(() => {
-        clearTimeout(loadingTimer);
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; clearTimeout(loadingTimer); };
+    return () => { cancelled = true; };
   }, [matchId]);
 
   const isOpen = matchId !== null;

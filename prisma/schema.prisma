@@ -406,6 +406,27 @@ model PlayoffMatch {
 }
 
 // ============================================
+// IDM LEAGUE - ADMIN AUDIT LOG
+// ============================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String?  // Admin who performed the action (null for system actions)
+  adminName  String?  // Denormalized for quick display
+  action     String   // "create" | "update" | "delete" | "approve" | "reject" | "login" | "export" | "reseed"
+  entity     String   // "player" | "tournament" | "season" | "donation" | "sponsor" | "achievement" | "skin" | "cms" | "match" | "club" | "admin" | "auth"
+  entityId   String?  // ID of the affected entity
+  details    String?  // Human-readable description of what happened
+  metadata   String?  // JSON string for additional context (before/after values etc.)
+  createdAt  DateTime @default(now())
+
+  @@index([adminId])
+  @@index([entity])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ============================================
 // IDM LEAGUE - CMS (CONTENT MANAGEMENT SYSTEM)
 // ============================================
 

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IDM League - Idol Meta Fan Made Edition",
+  title: "Tarkam IDM - Idol Meta Fan Made Edition",
   description: "Premium Dance Tournament & League Platform",
   manifest: "/manifest.json",
   icons: {

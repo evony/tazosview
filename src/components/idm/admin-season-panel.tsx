@@ -91,10 +91,7 @@ export function AdminSeasonPanel({ division, dt, setConfirmDialog, mode = 'liga'
   // Sync division with store division when in tarkam mode
   useEffect(() => {
     if (isTarkam) {
-      const timer = setTimeout(() => {
-        setNewSeasonForm(p => ({ ...p, division }));
-      }, 0);
-      return () => clearTimeout(timer);
+      setTimeout(() => setNewSeasonForm(p => ({ ...p, division })), 0);
     }
   }, [division, isTarkam]);
   const [editingChampion, setEditingChampion] = useState<string | null>(null);

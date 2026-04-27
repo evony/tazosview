@@ -4,32 +4,29 @@ import { useQuery } from '@tanstack/react-query';
 import { useAppStore } from '@/lib/store';
 import { useCrossTabInvalidation } from '@/lib/cross-tab-sync';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
-import { Crown, Users, Swords, BookOpen, Trophy, Radio } from 'lucide-react';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { Crown, Users, Swords, Sparkles, Play, Flame, ChevronRight, Zap } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import type { StatsData } from '@/types/stats';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 // Section components
 import { HeroSection } from './landing/hero-section';
-import { AboutSection } from './landing/about-section';
+import { HighlightsSection } from './landing/highlights-section';
+import { ExperiencesSection } from './landing/experiences-section';
 import { TournamentHub } from './landing/tournament-hub';
 import { ClubsSection } from './landing/clubs-section';
-import { ClubLeaderboard } from './landing/club-leaderboard';
-import { PlayerSpotlight } from './landing/player-spotlight';
 import { ChampionsSection } from './landing/champions-section';
 import { MvpSection } from './landing/mvp-section';
-import { DreamSection } from './landing/dream-section';
+import { HowItWorksSection } from './landing/how-it-works-section';
+import { CTASection } from './landing/cta-section';
 import { LandingFooter } from './landing/landing-footer';
 
 // Shared hooks & components
-import { useSwipeNavigation } from './landing/shared';
+import { useSwipeNavigation, useScrollReveal, useParallax } from './landing/shared';
 
 // Modal & utility components
 import { PlayerProfile } from './player-profile';
 import { ClubProfile } from './club-profile';
-import { DonationModal } from './donation-modal';
 import { RegistrationModal } from './registration-modal';
 import { VideoModal } from './video-modal';
 import { BackToTop } from './ui/back-to-top';
@@ -47,11 +44,6 @@ export function LandingPage() {
   const [showAllClubs, setShowAllClubs] = useState(false);
   const [showAllPlayers, setShowAllPlayers] = useState(false);
 
-  /* Donation Modal State */
-  const [donationModalOpen, setDonationModalOpen] = useState(false);
-  const [donationModalType, setDonationModalType] = useState<'weekly' | 'season'>('season');
-  const [donationModalAmount, setDonationModalAmount] = useState<number | undefined>(undefined);
-
   /* Registration Modal State */
   const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
 
@@ -66,40 +58,26 @@ export function LandingPage() {
     setVideoModalOpen(true);
   }, []);
 
-  const openDonationModal = useCallback((type: 'weekly' | 'season', amount?: number) => {
-    setDonationModalType(type);
-    setDonationModalAmount(amount);
-    setDonationModalOpen(true);
-  }, []);
-
   /* Cross-tab cache sync — invalidates when admin updates logo/banner in another tab */
   useCrossTabInvalidation();
 
-  /* Parallax Refs — disabled on mobile for performance */
-  const isMobile = useIsMobile();
-  const heroRef = useRef<HTMLElement | null>(null);
-  const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const heroY = useTransform(heroScroll, [0, 1], isMobile ? ['0%', '0%'] : ['0%', '25%']);
-  const heroScale = useTransform(heroScroll, [0, 1], isMobile ? [1, 1] : [1, 1.05]);
-  const heroOpacity = useTransform(heroScroll, [0, 0.7], isMobile ? [1, 1] : [1, 0]);
-  const contentY = useTransform(heroScroll, [0, 1], isMobile ? ['0%', '0%'] : ['0%', '15%']);
-  const heroMidY = useTransform(heroScroll, [0, 1], isMobile ? ['0%', '0%'] : ['0%', '8%']);
-
-  /* Data Queries — 15s polling, CDN-cached */
+  /* Data Queries — 2min polling, CDN-cached */
   const { data: maleData, isLoading: isMaleLoading } = useQuery<StatsData>({
     queryKey: ['stats', 'male'],
     queryFn: async () => { const res = await fetch('/api/stats?division=male'); return res.json(); },
-    staleTime: 15000,
-    refetchInterval: 30000, // 15s polling — CDN handles most requests
+    staleTime: 60000,
+    refetchInterval: 120000, // 2min polling — optimized for mid-range devices
     refetchOnWindowFocus: true,
+    gcTime: 300000,
   });
 
   const { data: femaleData, isLoading: isFemaleLoading } = useQuery<StatsData>({
     queryKey: ['stats', 'female'],
     queryFn: async () => { const res = await fetch('/api/stats?division=female'); return res.json(); },
-    staleTime: 15000,
-    refetchInterval: 30000, // 15s polling — CDN handles most requests
+    staleTime: 60000,
+    refetchInterval: 120000, // 2min polling — optimized for mid-range devices
     refetchOnWindowFocus: true,
+    gcTime: 300000,
   });
 
   const isDataLoading = isMaleLoading || isFemaleLoading;
@@ -107,9 +85,10 @@ export function LandingPage() {
   const { data: cmsData } = useQuery({
     queryKey: ['cms-content'],
     queryFn: async () => { const res = await fetch('/api/cms/content'); if (!res.ok) return { settings: {}, sections: {} }; return res.json(); },
-    staleTime: 30000, // CMS changes rarely — 30s is enough
-    refetchInterval: 30000,
+    staleTime: 120000, // CMS changes rarely — 2min stale is fine
+    refetchInterval: 300000, // 5min polling — CMS data barely changes
     refetchOnWindowFocus: true,
+    gcTime: 300000,
   });
 
   const { data: leagueData } = useQuery<{ hasData: boolean; preSeason?: boolean; reason?: string; season?: { id: string; name: string }; ligaChampion?: { id: string; name: string; logo: string | null; seasonNumber: number; members: { id: string; gamertag: string; division: string; tier: string; points: number; role: string; avatar?: string | null }[] } | null; stats?: { totalClubs: number; totalMatches: number; completedMatches: number } }>({
@@ -119,33 +98,27 @@ export function LandingPage() {
       if (!res.ok) throw new Error('League API failed');
       return res.json();
     },
-    // ── 15s Polling Strategy ──
+    // ── 2min Polling Strategy ──
     // Most requests hit Vercel CDN (s-maxage=10), not the database.
-    // 15s is safe for free tier while still feeling responsive:
+    // 2min is optimized for mid-range devices while still feeling responsive:
     //   - CDN caches for 10s → most polls hit CDN, not DB
     //   - Admin updates: revalidateTag purges CDN → next poll gets fresh data
-    //   - Admin changes appear within max 15s without manual refresh
-    staleTime: 15000, // 15s — data considered fresh for 15s
+    //   - Admin changes appear within max 2min without manual refresh
+    staleTime: 120000, // 2min — data considered fresh for 2min
     gcTime: 300000, // Keep unused data for 5 min in memory
     refetchOnWindowFocus: true, // Refetch when user comes back to tab
     refetchOnReconnect: true, // Refetch when network reconnects
-    refetchInterval: 30000, // 15s polling — safe for free tier, CDN-cached
+    refetchInterval: 300000, // 5min polling — league data changes rarely
   });
-
-  const nextSeason = (leagueData?.ligaChampion?.seasonNumber || 1) + 1;
-  const completedSeason = leagueData?.ligaChampion?.seasonNumber || 1;
 
   // CMS helpers
   const cms = cmsData?.settings || {};
   const cmsSections = cmsData?.sections || {};
   const cmsLogo = cms.logo_url || '/logo1.webp';
-  const cmsSiteTitle = cms.site_title || 'IDM League';
+  const cmsSiteTitle = cms.site_title || 'Tarkam IDM';
   const cmsHeroTitle = cms.hero_title || 'Idol Meta';
   const cmsHeroSubtitle = cms.hero_subtitle || 'Fan Made Edition';
-  const cmsHeroTagline = cms.hero_tagline || 'Tempat dancer terbaik berkompetisi. Tournament mingguan, liga profesional, dan podium yang menunggu.';
-  const cmsHeroBgDesktop = cms.hero_bg_desktop || '';
-  const cmsHeroBgMobile = cms.hero_bg_mobile || '';
-  const cmsFooterText = cms.footer_text || '© 2025 IDM League — Idol Meta Fan Made Edition. All rights reserved.';
+  const cmsFooterText = cms.footer_text || '© 2025 Tarkam IDM — Idol Meta Fan Made Edition. All rights reserved.';
   const cmsFooterTagline = cms.footer_tagline || 'Dance. Compete. Dominate.';
 
   const enterApp = (division: 'male' | 'female') => {
@@ -159,6 +132,10 @@ export function LandingPage() {
     setCurrentView('dashboard');
   };
 
+  const enterCommunity = () => {
+    setCurrentView('community');
+  };
+
   /* Nav scroll state */
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
@@ -170,7 +147,7 @@ export function LandingPage() {
   }, []);
 
   useEffect(() => {
-    const sectionIds = ['about', 'kompetisi', 'champions', 'mvp', 'spotlight', 'clubs', 'leaderboard', 'dream'];
+    const sectionIds = ['kompetisi', 'highlights', 'experiences', 'champions', 'mvp', 'clubs', 'how-it-works'];
     const observer = new IntersectionObserver(
       (entries) => { entries.forEach((entry) => { if (entry.isIntersecting) setActiveSection(entry.target.id); }); },
       { rootMargin: '-40% 0px -55% 0px' }
@@ -179,7 +156,8 @@ export function LandingPage() {
     return () => observer.disconnect();
   }, []);
 
-  /* Section Reveal — IntersectionObserver for scroll-triggered fade-in animations */
+  /* Section Reveal — IntersectionObserver for scroll-triggered fade-in animations
+     Dashboard-crisp: low threshold + generous rootMargin so animation fires early */
   useEffect(() => {
     const revealSections = document.querySelectorAll('.section-reveal');
     if (!revealSections.length) return;
@@ -192,13 +170,23 @@ export function LandingPage() {
           }
         });
       },
-      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.01, rootMargin: '0px 0px 0px 0px' }
     );
     revealSections.forEach((el) => revealObserver.observe(el));
     return () => revealObserver.disconnect();
-  }, [maleData, femaleData, leagueData, cmsData]);
+  }, []);
 
   useSwipeNavigation();
+  useScrollReveal();
+
+  /* Parallax — lightweight rAF-based depth layers on scroll */
+  useParallax([
+    { selector: '.parallax-hero-bg', speed: 0.12 },      // base gradient — slowest
+    { selector: '.parallax-hero-mid', speed: 0.08 },      // gold haze — very slow
+    { selector: '.parallax-hero-slow', speed: 0.05 },     // cyan/purple glow — slowest
+    { selector: '.parallax-section-bg', speed: 0.06 },    // section backgrounds — subtle
+    { selector: '.parallax-particles', speed: 0.18 },     // floating particles — fastest
+  ]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -206,7 +194,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-background overflow-hidden landing-scroll pb-24 sm:pb-0">
+    <div className="relative min-h-screen bg-background overflow-hidden landing-scroll pb-24 md:pb-0">
 
       {/* ========== FIXED NAVIGATION HEADER ========== */}
       <nav aria-label="Main navigation" className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
@@ -223,71 +211,62 @@ export function LandingPage() {
             <span className={`text-gradient-fury text-sm font-bold tracking-tight transition-all duration-500 ${scrolled ? 'nav-logo-text-glow' : ''}`}>{cmsSiteTitle}</span>
           </div>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden sm:flex items-center gap-1">
+          {/* Desktop Nav Links — compact on medium screens */}
+          <div className="hidden sm:flex items-center gap-0.5 md:gap-1">
             {[
-              { id: 'about', label: 'Cerita Kami' },
-              { id: 'kompetisi', label: 'Kompetisi' },
-              { id: 'champions', label: 'Champion' },
-              { id: 'mvp', label: 'MVP' },
-              { id: 'clubs', label: 'Club' },
-              { id: 'leaderboard', label: 'Peringkat' },
-              { id: 'dream', label: 'Liga IDM' },
+              { id: 'kompetisi', label: 'Kompetisi', mdLabel: 'Kompetisi' },
+              { id: 'highlights', label: 'Highlights', mdLabel: 'Highlight' },
+              { id: 'champions', label: 'Champion', mdLabel: 'Champion' },
+              { id: 'mvp', label: 'MVP', mdLabel: 'MVP' },
+              { id: 'clubs', label: 'Club', mdLabel: 'Club' },
+              { id: 'how-it-works', label: 'Cara Main', mdLabel: 'Cara Main' },
             ].map(item => (
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
                 aria-label={`Navigate to ${item.label} section`}
                 aria-current={activeSection === item.id ? 'true' : undefined}
-                className={`relative px-3 py-1.5 text-sm transition-all duration-300 cursor-pointer rounded-md ${
+                className={`relative px-2 md:px-3 py-1.5 text-xs md:text-sm transition-all duration-300 cursor-pointer rounded-md ${
                   activeSection === item.id
                     ? 'text-idm-gold-warm font-semibold'
                     : 'text-muted-foreground hover:text-idm-gold-warm/70'
                 }`}
               >
-                {item.label}
+                <span className="hidden md:inline">{item.label}</span>
+                <span className="md:hidden">{item.mdLabel}</span>
                 {activeSection === item.id && (
-                  <motion.div
-                    layoutId="nav-active"
-                    className="absolute bottom-0 left-1 right-1 h-[2px] bg-idm-gold-warm rounded-full"
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  />
+                  <div className="nav-indicator absolute bottom-0 left-1 right-1 h-[2px] bg-idm-gold-warm rounded-full" />
                 )}
               </button>
             ))}
           </div>
 
-          {/* Division Switch */}
-          <div className="flex items-center bg-muted/80 backdrop-blur-sm rounded-full p-0.5 gap-0.5 border border-idm-gold-warm/15">
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => enterApp('male')}
-              aria-label="Enter Male Division"
-              className="px-4 py-2.5 rounded-full text-xs font-semibold transition-all duration-300 text-muted-foreground hover:bg-idm-male hover:text-white hover:shadow-md division-toggle-shimmer"
-            >
-              🕺 Male
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => enterApp('female')}
-              aria-label="Enter Female Division"
-              className="px-4 py-2.5 rounded-full text-xs font-semibold transition-all duration-300 text-muted-foreground hover:bg-idm-female hover:text-white hover:shadow-md division-toggle-shimmer"
-            >
-              💃 Female
-            </motion.button>
-          </div>
+          {/* Masuk Arena Button */}
+          <button
+            onClick={enterCommunity}
+            aria-label="Masuk Arena"
+            className="btn-press relative flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-200 bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.4)] active:scale-95 cursor-pointer"
+          >
+            <Flame className="w-4 h-4" />
+            <span>Masuk Arena</span>
+            {/* Pulsing arrow */}
+            <span className="relative flex items-center justify-center">
+              <ChevronRight className="w-4 h-4 animate-pulse" />
+              <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" />
+            </span>
+          </button>
         </div>
       </nav>
 
       {/* ========== MOBILE BOTTOM NAVIGATION ========== */}
-      <nav aria-label="Section navigation" className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/98 border-t border-idm-gold-warm/10 safe-area-bottom">
+      <nav aria-label="Section navigation" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/98 border-t border-idm-gold-warm/10 safe-area-bottom">
         <div className="flex items-center justify-around h-16 px-2">
           {[
-            { id: 'about', label: 'Cerita', icon: BookOpen, special: false },
             { id: 'kompetisi', label: 'Kompetisi', icon: Swords, special: false },
             { id: 'champions', label: 'Champion', icon: Crown, special: true },
+            { id: 'mvp', label: 'MVP', icon: Sparkles, special: false },
             { id: 'clubs', label: 'Club', icon: Users, special: false },
-            { id: 'leaderboard', label: 'Peringkat', icon: Trophy, special: false },
+            { id: 'how-it-works', label: 'Cara Main', icon: Zap, special: false },
           ].map(item => {
             const isActive = (activeSection === 'champions' || activeSection === 'mvp') && item.id === 'champions' || activeSection === item.id;
             return (
@@ -313,11 +292,7 @@ export function LandingPage() {
                 <item.icon className={`relative z-10 w-5 h-5 ${item.special ? 'drop-shadow-[0_0_4px_rgba(212,168,83,0.3)]' : ''}`} />
                 <span className={`relative z-10 text-[11px] font-medium mt-1 ${item.special ? 'font-bold' : ''}`}>{item.label}</span>
                 {isActive && (
-                  <motion.div
-                    layoutId="bottom-nav-active"
-                    className={`absolute -bottom-0.5 rounded-full transition-colors ${item.special ? 'w-10 h-1 bg-idm-gold-warm shadow-[0_0_8px_rgba(212,168,83,0.5)]' : 'w-8 h-0.5 bg-idm-gold-warm'}`}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  />
+                  <div className={`nav-indicator absolute -bottom-0.5 rounded-full ${item.special ? 'w-10 h-1 bg-idm-gold-warm shadow-[0_0_8px_rgba(212,168,83,0.5)]' : 'w-8 h-0.5 bg-idm-gold-warm'}`} />
                 )}
               </button>
             );
@@ -327,44 +302,54 @@ export function LandingPage() {
 
       {/* ========== SECTION COMPONENTS ========== */}
       <HeroSection
-        heroRef={heroRef}
-        heroY={heroY}
-        heroScale={heroScale}
-        heroOpacity={heroOpacity}
-        contentY={contentY}
-        heroMidY={heroMidY}
-        cmsLogo={cmsLogo}
-        cmsSiteTitle={cmsSiteTitle}
-        cmsHeroTitle={cmsHeroTitle}
-        cmsHeroSubtitle={cmsHeroSubtitle}
-        cmsHeroTagline={cmsHeroTagline}
-        cmsHeroBgDesktop={cmsHeroBgDesktop}
-        cmsHeroBgMobile={cmsHeroBgMobile}
-        cmsHeroBgVideo={cms.hero_bg_video}
-        cmsSections={cmsSections}
-        leagueData={leagueData}
-        nextSeason={nextSeason}
         maleData={maleData}
-        onRegister={() => setRegistrationModalOpen(true)}
-        onVideoPlay={openVideoModal}
-        onViewBracket={enterBracket}
-      />
-
-      {/* About / Cerita Kami */}
-      <div className="section-reveal">
-      <AboutSection
+        femaleData={femaleData}
+        leagueData={leagueData}
         cmsSections={cmsSections}
         cmsSettings={cms}
+        onEnterApp={enterApp}
+        onEnterCommunity={enterCommunity}
+        onRegister={() => setRegistrationModalOpen(true)}
+        onViewBracket={enterBracket}
+        onVideoPlay={openVideoModal}
+      />
+
+      {/* Kompetisi — Tarkam Arena (first section after hero) */}
+      <div className="section-reveal">
+      <TournamentHub
+        maleData={maleData}
+        femaleData={femaleData}
+        leagueData={leagueData}
+        cmsSections={cmsSections}
+        cmsSettings={cms}
+        onEnterApp={enterApp}
+        onVideoPlay={openVideoModal}
       />
       </div>
 
       <SectionDivider />
 
-      {/* Kompetisi */}
+      {/* Highlights — Momen Terbaik */}
       <div className="section-reveal">
-      <TournamentHub
+      <HighlightsSection
         maleData={maleData}
         femaleData={femaleData}
+        leagueData={leagueData}
+        cmsSections={cmsSections}
+        cmsSettings={cms}
+        onVideoPlay={openVideoModal}
+        setSelectedPlayer={setSelectedPlayer}
+      />
+      </div>
+
+      <SectionDivider />
+
+      {/* Experiences — Video Highlights */}
+      <div className="section-reveal">
+      <ExperiencesSection
+        maleData={maleData}
+        femaleData={femaleData}
+        leagueData={leagueData}
         cmsSections={cmsSections}
         cmsSettings={cms}
         onEnterApp={enterApp}
@@ -379,12 +364,9 @@ export function LandingPage() {
       <ChampionsSection
         maleData={maleData}
         femaleData={femaleData}
-        leagueData={leagueData}
         isDataLoading={isDataLoading}
         cmsSections={cmsSections}
         setSelectedPlayer={setSelectedPlayer}
-        championVideoUrl={cms.champion_video_url}
-        onVideoPlay={openVideoModal}
       />
       </div>
 
@@ -397,18 +379,6 @@ export function LandingPage() {
         femaleData={femaleData}
         isDataLoading={isDataLoading}
         cmsSections={cmsSections}
-        setSelectedPlayer={setSelectedPlayer}
-      />
-      </div>
-
-      <SectionDivider />
-
-      {/* Player Spotlight — Featured #1 players */}
-      <div className="section-reveal">
-      <PlayerSpotlight
-        maleData={maleData}
-        femaleData={femaleData}
-        isDataLoading={isDataLoading}
         setSelectedPlayer={setSelectedPlayer}
       />
       </div>
@@ -435,81 +405,23 @@ export function LandingPage() {
 
       <SectionDivider />
 
-      {/* Leaderboard — Peringkat Klub & Pemain */}
+      {/* How It Works */}
       <div className="section-reveal">
-      <ClubLeaderboard
-        onClubClick={(club) => setSelectedClub({
-          id: club.id,
-          name: club.name,
-          logo: club.logo,
-          wins: club.wins,
-          losses: club.losses,
-          points: club.points,
-          gameDiff: club.gameDiff,
-        })}
-        onPlayerClick={(player) => {
-          const searchDivision = player.division || 'male';
-          const data = searchDivision === 'male' ? maleData : femaleData;
-          const found = data?.topPlayers?.find(p => p.id === player.id);
-          if (found) {
-            setSelectedPlayer({ ...found, division: searchDivision });
-          } else {
-            setSelectedPlayer({
-              id: player.id,
-              name: player.name || player.gamertag,
-              gamertag: player.gamertag,
-              avatar: player.avatar,
-              tier: player.tier || 'B',
-              points: player.points || 0,
-              totalWins: player.totalWins || 0,
-              streak: player.streak || 0,
-              maxStreak: player.maxStreak || 0,
-              totalMvp: player.totalMvp || 0,
-              matches: player.matches || 0,
-              division: searchDivision,
-              club: player.club || undefined,
-            });
-          }
-        }}
-      />
+      <HowItWorksSection cmsSettings={cms} />
       </div>
 
       <SectionDivider />
 
-      {/* Dream / CTA */}
+      {/* CTA — Call to Action */}
       <div className="section-reveal">
-      <DreamSection
-        maleData={maleData}
-        femaleData={femaleData}
-        leagueData={leagueData}
-        nextSeason={nextSeason}
-        completedSeason={completedSeason}
-        cmsSections={cmsSections}
+      <CTASection
+        onEnterCommunity={enterCommunity}
+        onRegister={() => setRegistrationModalOpen(true)}
         cmsSettings={cms}
-        onEnterApp={enterApp}
-        openDonationModal={openDonationModal}
-        onVideoPlay={openVideoModal}
       />
       </div>
 
       <LandingFooter
-        cmsFooterText={cmsFooterText}
-        cmsFooterTagline={cmsFooterTagline}
-        cmsLogo={cmsLogo}
-        cmsSiteTitle={cmsSiteTitle}
-        cmsHeroTitle={cmsHeroTitle}
-        cmsHeroSubtitle={cmsHeroSubtitle}
-        cmsSettings={cms}
-        scrollToSection={scrollToSection}
-      />
-
-      {/* ========== DONATION MODAL (Landing — Donasi only, no Sawer toggle) ========== */}
-      <DonationModal
-        open={donationModalOpen}
-        onOpenChange={setDonationModalOpen}
-        defaultType={donationModalType}
-        defaultAmount={donationModalAmount}
-        hideSawer
         cmsSettings={cms}
       />
 

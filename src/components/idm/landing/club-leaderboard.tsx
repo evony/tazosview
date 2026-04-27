@@ -62,18 +62,18 @@ const TAB_CONFIG: Record<LeaderboardTab, { icon: typeof Swords; label: string; d
   },
   'club-liga': {
     icon: Shield,
-    label: 'Klub Liga',
-    desc: 'Poin dari hasil pertandingan Liga',
+    label: 'Klub Tarkam IDM',
+    desc: 'Poin dari hasil pertandingan Tarkam',
   },
   'player-male': {
     icon: Users,
     label: 'Pemain Male',
-    desc: 'Peringkat pemain divisi male',
+    desc: 'Peringkat pemain Tarkam male',
   },
   'player-female': {
     icon: Users,
     label: 'Pemain Female',
-    desc: 'Peringkat pemain divisi female',
+    desc: 'Peringkat pemain Tarkam female',
   },
 };
 
@@ -392,11 +392,10 @@ export function ClubLeaderboard({ onClubClick, onPlayerClick }: ClubLeaderboardP
   };
 
   return (
-    <section id="leaderboard" className="relative py-24 px-4 overflow-hidden">
+    <section id="leaderboard" className="relative py-24 px-4 overflow-hidden bg-[#0d0d1a]">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-background/98 to-background" />
-      <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: 'radial-gradient(circle, rgba(212,168,83,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(212,168,83,0.06) 0%, transparent 50%), radial-gradient(ellipse at 20% 60%, rgba(229,190,74,0.03) 0%, transparent 40%), radial-gradient(ellipse at 80% 60%, rgba(212,168,83,0.03) 0%, transparent 40%)' }} />
+      <div className="absolute inset-0 opacity-[0.012]" style={{ backgroundImage: 'radial-gradient(circle, rgba(212,168,83,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(212,168,83,0.05) 0%, transparent 50%), radial-gradient(ellipse at 20% 60%, rgba(6,182,212,0.02) 0%, transparent 40%), radial-gradient(ellipse at 80% 60%, rgba(168,85,247,0.02) 0%, transparent 40%)' }} />
 
       <div className="relative z-10 max-w-5xl mx-auto">
         <SectionHeader
@@ -417,8 +416,8 @@ export function ClubLeaderboard({ onClubClick, onPlayerClick }: ClubLeaderboardP
                 onClick={() => { setActiveTab(key); setShowAll(false); }}
                 className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-semibold transition-all duration-300 cursor-pointer ${
                   isActive
-                    ? 'bg-idm-gold-warm/15 text-idm-gold-warm border border-idm-gold-warm/30 shadow-[0_0_16px_rgba(212,168,83,0.15)]'
-                    : 'bg-white/[0.04] text-muted-foreground border border-white/[0.08] hover:bg-white/[0.08] hover:text-foreground'
+                    ? 'bg-[#d4a853]/15 text-[#d4a853] border border-[#d4a853]/30 shadow-[0_0_16px_rgba(212,168,83,0.15)]'
+                    : 'bg-[#d4a853]/[0.04] text-[#a09880] border border-[#d4a853]/10 hover:bg-[#d4a853]/[0.08] hover:text-[#d4a853]'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -430,7 +429,7 @@ export function ClubLeaderboard({ onClubClick, onPlayerClick }: ClubLeaderboardP
         </div>
 
         {/* Tab description */}
-        <p className="text-center text-[11px] text-muted-foreground/60 mb-6">
+        <p className="text-center text-[11px] text-[#a09880]/60 mb-6">
           {TAB_CONFIG[activeTab].desc}
         </p>
 
@@ -463,8 +462,8 @@ export function ClubLeaderboard({ onClubClick, onPlayerClick }: ClubLeaderboardP
             ) : allClubs.length === 0 ? (
               <AnimatedEmptyState
                 icon={Trophy}
-                message={clubType === 'tarkam' ? 'Belum ada data klasemen tarkam' : 'Belum ada data klasemen liga'}
-                hint={clubType === 'tarkam' ? 'Club akan muncul setelah anggotanya bermain di tarkam' : 'Club akan muncul setelah pertandingan liga dimulai'}
+                message={clubType === 'tarkam' ? 'Belum ada data klasemen Tarkam' : 'Belum ada data klasemen Tarkam IDM'}
+                hint={clubType === 'tarkam' ? 'Club akan muncul setelah anggotanya bermain di Tarkam' : 'Club akan muncul setelah pertandingan Tarkam dimulai'}
               />
             ) : (
               <>
@@ -487,11 +486,11 @@ export function ClubLeaderboard({ onClubClick, onPlayerClick }: ClubLeaderboardP
                   <div className="mt-8 text-center">
                     <button
                       onClick={() => setShowAll(true)}
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-idm-gold-warm/20 bg-idm-gold-warm/5 text-idm-gold-warm text-sm font-semibold transition-all duration-300 hover:bg-idm-gold-warm/10 hover:border-idm-gold-warm/30 hover:shadow-[0_0_20px_rgba(212,168,83,0.15)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#d4a853]/20 bg-[#d4a853]/5 text-[#d4a853] text-sm font-semibold transition-all duration-300 hover:bg-[#d4a853]/10 hover:border-[#d4a853]/30 hover:shadow-[0_0_20px_rgba(212,168,83,0.15)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     >
                       Lihat Semua Club
                       <ChevronRight className="w-4 h-4" />
-                      <span className="text-[10px] text-muted-foreground">({allClubs.length} club)</span>
+                      <span className="text-[10px] text-[#a09880]">({allClubs.length} club)</span>
                     </button>
                   </div>
                 )}
@@ -499,7 +498,7 @@ export function ClubLeaderboard({ onClubClick, onPlayerClick }: ClubLeaderboardP
                   <div className="mt-6 text-center">
                     <button
                       onClick={() => setShowAll(false)}
-                      className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/[0.08] bg-white/[0.03] text-muted-foreground text-sm font-medium transition-all duration-200 hover:text-foreground hover:bg-white/[0.06] cursor-pointer"
+                      className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#d4a853]/10 bg-[#d4a853]/[0.03] text-[#a09880] text-sm font-medium transition-all duration-200 hover:text-[#d4a853] hover:bg-[#d4a853]/[0.06] cursor-pointer"
                     >
                       Tampilkan Lebih Sedikit
                     </button>
@@ -528,7 +527,7 @@ export function ClubLeaderboard({ onClubClick, onPlayerClick }: ClubLeaderboardP
             ) : allPlayers.length === 0 ? (
               <AnimatedEmptyState
                 icon={Users}
-                message={playerDivision === 'male' ? 'Belum ada pemain divisi male' : 'Belum ada pemain divisi female'}
+                message={playerDivision === 'male' ? 'Belum ada pemain Tarkam male' : 'Belum ada pemain Tarkam female'}
                 hint="Pemain akan muncul setelah terdaftar dan bermain"
               />
             ) : (
@@ -552,11 +551,11 @@ export function ClubLeaderboard({ onClubClick, onPlayerClick }: ClubLeaderboardP
                   <div className="mt-8 text-center">
                     <button
                       onClick={() => setShowAll(true)}
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-idm-gold-warm/20 bg-idm-gold-warm/5 text-idm-gold-warm text-sm font-semibold transition-all duration-300 hover:bg-idm-gold-warm/10 hover:border-idm-gold-warm/30 hover:shadow-[0_0_20px_rgba(212,168,83,0.15)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#d4a853]/20 bg-[#d4a853]/5 text-[#d4a853] text-sm font-semibold transition-all duration-300 hover:bg-[#d4a853]/10 hover:border-[#d4a853]/30 hover:shadow-[0_0_20px_rgba(212,168,83,0.15)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     >
                       Lihat Semua Pemain
                       <ChevronRight className="w-4 h-4" />
-                      <span className="text-[10px] text-muted-foreground">({allPlayers.length} pemain)</span>
+                      <span className="text-[10px] text-[#a09880]">({allPlayers.length} pemain)</span>
                     </button>
                   </div>
                 )}
@@ -564,7 +563,7 @@ export function ClubLeaderboard({ onClubClick, onPlayerClick }: ClubLeaderboardP
                   <div className="mt-6 text-center">
                     <button
                       onClick={() => setShowAll(false)}
-                      className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/[0.08] bg-white/[0.03] text-muted-foreground text-sm font-medium transition-all duration-200 hover:text-foreground hover:bg-white/[0.06] cursor-pointer"
+                      className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#d4a853]/10 bg-[#d4a853]/[0.03] text-[#a09880] text-sm font-medium transition-all duration-200 hover:text-[#d4a853] hover:bg-[#d4a853]/[0.06] cursor-pointer"
                     >
                       Tampilkan Lebih Sedikit
                     </button>

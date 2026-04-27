@@ -76,8 +76,8 @@ export async function GET() {
     activities.push({
       id: `reg-${p.id}`,
       type: 'registration',
-      title: 'New Player Registered',
-      description: `${p.gamertag} joined the league`,
+      title: 'Pemain Baru Bergabung',
+      description: `${p.gamertag} bergabung di tarkam`,
       icon: '\u{1F44B}',
       timestamp: p.createdAt.toISOString(),
       division: p.division,
@@ -94,7 +94,7 @@ export async function GET() {
     activities.push({
       id: `match-${m.id}`,
       type: 'match_result',
-      title: 'Match Completed',
+      title: 'Pertandingan Selesai',
       description: `${team1Name} ${s1}-${s2} ${team2Name}`,
       icon: '\u2694\uFE0F',
       timestamp: m.completedAt?.toISOString() || m.createdAt.toISOString(),
@@ -107,8 +107,8 @@ export async function GET() {
     activities.push({
       id: `don-${d.id}`,
       type: 'donation',
-      title: 'Donation Received',
-      description: `${d.donorName} donated ${formatRupiah(d.amount)}`,
+      title: 'Donasi Diterima',
+      description: `${d.donorName} menyawer ${formatRupiah(d.amount)}`,
       icon: '\u2764\uFE0F',
       timestamp: d.createdAt.toISOString(),
     });
@@ -119,8 +119,8 @@ export async function GET() {
     activities.push({
       id: `ach-${a.id}`,
       type: 'achievement',
-      title: 'Achievement Unlocked',
-      description: `${a.player.gamertag} earned ${a.achievement.displayName}`,
+      title: 'Pencapaian Baru',
+      description: `${a.player.gamertag} mendapat ${a.achievement.displayName}`,
       icon: a.achievement.icon || '\u{1F3C6}',
       timestamp: a.earnedAt.toISOString(),
       division: a.player.division,

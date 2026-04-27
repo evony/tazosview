@@ -61,7 +61,7 @@ export function Dashboard() {
           {/* Top row — badges */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <Badge className={`${accentBg} ${accentText} border-0 text-xs ${isMale ? 'division-badge-glow-male' : 'division-badge-glow-female'}`}>
-              {division === 'male' ? '🕺' : '💃'} {division.charAt(0).toUpperCase() + division.slice(1)} Division
+              {division === 'male' ? '🕺' : '💃'} {division.charAt(0).toUpperCase() + division.slice(1)} Tarkam
             </Badge>
             <Badge variant="outline" className="text-[10px]">{data.season.name}</Badge>
             {hasActive && (

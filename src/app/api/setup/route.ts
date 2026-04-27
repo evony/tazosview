@@ -341,14 +341,7 @@ export async function POST(request: Request) {
         });
       }
 
-      // Set Season 1 Female champion
-      const maximousProfile = await db.clubProfile.findFirst({ where: { name: 'MAXIMOUS' } });
-      if (maximousProfile) {
-        await db.season.update({
-          where: { id: femaleSeason.id },
-          data: { championClubId: maximousProfile.id },
-        });
-      }
+      // Champion is NOT auto-set — admin must manually set champion via Admin Panel > Season
 
       results.push(`Database seeded: ${maleData.length} male + ${femaleData.length} female players, ${allClubNames.length} clubs, 3 seasons`);
     } else {

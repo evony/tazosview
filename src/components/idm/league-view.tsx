@@ -463,7 +463,7 @@ export function LeagueView() {
                   {d.season && <Badge className="bg-muted/50 text-muted-foreground text-[9px] border-0">{d.season.name}</Badge>}
                 </div>
                 <h2 className="text-xl lg:text-2xl font-bold" style={{ background: 'linear-gradient(135deg, var(--idm-gold-warm), #f5d78e, var(--idm-gold-warm))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  IDM League
+                  Tarkam IDM
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">Club bertanding — peserta bebas mix dari divisi male dan female</p>
               </div>

@@ -523,7 +523,7 @@ export function MatchDayCenter() {
                 </div>
                 <div className="flex items-center gap-2">
                   <ShareButton
-                    title={t?.name || 'IDM League'}
+                    title={t?.name || 'Tarkam IDM'}
                     description={`Week ${t?.weekNumber ?? '-'} — ${division === 'male' ? 'Male' : 'Female'} Division`}
                     variant="icon"
                   />

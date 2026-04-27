@@ -24,8 +24,8 @@ export function SocialShareButton({ playerGamertag, playerId, className = '' }: 
 
   const handleShare = useCallback(async () => {
     const shareData = {
-      title: `${playerGamertag} — IDM League Profile`,
-      text: `Lihat profil ${playerGamertag} di IDM League!`,
+      title: `${playerGamertag} — Tarkam IDM Profile`,
+      text: `Lihat profil ${playerGamertag} di Tarkam IDM!`,
       url: playerUrl,
     };
 

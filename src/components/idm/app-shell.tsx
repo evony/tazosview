@@ -3,9 +3,11 @@
 import { useAppStore, type AppView } from '@/lib/store';
 import Image from 'next/image';
 import {
-  Gamepad2, Trophy, Users, Shield,
-  Home, Flame, Radio, UserPlus, LogOut, Target, KeyRound,
-  PanelLeftClose, ChevronRight, Download, X, UserCircle
+  Users, Shield,
+  Home, Flame, LogOut, KeyRound,
+  PanelLeftClose, ChevronRight, Download, X, UserCircle,
+  Zap, Star, HelpCircle, Bell,
+  Gamepad2, Trophy, Radio, Target
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CasinoHeroSkeleton, StatsRowSkeleton } from './ui/skeleton';
@@ -17,6 +19,7 @@ import { DonationPopup } from './donation-popup';
 import { NotificationStack } from './notification-stack';
 import { useEffect, useState } from 'react';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
+import { useShellTheme } from '@/hooks/use-shell-theme';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePWA } from '@/hooks/use-pwa';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -60,51 +63,36 @@ const RegistrationForm = dynamic(() => import('./registration-form').then(m => (
 const MyTournamentCard = dynamic(() => import('./my-tournament-card').then(m => ({ default: m.MyTournamentCard })), {
   loading: () => <div className="max-w-lg mx-auto"><div className="skeleton-shimmer h-96 rounded-2xl" /></div>,
 });
+const CommunityDashboard = dynamic(() => import('./community-dashboard').then(m => ({ default: m.CommunityDashboard })), {
+  loading: () => viewLoading,
+});
 
-const navItems: { id: AppView; label: string; icon: typeof Gamepad2 }[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: Gamepad2 },
-  { id: 'mytournament', label: 'Tour Saya', icon: Target },
-  { id: 'matchday', label: 'Match Day', icon: Radio },
-  { id: 'league', label: 'League', icon: Trophy },
+/* ─── Navigation Items — Community-focused ─── */
+type NavItemDef = {
+  id: AppView;
+  label: string;
+  icon: typeof Home;
+  division?: 'male' | 'female';
+  isSubItem?: boolean;
+};
+
+const communityNavItems: NavItemDef[] = [
+  { id: 'community', label: 'Komunitas', icon: Users },
+  { id: 'dashboard', label: 'Male', icon: Zap, division: 'male' },
+  { id: 'dashboard', label: 'Female', icon: Star, division: 'female' },
 ];
 
-const actionItems: { id: AppView; label: string; icon: typeof UserPlus }[] = [
-  { id: 'register', label: 'Daftar', icon: UserPlus },
+/* Division sub-menu items — shown when a division is active */
+const divisionSubItems: NavItemDef[] = [
+  { id: 'mytournament', label: 'Tour Saya', icon: Target, isSubItem: true },
+  { id: 'matchday', label: 'Match Day', icon: Radio, isSubItem: true },
+  { id: 'league', label: 'League', icon: Trophy, isSubItem: true },
 ];
-
-function DivisionToggle({ compact = false }: { compact?: boolean } = {}) {
-  const { division, setDivision } = useAppStore();
-  const baseClass = compact ? 'px-3 py-2 text-[11px]' : 'px-3 py-1.5 text-xs';
-  return (
-    <div className="flex items-center bg-muted rounded-full p-0.5 gap-0.5">
-      <button
-        onClick={() => { setDivision('male'); toast.success('🕺 Male Division'); }}
-        className={`${baseClass} rounded-full font-semibold transition-colors duration-150 ${
-          division === 'male'
-            ? 'bg-idm-male text-white shadow-md'
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        🕺 Male
-      </button>
-      <button
-        onClick={() => { setDivision('female'); toast.success('💃 Female Division'); }}
-        className={`${baseClass} rounded-full font-semibold transition-colors duration-150 ${
-          division === 'female'
-            ? 'bg-idm-female text-white shadow-md'
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        💃 Female
-      </button>
-    </div>
-  );
-}
 
 /* ─── Collapsible Desktop Sidebar ─── */
 function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccountModal: () => void; onOpenAdminModal: () => void }) {
-  const { currentView, setCurrentView, division, adminAuth, clearAdminAuth, sidebarCollapsed, toggleSidebarCollapsed, playerAuth, clearPlayerAuth } = useAppStore();
-  const dt = useDivisionTheme();
+  const { currentView, setCurrentView, division, setDivision, adminAuth, clearAdminAuth, sidebarCollapsed, toggleSidebarCollapsed, playerAuth, clearPlayerAuth } = useAppStore();
+  const dt = useShellTheme();
 
   const { data: leagueSummary } = useQuery<{ seasonNumber: number; status: string; completedWeeks: number; totalWeeks: number; percentage: number }>({
     queryKey: ['league-summary'],
@@ -145,7 +133,7 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <h1 className="text-gradient-fury text-base font-bold leading-tight truncate">IDM League</h1>
+            <h1 className="text-gradient-fury text-base font-bold leading-tight truncate">Tarkam IDM</h1>
             <p className="text-[10px] text-muted-foreground">Fan Made Edition</p>
           </div>
         )}
@@ -170,13 +158,6 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
         </button>
       </div>
 
-      {/* Division Toggle */}
-      {!collapsed && (
-        <div className="px-5 pb-3">
-          <DivisionToggle />
-        </div>
-      )}
-
       <div className="section-divider !my-0" />
 
       {/* Navigation */}
@@ -188,42 +169,112 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
           iconBg={currentView === 'landing' ? dt.iconBg : ''}
           activeGlow={currentView === 'landing'}
           division={division}
+          navActive={dt.navActive}
           onClick={() => setCurrentView('landing')}
         />
 
         {!collapsed && (
           <div className="px-3 py-1.5">
-            <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">Navigasi</p>
+            <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">Arena</p>
           </div>
         )}
 
         {collapsed && <div className="my-1 mx-auto w-6 h-px bg-border/40" />}
 
-        {/* Action items */}
-        {actionItems.map(item => (
-          <NavButton
-            key={item.id} icon={item.icon} label={item.label} collapsed={collapsed}
-            isActive={currentView === item.id}
-            iconBg={currentView === item.id ? dt.iconBg : ''}
-            activeGlow={currentView === item.id}
-            division={division}
-            onClick={() => setCurrentView(item.id)}
-          />
-        ))}
+        {/* Community + Division Nav Items */}
+        {communityNavItems.map((item) => {
+          const isActive = item.division
+            ? currentView === item.id && division === item.division
+            : currentView === item.id;
 
-        {/* Nav items */}
-        {navItems.map(item => (
-          <NavButton
-            key={item.id} icon={item.icon} label={item.label} collapsed={collapsed}
-            isActive={currentView === item.id}
-            iconBg={currentView === item.id ? dt.iconBg : ''}
-            activeGlow={currentView === item.id}
-            division={division}
-            onClick={() => setCurrentView(item.id)}
-          />
-        ))}
+          // Division-specific icon backgrounds and accent colors
+          let iconBg = '';
+          if (isActive) {
+            if (item.division === 'male') iconBg = 'bg-idm-male/15';
+            else if (item.division === 'female') iconBg = 'bg-idm-female/15';
+            else iconBg = dt.iconBg;
+          }
+
+          return (
+            <NavButton
+              key={`nav-${item.label}`}
+              icon={item.icon}
+              label={item.label}
+              collapsed={collapsed}
+              isActive={isActive}
+              iconBg={iconBg}
+              activeGlow={isActive}
+              division={item.division || division}
+              navActive={dt.navActive}
+              isCommunity={!item.division}
+              onClick={() => {
+                if (item.division) setDivision(item.division);
+                setCurrentView(item.id);
+              }}
+            />
+          );
+        })}
+
+        {/* ═══ Division Sub-menu — Tour Saya, Match Day, League ═══ */}
+        {(['dashboard', 'mytournament', 'matchday', 'league'] as AppView[]).includes(currentView) && (
+          <>
+            {collapsed && <div className="my-1 mx-auto w-6 h-px bg-border/40" />}
+            {!collapsed && (
+              <div className="px-3 py-1.5 flex items-center gap-1.5">
+                <div className={`h-px flex-1 bg-border/40`} />
+                <span className={`text-[9px] font-semibold uppercase tracking-widest ${division === 'male' ? 'text-idm-male/60' : 'text-idm-female/60'}`}>
+                  {division === 'male' ? '🕺 Male' : '💃 Female'}
+                </span>
+                <div className={`h-px flex-1 bg-border/40`} />
+              </div>
+            )}
+            {divisionSubItems.map((item) => (
+              <NavButton
+                key={`sub-${item.id}`}
+                icon={item.icon}
+                label={item.label}
+                collapsed={collapsed}
+                isActive={currentView === item.id}
+                iconBg={currentView === item.id ? (division === 'male' ? 'bg-idm-male/15' : 'bg-idm-female/15') : ''}
+                activeGlow={currentView === item.id}
+                division={division}
+                isSubItem={!collapsed}
+                navActive={dt.navActive}
+                onClick={() => setCurrentView(item.id)}
+              />
+            ))}
+          </>
+        )}
 
         {collapsed && <div className="my-1 mx-auto w-6 h-px bg-border/40" />}
+
+        {!collapsed && (
+          <div className="px-3 py-1.5">
+            <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">Lainnya</p>
+          </div>
+        )}
+
+        {/* Bantuan */}
+        <NavButton
+          icon={HelpCircle} label="Bantuan" collapsed={collapsed}
+          isActive={false}
+          iconBg=""
+          activeGlow={false}
+          division={division}
+          navActive={dt.navActive}
+          onClick={() => toast.info('Hubungi admin di Discord untuk bantuan')}
+        />
+
+        {/* Notifikasi */}
+        <NavButton
+          icon={Bell} label="Notifikasi" collapsed={collapsed}
+          isActive={false}
+          iconBg=""
+          activeGlow={false}
+          division={division}
+          navActive={dt.navActive}
+          onClick={() => toast.info('Belum ada notifikasi baru')}
+        />
 
         {/* Admin — open unified modal if not authenticated */}
         <NavButton
@@ -232,6 +283,7 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
           iconBg={currentView === 'admin' ? dt.iconBg : ''}
           activeGlow={currentView === 'admin'}
           division={division}
+          navActive={dt.navActive}
           onClick={() => adminAuth.isAuthenticated ? setCurrentView('admin') : onOpenAdminModal()}
         />
       </nav>
@@ -241,17 +293,17 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
         <>
           {/* Player Account Status */}
           {playerAuth.isAuthenticated && playerAuth.account && (
-            <div className={`mx-4 p-3 rounded-xl ${division === 'male' ? 'bg-idm-male/5 border border-idm-male/20' : 'bg-idm-female/5 border border-idm-female/20'} mb-2`}>
+            <div className={`mx-4 p-3 rounded-xl ${currentView === 'community' ? 'bg-idm-gold-warm/5 border border-idm-gold-warm/20' : division === 'male' ? 'bg-idm-male/5 border border-idm-male/20' : 'bg-idm-female/5 border border-idm-female/20'} mb-2`}>
               <div className="flex items-center gap-2 mb-2">
-                <UserCircle className={`w-3 h-3 ${division === 'male' ? 'text-idm-male' : 'text-idm-female'}`} />
-                <span className={`text-[10px] font-semibold ${division === 'male' ? 'text-idm-male' : 'text-idm-female'} uppercase tracking-wider`}>
+                <UserCircle className={`w-3 h-3 ${currentView === 'community' ? 'text-idm-gold-warm' : division === 'male' ? 'text-idm-male' : 'text-idm-female'}`} />
+                <span className={`text-[10px] font-semibold ${currentView === 'community' ? 'text-idm-gold-warm' : division === 'male' ? 'text-idm-male' : 'text-idm-female'} uppercase tracking-wider`}>
                   Akun Saya
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-foreground font-medium truncate">{playerAuth.account.player.gamertag}</span>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="sm" className={`h-6 w-6 p-0 text-muted-foreground ${division === 'male' ? 'hover:text-idm-male hover:bg-idm-male/10' : 'hover:text-idm-female hover:bg-idm-female/10'}`}
+                  <Button variant="ghost" size="sm" className={`h-6 w-6 p-0 text-muted-foreground ${currentView === 'community' ? 'hover:text-idm-gold-warm hover:bg-idm-gold-warm/10' : division === 'male' ? 'hover:text-idm-male hover:bg-idm-male/10' : 'hover:text-idm-female hover:bg-idm-female/10'}`}
                     onClick={onOpenAccountModal} title="Akun Saya">
                     <UserCircle className="w-3 h-3" />
                   </Button>
@@ -310,7 +362,7 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
             </div>
             <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
               <div
-                className={`h-full rounded-full bg-gradient-to-r ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} transition-all duration-700`}
+                className={`h-full rounded-full bg-gradient-to-r ${currentView === 'community' ? 'from-idm-gold-warm to-idm-amber' : division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} transition-all duration-700`}
                 style={{ width: `${leagueSummary?.percentage || 0}%` }}
               />
             </div>
@@ -335,12 +387,16 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
 }
 
 /* ─── Nav Button — shared between collapsed & expanded ─── */
-function NavButton({ icon: Icon, label, collapsed, isActive, iconBg, activeGlow, division, onClick }: {
+function NavButton({ icon: Icon, label, collapsed, isActive, iconBg, activeGlow, division, isSubItem, navActive, isCommunity, onClick }: {
   icon: typeof Home; label: string; collapsed: boolean;
   isActive: boolean; iconBg: string; activeGlow: boolean; division: string;
+  isSubItem?: boolean; navActive: string; isCommunity?: boolean;
   onClick: () => void;
 }) {
-  const dt = useDivisionTheme();
+  // Resolve accent color: community=gold, male=cyan, female=purple
+  const accentBar = isCommunity ? 'bg-idm-gold-warm' : division === 'male' ? 'bg-idm-male' : 'bg-idm-female';
+  const accentBorder = isCommunity ? 'border-l-idm-gold-warm' : division === 'male' ? 'border-l-idm-male' : 'border-l-idm-female';
+  const accentDot = accentBar;
 
   if (collapsed) {
     return (
@@ -349,7 +405,7 @@ function NavButton({ icon: Icon, label, collapsed, isActive, iconBg, activeGlow,
         title={label}
         className={`w-full flex items-center justify-center py-2.5 rounded-lg transition-all duration-200 relative ${
           isActive
-            ? `${dt.navActive}`
+            ? navActive
             : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
         }`}
       >
@@ -357,7 +413,7 @@ function NavButton({ icon: Icon, label, collapsed, isActive, iconBg, activeGlow,
           <Icon className="w-4 h-4" />
         </div>
         {isActive && (
-          <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full ${division === 'male' ? 'bg-idm-male' : 'bg-idm-female'}`} />
+          <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full ${accentBar}`} />
         )}
       </button>
     );
@@ -367,47 +423,40 @@ function NavButton({ icon: Icon, label, collapsed, isActive, iconBg, activeGlow,
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 text-sm font-medium transition-all duration-200 rounded-lg ${
+        isSubItem ? 'pl-10' : ''
+      } ${
         isActive
-          ? `${dt.navActive} border-l-2 ${division === 'male' ? 'border-l-idm-male' : 'border-l-idm-female'}`
-          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+          ? `${navActive} border-l-2 ${accentBorder}`
+          : isSubItem
+            ? 'text-muted-foreground/70 hover:bg-muted/40 hover:text-foreground'
+            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
       }`}
     >
-      <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${iconBg} shrink-0`}>
-        <Icon className="w-4 h-4" />
+      <div className={`flex items-center justify-center ${isSubItem ? 'w-6 h-6' : 'w-8 h-8'} rounded-lg ${iconBg} shrink-0`}>
+        <Icon className={`${isSubItem ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
       </div>
-      <span className="py-2.5">{label}</span>
+      <span className={`py-2.5 ${isSubItem ? 'text-xs' : ''}`}>{label}</span>
       {isActive && (
-        <div className={`ml-auto w-1.5 h-1.5 rounded-full ${division === 'male' ? 'bg-idm-male' : 'bg-idm-female'}`} />
+        <div className={`ml-auto w-1.5 h-1.5 rounded-full ${accentDot}`} />
       )}
     </button>
   );
 }
 
-
-
 export function AppShell() {
-  const { currentView, donationPopup, hideDonationPopup, division, adminAuth, setAdminAuth, setCurrentView, playerAuth, setPlayerAuth } = useAppStore();
-  const dt = useDivisionTheme();
+  const { currentView, donationPopup, hideDonationPopup, division, setDivision, adminAuth, setAdminAuth, setCurrentView, playerAuth, setPlayerAuth } = useAppStore();
+  const dt = useShellTheme();
   const { hapticTap } = useHaptic();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const { canInstall: _canInstall, promptInstall } = usePWA();
-  const [canInstall, setCanInstall] = useState(_canInstall);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !!localStorage.getItem('pwa-install-dismissed');
+  });
+  const canInstall = _canInstall && !dismissed;
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [accountModalDefaultTab, setAccountModalDefaultTab] = useState<'peserta' | 'admin'>('peserta');
-
-  // Sync with PWA hook + localStorage dismissal
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (_canInstall && !localStorage.getItem('pwa-install-dismissed')) {
-        setCanInstall(true);
-      } else {
-        setCanInstall(false);
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [_canInstall]);
 
   // Check admin session on mount
   useEffect(() => {
@@ -463,6 +512,7 @@ export function AppShell() {
       case 'league': return <LeagueView />;
       case 'admin': return adminAuth.isAuthenticated ? <AdminPanel /> : (() => { /* Open unified modal on admin tab instead of inline login */ setTimeout(() => { setAccountModalDefaultTab('admin'); setAccountModalOpen(true); setCurrentView('dashboard'); }, 0); return null; })();
       case 'register': return <RegistrationForm />;
+      case 'community': return <CommunityDashboard />;
       case 'mytournament': return <MyTournamentCard />;
       default: return <Dashboard />;
     }
@@ -476,14 +526,22 @@ export function AppShell() {
           <div className="w-7 h-7 rounded-lg overflow-hidden">
             <Image src="/logo1.webp" alt="IDM" width={28} height={28} className="w-full h-full object-cover" />
           </div>
-          <span className="text-gradient-fury text-sm font-bold">IDM League</span>
+          <span className="text-gradient-fury text-sm font-bold">Tarkam IDM</span>
         </div>
         <div className="flex items-center gap-1">
-          <DivisionToggle compact />
           <Button
             variant="ghost"
             size="icon"
-            className={`h-9 w-9 ${playerAuth.isAuthenticated ? (division === 'male' ? 'text-idm-male' : 'text-idm-female') : adminAuth.isAuthenticated ? 'text-idm-gold-warm' : 'text-muted-foreground'}`}
+            className="h-9 w-9 text-muted-foreground"
+            onClick={() => toast.info('Belum ada notifikasi baru')}
+            title="Notifikasi"
+          >
+            <Bell className="w-4.5 h-4.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-9 w-9 ${playerAuth.isAuthenticated ? (currentView === 'community' ? 'text-idm-gold-warm' : division === 'male' ? 'text-idm-male' : 'text-idm-female') : adminAuth.isAuthenticated ? 'text-idm-gold-warm' : 'text-muted-foreground'}`}
             onClick={() => { hapticTap(); setAccountModalDefaultTab('peserta'); setAccountModalOpen(true); }}
             title={playerAuth.isAuthenticated ? `Akun: ${playerAuth.account?.player.gamertag}` : 'Masuk Akun'}
           >
@@ -496,7 +554,7 @@ export function AppShell() {
       {canInstall && !dismissed && (
         <div className={`lg:hidden ${dt.glassStrong} border-b ${dt.border} px-3 py-2 flex items-center gap-2`}>
           <Download className="w-4 h-4 text-idm-gold-warm shrink-0" />
-          <p className="text-[11px] flex-1">Install IDM League di HP-mu untuk akses cepat!</p>
+          <p className="text-[11px] flex-1">Install Tarkam IDM di HP-mu untuk akses cepat!</p>
           <button
             onClick={() => { promptInstall(); }}
             className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black shrink-0"
@@ -504,7 +562,7 @@ export function AppShell() {
             Install
           </button>
           <button
-            onClick={() => { setDismissed(true); setCanInstall(false); localStorage.setItem('pwa-install-dismissed', '1'); }}
+            onClick={() => { setDismissed(true); localStorage.setItem('pwa-install-dismissed', '1'); }}
             className="p-1 text-muted-foreground hover:text-foreground shrink-0"
           >
             <X className="w-3.5 h-3.5" />
@@ -518,41 +576,41 @@ export function AppShell() {
 
         {/* Main Content */}
         <main className={`flex-1 min-w-0 overflow-y-auto ${dt.bgMesh}`}>
-          {isMobile ? (
-            <PullToRefresh onRefresh={async () => { queryClient.invalidateQueries(); }}>
-              <div
-                key={currentView}
-                className={`pt-6 px-3 pb-28 sm:pt-6 sm:px-4 sm:pb-28 lg:p-8 lg:pb-8 ${currentView === 'admin' ? 'max-w-[2200px]' : currentView === 'dashboard' || currentView === 'mytournament' ? '' : 'max-w-[1600px]'} mx-auto`}
-              >
-                {renderView()}
-              </div>
-            </PullToRefresh>
-          ) : (
-            <div
-              key={currentView}
-              className={`pt-6 px-3 pb-28 sm:pt-6 sm:px-4 sm:pb-28 lg:p-8 lg:pb-8 ${currentView === 'admin' ? 'max-w-[2200px]' : currentView === 'dashboard' || currentView === 'mytournament' ? '' : 'max-w-[1600px]'} mx-auto`}
-            >
-              {renderView()}
-            </div>
-          )}
+          {(() => {
+            const contentClass = `pt-6 px-3 pb-28 sm:pt-6 sm:px-4 sm:pb-28 lg:p-8 lg:pb-8 ${currentView === 'admin' ? 'max-w-[2200px]' : currentView === 'dashboard' || currentView === 'mytournament' || currentView === 'community' ? '' : 'max-w-[1600px]'} mx-auto`;
+            const content = <div key={currentView} className={contentClass}>{renderView()}</div>;
+            return isMobile
+              ? <PullToRefresh onRefresh={async () => { queryClient.invalidateQueries(); }}>{content}</PullToRefresh>
+              : content;
+          })()}
         </main>
       </div>
 
-      {/* ═══ FAB: Daftar (Register) — circle bottom-right, above bottom nav ═══ */}
-      <button
-        onClick={() => { hapticTap(); setCurrentView('register'); }}
-        className={`lg:hidden fixed z-[60] right-4 bottom-20 w-12 h-12 rounded-full shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center ${
-          currentView === 'register'
-            ? 'bg-gradient-to-br from-idm-gold-warm to-[#e8d5a3] ring-2 ring-idm-gold-warm/40'
-            : 'bg-gradient-to-br from-idm-gold-warm to-[#e8d5a3]'
-        }`}
-        aria-label="Daftar Turnamen"
-      >
-        <span className="text-lg leading-none">📝</span>
-      </button>
-
-      {/* ═══ Mobile Bottom Nav — 5 items, clean and spacious ═══ */}
+      {/* ═══ Mobile Bottom Nav — 4 items: Home, Komunitas, Male, Female ═══ */}
       <nav className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 ${dt.glassStrong} border-t border-border safe-area-bottom`}>
+        {/* Division sub-nav — appears when in division view */}
+        {(['dashboard', 'mytournament', 'matchday', 'league'] as AppView[]).includes(currentView) && (
+          <div className="flex items-center justify-around px-2 py-1 border-b border-border/40">
+            {divisionSubItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={`mobile-sub-${item.id}`}
+                  onClick={() => { hapticTap(); setCurrentView(item.id); }}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-medium transition-colors duration-200 ${
+                    isActive
+                      ? `${division === 'male' ? 'bg-idm-male/10 text-idm-male' : 'bg-idm-female/10 text-idm-female'}`
+                      : 'text-muted-foreground/60 hover:text-foreground'
+                  }`}
+                >
+                  <Icon className="w-3 h-3" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div className="flex justify-around py-1 px-1">
           {/* Home */}
           <button
@@ -564,26 +622,43 @@ export function AppShell() {
             <Home className="w-5 h-5" />
             <span className="text-[10px] font-medium leading-tight">Home</span>
             {(currentView as AppView) === 'landing' && (
-              <div className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full ${division === 'male' ? 'bg-idm-male' : 'bg-idm-female'}`} />
+              <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-idm-gold-warm" />
             )}
           </button>
 
-          {/* All 4 nav items — evenly spaced */}
-          {navItems.map((navItem) => {
+          {/* Community + Division Nav Items */}
+          {communityNavItems.map((navItem) => {
             const Icon = navItem.icon;
-            const isActive = currentView === navItem.id;
+            const isActive = navItem.division
+              ? currentView === navItem.id && division === navItem.division
+              : currentView === navItem.id;
+            // Division-specific active color
+            const activeColor = navItem.division === 'male'
+              ? 'text-idm-male'
+              : navItem.division === 'female'
+                ? 'text-idm-female'
+                : dt.text;
+            const activeBarColor = navItem.division === 'male'
+              ? 'bg-idm-male'
+              : navItem.division === 'female'
+                ? 'bg-idm-female'
+                : 'bg-idm-gold-warm';
             return (
               <button
-                key={navItem.id}
-                onClick={() => { hapticTap(); setCurrentView(navItem.id); }}
+                key={`mobile-nav-${navItem.label}`}
+                onClick={() => {
+                  hapticTap();
+                  if (navItem.division) setDivision(navItem.division);
+                  setCurrentView(navItem.id);
+                }}
                 className={`flex flex-col items-center justify-center gap-0.5 px-3 py-2 min-h-[44px] rounded-lg transition-colors duration-200 relative ${
-                  isActive ? dt.text : 'text-muted-foreground'
+                  isActive ? activeColor : 'text-muted-foreground'
                 }`}
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-[10px] font-medium leading-tight">{navItem.label}</span>
                 {isActive && (
-                  <div className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full ${division === 'male' ? 'bg-idm-male' : 'bg-idm-female'}`} />
+                  <div className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full ${activeBarColor}`} />
                 )}
               </button>
             );
@@ -608,9 +683,9 @@ export function AppShell() {
         defaultTab={accountModalDefaultTab}
       />
 
-      {/* Footer — desktop only, premium subtle style */}
-      <footer className="mt-auto py-4 text-center text-xs text-muted-foreground border-t border-border/60 hidden lg:block">
-        <span className="text-gradient-fury font-semibold">IDM League</span> — Fan Made Edition © 2026
+      {/* Footer — desktop only, sits at bottom of flex column */}
+      <footer className="shrink-0 py-3 text-center text-[11px] text-muted-foreground/60 border-t border-border/40 hidden lg:block">
+        <span className="text-gradient-fury font-semibold">Tarkam IDM</span> — Fan Made Edition © 2026
       </footer>
     </div>
   );

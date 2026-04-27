@@ -201,6 +201,7 @@ export interface SeasonInfo {
   championClubId: string | null;
   championPlayerId: string | null;
   championPlayer: SeasonChampionPlayer | null;
+  championClub: { id: string; name: string; logo: string | null } | null;
 }
 
 export interface StatsData {

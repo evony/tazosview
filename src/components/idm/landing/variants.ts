@@ -1,26 +1,9 @@
-import type { Variants } from 'framer-motion';
+/* variants.ts — Emptied for backward compatibility.
+   All animation logic has been migrated to CSS keyframes + IntersectionObserver
+   in shared.tsx and globals.css. These empty exports prevent import errors. */
 
-export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
-};
-
-export const fadeLeft: Variants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
-};
-
-export const fadeRight: Variants = {
-  hidden: { opacity: 0, x: 20 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
-};
-
-export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
-};
-
-export const stagger: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-};
+export const fadeUp = {};
+export const fadeLeft = {};
+export const fadeRight = {};
+export const scaleIn = {};
+export const stagger = {};

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Image as ImageIcon, Type, Layout, Save, Plus, Trash2, ChevronDown,
   ChevronUp, Eye, EyeOff, Edit3, X, Loader2, Palette,
-  FileText, Settings2, Globe, Sparkles, PanelTop, PanelBottom, Heart, Link2, Trophy, Shield, Swords
+  FileText, Settings2, Globe, Sparkles, PanelTop, PanelBottom, Heart, Link2, Trophy, Shield, Swords, Flame, Crown, Video, Zap
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,7 +57,8 @@ const sectionIconMap: Record<string, React.ComponentType<{ className?: string }>
   champions: Layout,
   mvp: Layout,
   clubs: Layout,
-  cta: Layout,
+  howitworks: Zap,
+  cta: Flame,
   footer: PanelBottom,
 };
 
@@ -522,6 +523,7 @@ export function CmsPanel() {
       // Reset local form state so fields show fresh data from server after refetch
       setSettingsForm(null);
       qc.invalidateQueries({ queryKey: ['cms-settings'] });
+      qc.invalidateQueries({ queryKey: ['cms-content'] });
       toast.success('Setting berhasil disimpan!');
     },
     onError: (e: Error) => { toast.error(e.message); },
@@ -610,8 +612,8 @@ export function CmsPanel() {
                 {/* Site Identity */}
                 <Card className="border border-border/50">
                   <CardContent className="p-4 space-y-4">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <Palette className="w-4 h-4 text-idm-gold-warm" /> Identitas Situs
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Palette className="w-5 h-5 text-idm-gold-warm" /> Identitas Situs
                       <Badge className="text-[8px] border-0 bg-muted text-muted-foreground">Global</Badge>
                     </h3>
 
@@ -622,7 +624,7 @@ export function CmsPanel() {
                           value={settingsForm.site_title || ''}
                           onChange={(e) => updateSettingsForm({ site_title: e.target.value })}
                           className="text-sm"
-                          placeholder="IDM League"
+                          placeholder="Tarkam IDM"
                         />
                       </div>
                       <CloudinaryImageField
@@ -654,8 +656,8 @@ export function CmsPanel() {
                 {/* Hero Settings */}
                 <Card className="border border-border/50">
                   <CardContent className="p-4 space-y-4">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-idm-gold-warm" /> Hero Section
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-idm-gold-warm" /> Hero Section
                       <Badge className="text-[8px] border-0 bg-idm-gold-warm/10 text-idm-gold-warm">Section 1</Badge>
                     </h3>
 
@@ -737,97 +739,218 @@ export function CmsPanel() {
                   </CardContent>
                 </Card>
 
-                {/* About Section Text Settings — Landing Section #2 (after Hero) */}
+                {/* Kompetisi — Landing Section #3 */}
                 <Card className="border border-border/50">
-                  <CardContent className="p-4 space-y-3">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <Heart className="w-4 h-4 text-idm-gold-warm" /> About / Cerita Kami
-                      <Badge className="text-[8px] border-0 bg-cyan-500/10 text-cyan-400">Section 2</Badge>
-                    </h3>
-                    <p className="text-[10px] text-muted-foreground">Edit teks pada section About di landing page</p>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Origin Story</label>
-                      <Textarea
-                        rows={6}
-                        placeholder="Cerita awal mula IDM League... (pisahkan paragraf dengan baris kosong)"
-                        value={settingsForm.about_origin_story || ''}
-                        onChange={(e) => updateSettingsForm({ about_origin_story: e.target.value })}
-                        className="text-xs resize-y"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Season 1 Success Text</label>
-                      <Textarea
-                        rows={3}
-                        placeholder="Teks tentang keberhasilan Season 1..."
-                        value={settingsForm.about_season1_text || ''}
-                        onChange={(e) => updateSettingsForm({ about_season1_text: e.target.value })}
-                        className="text-xs resize-y"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Bottom Tagline</label>
-                      <Input
-                        placeholder="Contoh: By Players, For Players"
-                        value={settingsForm.about_tagline || ''}
-                        onChange={(e) => updateSettingsForm({ about_tagline: e.target.value })}
-                        className="text-xs"
-                      />
-                    </div>
-                    <Button
-                      size="sm"
-                      className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
-                      onClick={() => {
-                        saveSettingsBatch.mutate([
-                          { key: 'about_origin_story', value: settingsForm.about_origin_story || '', type: 'text' },
-                          { key: 'about_season1_text', value: settingsForm.about_season1_text || '', type: 'text' },
-                          { key: 'about_tagline', value: settingsForm.about_tagline || '', type: 'text' },
-                        ]);
-                      }}
-                      disabled={saveSettingsBatch.isPending}
-                    >
-                      {saveSettingsBatch.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />} Simpan About
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Kompetisi — Landing Section #3 (Video URLs) */}
-                <Card className="border border-border/50">
-                  <CardContent className="p-4 space-y-3">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <Swords className="w-4 h-4 text-idm-gold-warm" /> Kompetisi
+                  <CardContent className="p-4 space-y-4">
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Swords className="w-5 h-5 text-idm-gold-warm" /> Kompetisi
                       <Badge className="text-[8px] border-0 bg-cyan-500/10 text-cyan-400">Section 3</Badge>
                     </h3>
-                    <p className="text-[10px] text-muted-foreground">Tambahkan video highlight untuk masing-masing divisi di section Kompetisi. Tombol play akan muncul di card divisi.</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Video Male (Opsional)</label>
-                        <Input
-                          value={settingsForm.kompetisi_male_video_url || ''}
-                          onChange={(e) => updateSettingsForm({ kompetisi_male_video_url: e.target.value })}
-                          className="text-sm"
-                          placeholder="URL YouTube/MP4 — tombol play di card Male"
-                        />
-                        <p className="text-[9px] text-muted-foreground/60 mt-0.5">Video highlight turnamen Male Division</p>
+                    <p className="text-[10px] text-muted-foreground">Kelola seluruh teks dan video untuk section Kompetisi di landing page. Perubahan langsung terlihat setelah simpan.</p>
+
+                    {/* Section Header */}
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <PanelTop className="w-3 h-3" /> Section Header
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Label Badge</label>
+                          <Input
+                            value={settingsForm.kompetisi_label || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_label: e.target.value })}
+                            className="text-sm"
+                            placeholder="Kompetisi"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Judul Section</label>
+                          <Input
+                            value={settingsForm.kompetisi_title || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_title: e.target.value })}
+                            className="text-sm"
+                            placeholder="Tarkam Arena"
+                          />
+                        </div>
                       </div>
                       <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Video Female (Opsional)</label>
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Subtitle Section</label>
                         <Input
-                          value={settingsForm.kompetisi_female_video_url || ''}
-                          onChange={(e) => updateSettingsForm({ kompetisi_female_video_url: e.target.value })}
+                          value={settingsForm.kompetisi_subtitle || ''}
+                          onChange={(e) => updateSettingsForm({ kompetisi_subtitle: e.target.value })}
                           className="text-sm"
-                          placeholder="URL YouTube/MP4 — tombol play di card Female"
+                          placeholder="Weekly tournament setiap minggu..."
                         />
-                        <p className="text-[9px] text-muted-foreground/60 mt-0.5">Video highlight turnamen Female Division</p>
                       </div>
                     </div>
+
+                    <Separator />
+
+                    {/* Male Card */}
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Shield className="w-3 h-3" /> Male Card
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Judul Card</label>
+                          <Input
+                            value={settingsForm.kompetisi_male_title || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_male_title: e.target.value })}
+                            className="text-sm"
+                            placeholder="Male Tarkam"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Badge Text</label>
+                          <Input
+                            value={settingsForm.kompetisi_male_badge || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_male_badge: e.target.value })}
+                            className="text-sm"
+                            placeholder="Weekly Tournament"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Format</label>
+                          <Input
+                            value={settingsForm.kompetisi_male_format || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_male_format: e.target.value })}
+                            className="text-sm"
+                            placeholder="Bracket elimination — 1 tim, 3 pemain"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Video URL (Opsional)</label>
+                          <Input
+                            value={settingsForm.kompetisi_male_video_url || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_male_video_url: e.target.value })}
+                            className="text-sm"
+                            placeholder="URL YouTube/MP4 — tombol play di card Male"
+                          />
+                          <p className="text-[9px] text-muted-foreground/60 mt-0.5">Video highlight turnamen Male Division</p>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Deskripsi</label>
+                        <Textarea
+                          value={settingsForm.kompetisi_male_description || ''}
+                          onChange={(e) => updateSettingsForm({ kompetisi_male_description: e.target.value })}
+                          className="text-sm"
+                          placeholder="Turnamen mingguan dengan format bracket elimination. Peserta tarkam putra bertanding setiap minggu. Juara weekly berhak atas prize pool dan gelar champion."
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Female Card */}
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Shield className="w-3 h-3" /> Female Card
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Judul Card</label>
+                          <Input
+                            value={settingsForm.kompetisi_female_title || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_female_title: e.target.value })}
+                            className="text-sm"
+                            placeholder="Female Tarkam"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Badge Text</label>
+                          <Input
+                            value={settingsForm.kompetisi_female_badge || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_female_badge: e.target.value })}
+                            className="text-sm"
+                            placeholder="Weekly Tournament"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Format</label>
+                          <Input
+                            value={settingsForm.kompetisi_female_format || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_female_format: e.target.value })}
+                            className="text-sm"
+                            placeholder="Bracket elimination — 1 tim, 3 pemain"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Video URL (Opsional)</label>
+                          <Input
+                            value={settingsForm.kompetisi_female_video_url || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_female_video_url: e.target.value })}
+                            className="text-sm"
+                            placeholder="URL YouTube/MP4 — tombol play di card Female"
+                          />
+                          <p className="text-[9px] text-muted-foreground/60 mt-0.5">Video highlight turnamen Female Division</p>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Deskripsi</label>
+                        <Textarea
+                          value={settingsForm.kompetisi_female_description || ''}
+                          onChange={(e) => updateSettingsForm({ kompetisi_female_description: e.target.value })}
+                          className="text-sm"
+                          placeholder="Turnamen mingguan dengan format bracket elimination. Peserta tarkam putri bertanding setiap minggu. Juara weekly berhak atas prize pool dan gelar champion."
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Bridge Card */}
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Trophy className="w-3 h-3" /> Bridge Card
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Judul</label>
+                          <Input
+                            value={settingsForm.kompetisi_bridge_title || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_bridge_title: e.target.value })}
+                            className="text-sm"
+                            placeholder="Dua Tarkam, Satu Arena"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Deskripsi</label>
+                          <Input
+                            value={settingsForm.kompetisi_bridge_description || ''}
+                            onChange={(e) => updateSettingsForm({ kompetisi_bridge_description: e.target.value })}
+                            className="text-sm"
+                            placeholder="Male Tarkam dan Female Tarkam berjalan secara paralel..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     <Button
                       size="sm"
                       className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
                       onClick={() => {
                         saveSettingsBatch.mutate([
+                          { key: 'kompetisi_label', value: settingsForm.kompetisi_label || '', type: 'text' },
+                          { key: 'kompetisi_title', value: settingsForm.kompetisi_title || '', type: 'text' },
+                          { key: 'kompetisi_subtitle', value: settingsForm.kompetisi_subtitle || '', type: 'text' },
+                          { key: 'kompetisi_male_title', value: settingsForm.kompetisi_male_title || '', type: 'text' },
+                          { key: 'kompetisi_male_badge', value: settingsForm.kompetisi_male_badge || '', type: 'text' },
+                          { key: 'kompetisi_male_format', value: settingsForm.kompetisi_male_format || '', type: 'text' },
+                          { key: 'kompetisi_male_description', value: settingsForm.kompetisi_male_description || '', type: 'text' },
                           { key: 'kompetisi_male_video_url', value: settingsForm.kompetisi_male_video_url || '', type: 'text' },
+                          { key: 'kompetisi_female_title', value: settingsForm.kompetisi_female_title || '', type: 'text' },
+                          { key: 'kompetisi_female_badge', value: settingsForm.kompetisi_female_badge || '', type: 'text' },
+                          { key: 'kompetisi_female_format', value: settingsForm.kompetisi_female_format || '', type: 'text' },
+                          { key: 'kompetisi_female_description', value: settingsForm.kompetisi_female_description || '', type: 'text' },
                           { key: 'kompetisi_female_video_url', value: settingsForm.kompetisi_female_video_url || '', type: 'text' },
+                          { key: 'kompetisi_bridge_title', value: settingsForm.kompetisi_bridge_title || '', type: 'text' },
+                          { key: 'kompetisi_bridge_description', value: settingsForm.kompetisi_bridge_description || '', type: 'text' },
                         ]);
                       }}
                       disabled={saveSettingsBatch.isPending}
@@ -837,168 +960,443 @@ export function CmsPanel() {
                   </CardContent>
                 </Card>
 
-                {/* Liga IDM / The Dream — Landing Section #7 (Dream part) */}
+                {/* Highlights — Puncak Prestasi */}
                 <Card className="border border-border/50">
-                  <CardContent className="p-4 space-y-3">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <Trophy className="w-4 h-4 text-idm-gold-warm" /> Liga IDM / The Dream
-                      <Badge className="text-[8px] border-0 bg-purple-500/10 text-purple-400">Section 7</Badge>
+                  <CardContent className="p-4 space-y-4">
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-idm-gold-warm" /> Highlights / Puncak Prestasi
+                      <Badge className="text-[8px] border-0 bg-orange-500/10 text-orange-400">Section 2</Badge>
                     </h3>
-                    <p className="text-[10px] text-muted-foreground">Edit teks pada section Liga IDM / The Dream di landing page. Gunakan <code className="bg-muted px-1 rounded text-[9px]">{'{season}'}</code> untuk nomor season, <code className="bg-muted px-1 rounded text-[9px]">{'{champion}'}</code> untuk nama champion, <code className="bg-muted px-1 rounded text-[9px]">{'{clubs}'}</code> untuk jumlah club, <code className="bg-muted px-1 rounded text-[9px]">{'{matches}'}</code> untuk jumlah match, <code className="bg-muted px-1 rounded text-[9px]">{'{participants}'}</code> untuk total peserta.</p>
+                    <p className="text-[10px] text-muted-foreground">Kelola teks section header dan video URL untuk tombol "Tonton Video" di section Highlights.</p>
+
+                    {/* Section Header */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Deskripsi (Season Completed — ada champion)</label>
-                      <Textarea
-                        rows={3}
-                        placeholder="Season {season} telah berlangsung dengan meriah — {champion} tampil sebagai champion..."
-                        value={settingsForm.dream_description_completed || ''}
-                        onChange={(e) => updateSettingsForm({ dream_description_completed: e.target.value })}
-                        className="text-xs resize-y"
-                      />
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <PanelTop className="w-3 h-3" /> Section Header
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Label Badge</label>
+                          <Input
+                            value={settingsForm.highlights_label || ''}
+                            onChange={(e) => updateSettingsForm({ highlights_label: e.target.value })}
+                            className="text-sm"
+                            placeholder="HIGHLIGHTS"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Judul Section</label>
+                          <Input
+                            value={settingsForm.highlights_title || ''}
+                            onChange={(e) => updateSettingsForm({ highlights_title: e.target.value })}
+                            className="text-sm"
+                            placeholder="Puncak Prestasi"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Subtitle Section</label>
+                        <Input
+                          value={settingsForm.highlights_subtitle || ''}
+                          onChange={(e) => updateSettingsForm({ highlights_subtitle: e.target.value })}
+                          className="text-sm"
+                          placeholder="Peringkat #1 tarkam, streak terpanjang, dan juara season di Tarkam IDM"
+                        />
+                      </div>
                     </div>
+
+                    <Separator />
+
+                    {/* Video URL */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Deskripsi (Season Active — belum ada champion)</label>
-                      <Textarea
-                        rows={3}
-                        placeholder="{clubs} club bertanding, peserta bebas mix dari divisi male dan female..."
-                        value={settingsForm.dream_description_active || ''}
-                        onChange={(e) => updateSettingsForm({ dream_description_active: e.target.value })}
-                        className="text-xs resize-y"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Teks "Season Next" (ajakan dukungan)</label>
-                      <Textarea
-                        rows={3}
-                        placeholder="Season {season} sudah terbukti — champion dinobatkan, club bertanding..."
-                        value={settingsForm.dream_season_next_text || ''}
-                        onChange={(e) => updateSettingsForm({ dream_season_next_text: e.target.value })}
-                        className="text-xs resize-y"
-                      />
-                    </div>
-                    <Separator className="my-2" />
-                    <h4 className="text-xs font-semibold flex items-center gap-1.5">
-                      <Shield className="w-3 h-3 text-idm-gold-warm" /> Statistik Liga (Manual)
-                    </h4>
-                    <p className="text-[10px] text-muted-foreground">Isi manual jumlah club, match, dan peserta yang ditampilkan di section Liga IDM. Kosongkan untuk menggunakan data otomatis.</p>
-                    <div className="grid grid-cols-3 gap-3">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3" /> Video Highlight
+                      </h4>
                       <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Club Bertanding</label>
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Video URL (Opsional)</label>
                         <Input
-                          type="number"
-                          min="0"
-                          value={settingsForm.dream_clubs_competing || ''}
-                          onChange={(e) => updateSettingsForm({ dream_clubs_competing: e.target.value })}
+                          value={settingsForm.highlights_video_url || ''}
+                          onChange={(e) => updateSettingsForm({ highlights_video_url: e.target.value })}
                           className="text-sm"
-                          placeholder="Otomatis"
+                          placeholder="URL YouTube/MP4 — tombol Tonton Video di featured card"
                         />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Match Dimainkan</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={settingsForm.dream_matches_played || ''}
-                          onChange={(e) => updateSettingsForm({ dream_matches_played: e.target.value })}
-                          className="text-sm"
-                          placeholder="Otomatis"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Peserta Total</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={settingsForm.dream_total_participants || ''}
-                          onChange={(e) => updateSettingsForm({ dream_total_participants: e.target.value })}
-                          className="text-sm"
-                          placeholder="Otomatis"
-                        />
+                        <p className="text-[9px] text-muted-foreground/60 mt-0.5">Video akan diputar saat pengguna klik "Tonton Video". Kosongkan untuk menyembunyikan tombol.</p>
                       </div>
                     </div>
-                    <Separator className="my-2" />
-                    <h4 className="text-xs font-semibold flex items-center gap-1.5">
-                      <FileText className="w-3 h-3 text-idm-gold-warm" /> Video & Highlight
-                    </h4>
-                    <div className="space-y-2">
-                      <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Video Champion (Opsional)</label>
-                        <Input
-                          value={settingsForm.champion_video_url || ''}
-                          onChange={(e) => updateSettingsForm({ champion_video_url: e.target.value })}
-                          className="text-sm"
-                          placeholder="URL video YouTube/MP4 — tombol play di card champion"
-                        />
-                        <p className="text-[9px] text-muted-foreground/60 mt-0.5">Video showcase pemenang liga, muncul sebagai tombol play di section Champion</p>
-                      </div>
-                    </div>
-                    <Separator className="my-2" />
-                    <h4 className="text-xs font-semibold flex items-center gap-1.5">
-                      <Type className="w-3 h-3 text-idm-gold-warm" /> CTA (Call to Action)
-                    </h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Teks Tombol Male</label>
-                        <Input
-                          value={settingsForm.nav_cta_male_text || ''}
-                          onChange={(e) => updateSettingsForm({ nav_cta_male_text: e.target.value })}
-                          className="text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Teks Tombol Female</label>
-                        <Input
-                          value={settingsForm.nav_cta_female_text || ''}
-                          onChange={(e) => updateSettingsForm({ nav_cta_female_text: e.target.value })}
-                          className="text-sm"
-                        />
-                      </div>
-                    </div>
-                    <Separator className="my-2" />
-                    <h4 className="text-xs font-semibold flex items-center gap-1.5">
-                      <Globe className="w-3 h-3 text-idm-gold-warm" /> Countdown Timer
-                    </h4>
-                    <p className="text-[10px] text-muted-foreground">Jika diisi, countdown timer akan muncul di section Liga IDM.</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Label</label>
-                        <Input
-                          value={settingsForm.countdown_label || ''}
-                          onChange={(e) => updateSettingsForm({ countdown_label: e.target.value })}
-                          className="text-sm"
-                          placeholder="Match Day Berikutnya"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Target Waktu</label>
-                        <Input
-                          type="datetime-local"
-                          value={settingsForm.countdown_target_date || ''}
-                          onChange={(e) => updateSettingsForm({ countdown_target_date: e.target.value })}
-                          className="text-sm"
-                        />
-                      </div>
-                    </div>
+
                     <Button
                       size="sm"
                       className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
                       onClick={() => {
                         saveSettingsBatch.mutate([
-                          { key: 'dream_description_completed', value: settingsForm.dream_description_completed || '', type: 'text' },
-                          { key: 'dream_description_active', value: settingsForm.dream_description_active || '', type: 'text' },
-                          { key: 'dream_season_next_text', value: settingsForm.dream_season_next_text || '', type: 'text' },
-                          { key: 'dream_clubs_competing', value: settingsForm.dream_clubs_competing || '', type: 'text' },
-                          { key: 'dream_matches_played', value: settingsForm.dream_matches_played || '', type: 'text' },
-                          { key: 'dream_total_participants', value: settingsForm.dream_total_participants || '', type: 'text' },
-                          { key: 'champion_video_url', value: settingsForm.champion_video_url || '', type: 'text' },
-                          { key: 'countdown_label', value: settingsForm.countdown_label || '', type: 'text' },
-                          { key: 'countdown_target_date', value: settingsForm.countdown_target_date || '', type: 'text' },
-                          { key: 'nav_cta_male_text', value: settingsForm.nav_cta_male_text || '', type: 'text' },
-                          { key: 'nav_cta_female_text', value: settingsForm.nav_cta_female_text || '', type: 'text' },
+                          { key: 'highlights_label', value: settingsForm.highlights_label || '', type: 'text' },
+                          { key: 'highlights_title', value: settingsForm.highlights_title || '', type: 'text' },
+                          { key: 'highlights_subtitle', value: settingsForm.highlights_subtitle || '', type: 'text' },
+                          { key: 'highlights_video_url', value: settingsForm.highlights_video_url || '', type: 'text' },
                         ]);
                       }}
                       disabled={saveSettingsBatch.isPending}
                     >
-                      {saveSettingsBatch.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />} Simpan Liga IDM & CTA
+                      {saveSettingsBatch.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />} Simpan Highlights
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Video Highlights — Momen Terbaik */}
+                <Card className="border border-border/50">
+                  <CardContent className="p-4 space-y-4">
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Video className="w-5 h-5 text-idm-gold-warm" /> Video Highlights / Momen Terbaik
+                      <Badge className="text-[8px] border-0 bg-red-500/10 text-red-400">Section 3</Badge>
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground">Kelola teks section header dan video URL default untuk section Video Highlights.</p>
+
+                    {/* Section Header */}
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <PanelTop className="w-3 h-3" /> Section Header
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Label Badge</label>
+                          <Input
+                            value={settingsForm.video_highlights_label || ''}
+                            onChange={(e) => updateSettingsForm({ video_highlights_label: e.target.value })}
+                            className="text-sm"
+                            placeholder="VIDEO HIGHLIGHTS"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Judul Section</label>
+                          <Input
+                            value={settingsForm.video_highlights_title || ''}
+                            onChange={(e) => updateSettingsForm({ video_highlights_title: e.target.value })}
+                            className="text-sm"
+                            placeholder="Momen Terbaik"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Subtitle Section</label>
+                        <Input
+                          value={settingsForm.video_highlights_subtitle || ''}
+                          onChange={(e) => updateSettingsForm({ video_highlights_subtitle: e.target.value })}
+                          className="text-sm"
+                          placeholder="Saksikan momen terbaik dari pertandingan Tarkam IDM"
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Video Title + URL for all 4 list items */}
+                    <div className="space-y-3">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3" /> Judul & Link Video (4 List)
+                      </h4>
+                      <p className="text-[9px] text-muted-foreground/60">Masukkan judul dan URL YouTube/MP4 untuk setiap video di list. Klik list di sebelah kanan untuk memilih video, lalu klik play di banner untuk memutar. Kosongkan URL untuk menampilkan status "Coming Soon".</p>
+                      {[1, 2, 3, 4].map((num) => (
+                        <div key={num} className="space-y-1.5 p-2.5 rounded-lg bg-muted/20 border border-border/30">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span className="w-4 h-4 rounded bg-idm-gold-warm/15 text-idm-gold-warm flex items-center justify-center text-[9px] font-black">{num}</span>
+                            Video #{num}
+                          </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[9px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Divisi</label>
+                              <Select
+                                value={settingsForm[`video_highlights_division_${num}`] || 'both'}
+                                onValueChange={(val) => updateSettingsForm({ [`video_highlights_division_${num}`]: val })}
+                              >
+                                <SelectTrigger className="h-8 text-[11px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="male">
+                                    <span className="flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                                      Male
+                                    </span>
+                                  </SelectItem>
+                                  <SelectItem value="female">
+                                    <span className="flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-full bg-purple-400" />
+                                      Female
+                                    </span>
+                                  </SelectItem>
+                                  <SelectItem value="both">
+                                    <span className="flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-full bg-[#d4a853]" />
+                                      Semua
+                                    </span>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Durasi</label>
+                              <Input
+                                value={settingsForm[`video_highlights_duration_${num}`] || ''}
+                                onChange={(e) => updateSettingsForm({ [`video_highlights_duration_${num}`]: e.target.value })}
+                                className="h-8 text-[11px]"
+                                placeholder="3:00"
+                              />
+                            </div>
+                          </div>
+                          <Input
+                            value={settingsForm[`video_highlights_title_${num}`] || ''}
+                            onChange={(e) => updateSettingsForm({ [`video_highlights_title_${num}`]: e.target.value })}
+                            className="text-sm"
+                            placeholder={`Judul video #${num} (cth: Highlight Pertandingan Final)`}
+                          />
+                          <Input
+                            value={settingsForm[`video_highlights_subtitle_${num}`] || ''}
+                            onChange={(e) => updateSettingsForm({ [`video_highlights_subtitle_${num}`]: e.target.value })}
+                            className="text-sm"
+                            placeholder={`Subjudul (cth: S1 Highlights, S2 MVP, Week 3 Champion)`}
+                          />
+                          <Input
+                            value={settingsForm[`video_highlights_url_${num}`] || ''}
+                            onChange={(e) => updateSettingsForm({ [`video_highlights_url_${num}`]: e.target.value })}
+                            className="text-sm"
+                            placeholder={`URL YouTube/MP4 untuk video #${num}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      size="sm"
+                      className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
+                      onClick={() => {
+                        saveSettingsBatch.mutate([
+                          { key: 'video_highlights_label', value: settingsForm.video_highlights_label || '', type: 'text' },
+                          { key: 'video_highlights_title', value: settingsForm.video_highlights_title || '', type: 'text' },
+                          { key: 'video_highlights_subtitle', value: settingsForm.video_highlights_subtitle || '', type: 'text' },
+                          ...[1, 2, 3, 4].flatMap((num) => [
+                            { key: `video_highlights_division_${num}`, value: settingsForm[`video_highlights_division_${num}`] || 'both', type: 'text' },
+                            { key: `video_highlights_duration_${num}`, value: settingsForm[`video_highlights_duration_${num}`] || '', type: 'text' },
+                            { key: `video_highlights_title_${num}`, value: settingsForm[`video_highlights_title_${num}`] || '', type: 'text' },
+                            { key: `video_highlights_subtitle_${num}`, value: settingsForm[`video_highlights_subtitle_${num}`] || '', type: 'text' },
+                            { key: `video_highlights_url_${num}`, value: settingsForm[`video_highlights_url_${num}`] || '', type: 'text' },
+                          ]),
+                        ]);
+                      }}
+                      disabled={saveSettingsBatch.isPending}
+                    >
+                      {saveSettingsBatch.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />} Simpan Video Highlights
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Cara Bermain — How It Works */}
+                <Card className="border border-border/50">
+                  <CardContent className="p-4 space-y-4">
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-idm-gold-warm" /> Cara Bermain
+                      <Badge className="text-[8px] border-0 bg-emerald-500/10 text-emerald-400">Section 6</Badge>
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground">Kelola teks section header dan deskripsi langkah-langkah cara bermain di landing page.</p>
+
+                    {/* Section Header */}
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <PanelTop className="w-3 h-3" /> Section Header
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Label Badge</label>
+                          <Input
+                            value={settingsForm.howitworks_label || ''}
+                            onChange={(e) => updateSettingsForm({ howitworks_label: e.target.value })}
+                            className="text-sm"
+                            placeholder="Cara Bermain"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Judul Section</label>
+                          <Input
+                            value={settingsForm.howitworks_title || ''}
+                            onChange={(e) => updateSettingsForm({ howitworks_title: e.target.value })}
+                            className="text-sm"
+                            placeholder="Bagaimana Cara Kerjanya?"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Subtitle Section</label>
+                        <Input
+                          value={settingsForm.howitworks_subtitle || ''}
+                          onChange={(e) => updateSettingsForm({ howitworks_subtitle: e.target.value })}
+                          className="text-sm"
+                          placeholder="Empat langkah sederhana untuk menjadi champion"
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Steps */}
+                    <div className="space-y-3">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Swords className="w-3 h-3" /> Langkah-langkah (4 Step)
+                      </h4>
+                      {[1, 2, 3, 4].map((num) => (
+                        <div key={num} className="space-y-1.5 p-2.5 rounded-lg bg-muted/20 border border-border/30">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span className="w-4 h-4 rounded bg-idm-gold-warm/15 text-idm-gold-warm flex items-center justify-center text-[9px] font-black">{num}</span>
+                            Step #{num}
+                          </label>
+                          <Input
+                            value={settingsForm[`howitworks_step_${num}_title`] || ''}
+                            onChange={(e) => updateSettingsForm({ [`howitworks_step_${num}_title`]: e.target.value })}
+                            className="text-sm"
+                            placeholder={['Daftar', 'Tarkam', 'Kumpulkan Poin', 'Jadi Champion'][num - 1]}
+                          />
+                          <Input
+                            value={settingsForm[`howitworks_step_${num}_description`] || ''}
+                            onChange={(e) => updateSettingsForm({ [`howitworks_step_${num}_description`]: e.target.value })}
+                            className="text-sm"
+                            placeholder={['Daftar sebagai peserta dan pilih divisi Male atau Female', 'Ikuti tournament mingguan dan raih kemenangan', 'Setiap kemenangan memberikan poin untuk peringkat', 'Raih gelar Season Champion dan MVP'][num - 1]}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      size="sm"
+                      className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
+                      onClick={() => {
+                        saveSettingsBatch.mutate([
+                          { key: 'howitworks_label', value: settingsForm.howitworks_label || '', type: 'text' },
+                          { key: 'howitworks_title', value: settingsForm.howitworks_title || '', type: 'text' },
+                          { key: 'howitworks_subtitle', value: settingsForm.howitworks_subtitle || '', type: 'text' },
+                          ...[1, 2, 3, 4].flatMap((num) => [
+                            { key: `howitworks_step_${num}_title`, value: settingsForm[`howitworks_step_${num}_title`] || '', type: 'text' },
+                            { key: `howitworks_step_${num}_description`, value: settingsForm[`howitworks_step_${num}_description`] || '', type: 'text' },
+                          ]),
+                        ]);
+                      }}
+                      disabled={saveSettingsBatch.isPending}
+                    >
+                      {saveSettingsBatch.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />} Simpan Cara Bermain
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* CTA — Call to Action */}
+                <Card className="border border-border/50">
+                  <CardContent className="p-4 space-y-4">
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Flame className="w-5 h-5 text-idm-gold-warm" /> CTA / Call to Action
+                      <Badge className="text-[8px] border-0 bg-rose-500/10 text-rose-400">Section 7</Badge>
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground">Kelola teks judul, deskripsi, tombol, dan trust badges di section CTA sebelum footer.</p>
+
+                    {/* Main Text */}
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <PanelTop className="w-3 h-3" /> Teks Utama
+                      </h4>
+                      <div>
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Judul CTA</label>
+                        <Input
+                          value={settingsForm.cta_title || ''}
+                          onChange={(e) => updateSettingsForm({ cta_title: e.target.value })}
+                          className="text-sm"
+                          placeholder="Siap Menjadi Champion?"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Deskripsi CTA</label>
+                        <Textarea
+                          value={settingsForm.cta_description || ''}
+                          onChange={(e) => updateSettingsForm({ cta_description: e.target.value })}
+                          className="text-sm"
+                          placeholder="Bergabung sekarang dan tunjukkan skill-mu di arena Tarkam IDM. Ribuan pemain sudah menunggu!"
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Buttons */}
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3" /> Tombol Aksi
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Tombol Utama (Gold)</label>
+                          <Input
+                            value={settingsForm.cta_button_primary_text || ''}
+                            onChange={(e) => updateSettingsForm({ cta_button_primary_text: e.target.value })}
+                            className="text-sm"
+                            placeholder="Masuk Arena"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Tombol Sekunder (Outline)</label>
+                          <Input
+                            value={settingsForm.cta_button_secondary_text || ''}
+                            onChange={(e) => updateSettingsForm({ cta_button_secondary_text: e.target.value })}
+                            className="text-sm"
+                            placeholder="Daftar Sekarang"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Trust Badges */}
+                    <div className="space-y-2">
+                      <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Shield className="w-3 h-3" /> Trust Badges (3)
+                      </h4>
+                      <p className="text-[9px] text-muted-foreground/60">Setiap badge memiliki nilai dan label. Contoh: nilai "12+" dengan label "Club Terdaftar".</p>
+                      {[1, 2, 3].map((num) => (
+                        <div key={num} className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted/20 border border-border/30">
+                          <div>
+                            <label className="text-[9px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Nilai Badge #{num}</label>
+                            <Input
+                              value={settingsForm[`cta_badge_${num}_value`] || ''}
+                              onChange={(e) => updateSettingsForm({ [`cta_badge_${num}_value`]: e.target.value })}
+                              className="h-8 text-[11px]"
+                              placeholder={['12+', '120+', '2'][num - 1]}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Label Badge #{num}</label>
+                            <Input
+                              value={settingsForm[`cta_badge_${num}_label`] || ''}
+                              onChange={(e) => updateSettingsForm({ [`cta_badge_${num}_label`]: e.target.value })}
+                              className="h-8 text-[11px]"
+                              placeholder={['Club Terdaftar', 'Pemain Aktif', 'Season'][num - 1]}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      size="sm"
+                      className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
+                      onClick={() => {
+                        saveSettingsBatch.mutate([
+                          { key: 'cta_title', value: settingsForm.cta_title || '', type: 'text' },
+                          { key: 'cta_description', value: settingsForm.cta_description || '', type: 'text' },
+                          { key: 'cta_button_primary_text', value: settingsForm.cta_button_primary_text || '', type: 'text' },
+                          { key: 'cta_button_secondary_text', value: settingsForm.cta_button_secondary_text || '', type: 'text' },
+                          ...[1, 2, 3].flatMap((num) => [
+                            { key: `cta_badge_${num}_value`, value: settingsForm[`cta_badge_${num}_value`] || '', type: 'text' },
+                            { key: `cta_badge_${num}_label`, value: settingsForm[`cta_badge_${num}_label`] || '', type: 'text' },
+                          ]),
+                        ]);
+                      }}
+                      disabled={saveSettingsBatch.isPending}
+                    >
+                      {saveSettingsBatch.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />} Simpan CTA
                     </Button>
                   </CardContent>
                 </Card>
@@ -1006,8 +1404,8 @@ export function CmsPanel() {
                 {/* Social Links — Footer Area */}
                 <Card className="border border-border/50">
                   <CardContent className="p-4 space-y-3">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <Link2 className="w-4 h-4 text-idm-gold-warm" /> Social Links
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Link2 className="w-5 h-5 text-idm-gold-warm" /> Social Links
                       <Badge className="text-[8px] border-0 bg-green-500/10 text-green-400">Footer</Badge>
                     </h3>
                     <p className="text-[10px] text-muted-foreground">Masukkan URL social media. Kosongkan atau biarkan # untuk menyembunyikan icon di footer.</p>
@@ -1082,8 +1480,8 @@ export function CmsPanel() {
                 {/* Footer Settings — Landing Section #8 */}
                 <Card className="border border-border/50">
                   <CardContent className="p-4 space-y-3">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <PanelBottom className="w-4 h-4 text-idm-gold-warm" /> Footer
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <PanelBottom className="w-5 h-5 text-idm-gold-warm" /> Footer
                       <Badge className="text-[8px] border-0 bg-amber-500/10 text-amber-400">Section 8</Badge>
                     </h3>
                     <div>

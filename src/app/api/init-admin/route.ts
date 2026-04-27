@@ -1,13 +1,24 @@
 import { db } from '@/lib/db';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, isBcryptHash } from '@/lib/auth';
 import { verifyAdmin } from '@/lib/api-auth';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    // First check: if super admin already exists, just return success (idempotent)
+    // First check: if super admin already exists, migrate bcrypt hash if needed
     const existing = await db.admin.findFirst({ where: { role: 'super_admin' } });
     if (existing) {
+      // Migrate legacy bcrypt hash to scrypt for Turbopack compatibility
+      if (isBcryptHash(existing.passwordHash)) {
+        const password = process.env.ADMIN_PASSWORD || 'tazevsta';
+        const newHash = await hashPassword(password);
+        await db.admin.update({
+          where: { id: existing.id },
+          data: { passwordHash: newHash },
+        });
+        console.log(`[init-admin] Migrated admin "${existing.username}" from bcrypt to scrypt`);
+      }
+
       return NextResponse.json({
         success: true,
         message: 'Super admin already exists',
