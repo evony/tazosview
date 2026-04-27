@@ -1,0 +1,19 @@
+{
+  "name": "IDM League — Tournament Hub",
+  "short_name": "IDM League",
+  "description": "Fan Made Tournament Hub untuk komunitas IDM — live scores, prediksi, klasemen, dan lebih banyak!",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0a06",
+  "theme_color": "#0c0a06",
+  "categories": ["sports", "entertainment"],
+  "icons": [
+    {
+      "src": "/logo1.webp",
+      "sizes": "1024x1024",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}

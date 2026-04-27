@@ -1,0 +1,606 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// IDM LEAGUE - DANCE TOURNAMENT PLATFORM SCHEMA
+// ============================================
+
+model Player {
+  id        String   @id @default(cuid())
+  name      String
+  gamertag  String   @unique
+  division  String   // "male" | "female"
+  tier      String   @default("B") // "S" | "A" | "B"
+  avatar    String?
+  points    Int      @default(0)
+  totalWins Int      @default(0)
+  totalMvp  Int      @default(0)
+  streak    Int      @default(0) // current win streak
+  maxStreak Int      @default(0)
+  matches   Int      @default(0)
+  isActive  Boolean  @default(true)
+
+  // Registration fields
+  phone              String?  // WhatsApp number (optional)
+  city               String   @default("") // Kota (required at registration)
+  joki               String?  // Name of joki if player is played by someone else (optional)
+  registrationStatus String   @default("approved") // "pending" | "approved" | "rejected"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teamPlayers      TeamPlayer[]
+  participations   Participation[]
+  mvpMatches       Match[]       @relation("MvpPlayer")
+  clubMembers      ClubMember[]
+  pointRecords     PlayerPoint[]
+  achievements     PlayerAchievement[]
+  account          Account?
+  championSeasons  Season[]      @relation("SeasonPlayerChampion")
+
+  @@index([division])
+  @@index([division, isActive])
+  @@index([points])
+}
+
+model Season {
+  id               String   @id @default(cuid())
+  name             String
+  number           Int
+  division         String   // "male" | "female"
+  status           String   @default("active") // "active" | "completed" | "upcoming"
+  startDate        DateTime
+  endDate          DateTime?
+  championClubId   String?  // ClubProfile that won the Liga IDM for this season (liga mode only)
+  championPlayerId String?  // Player that won the Tarkam season (tarkam mode only)
+  championSquad    String?  // JSON string: [{id, gamertag, division, role}] — 5 representatives for champion card (liga only)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  tournaments    Tournament[]
+  donations      Donation[]
+  clubs          Club[]
+  leagueMatches  LeagueMatch[]
+  playoffMatches PlayoffMatch[]
+  championClub   ClubProfile? @relation("SeasonChampion", fields: [championClubId], references: [id], onDelete: SetNull)
+  championPlayer Player?     @relation("SeasonPlayerChampion", fields: [championPlayerId], references: [id], onDelete: SetNull)
+
+  @@index([division, status])
+}
+
+model Tournament {
+  id                 String   @id @default(cuid())
+  name               String
+  weekNumber         Int
+  division           String   // "male" | "female"
+  status             String   @default("setup") // "setup" | "registration" | "approval" | "team_generation" | "bracket_generation" | "main_event" | "finalization" | "completed"
+  format             String   @default("single_elimination") // "single_elimination" | "double_elimination" | "group_stage"
+  defaultMatchFormat String   @default("BO1") // "BO1" | "BO3" | "BO5" — default, can be overridden per match
+  seasonId           String
+  prizePool          Int      @default(0) // total prize pool in IDR
+  bpm                String?
+  location           String?
+  scheduledAt        DateTime?
+  finalizedAt        DateTime? // when admin finalized prizes/MVP
+  completedAt        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  season              Season              @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  teams               Team[]
+  matches             Match[]
+  participations      Participation[]
+  prizes              TournamentPrize[]
+  donations           Donation[]
+  pointRecords        PlayerPoint[]
+  playerAchievements  PlayerAchievement[]
+  sponsors            TournamentSponsor[]
+  sponsoredPrizes     SponsoredPrize[]
+
+  @@unique([weekNumber, division, seasonId])
+  @@index([division, seasonId])
+}
+
+model Team {
+  id           String  @id @default(cuid())
+  name         String
+  tournamentId String
+  power        Int     @default(0)
+  isWinner     Boolean @default(false)
+  rank         Int?
+
+  tournament   Tournament  @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  teamPlayers  TeamPlayer[]
+  matchAsTeam1 Match[]     @relation("Team1")
+  matchAsTeam2 Match[]     @relation("Team2")
+  matchesWon   Match[]     @relation("MatchWinner")
+  matchesLost  Match[]     @relation("MatchLoser")
+}
+
+model TeamPlayer {
+  id       String @id @default(cuid())
+  teamId   String
+  playerId String
+  tier     String @default("B") // Effective tier at time of team generation (respects admin tierOverride)
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, playerId])
+}
+
+model Match {
+  id          String   @id @default(cuid())
+  tournamentId String
+  round        Int     @default(1)    // Round number (1=first round, 2=second, etc.)
+  matchNumber  Int     @default(1)    // Position within round for display order
+  bracket      String  @default("upper") // "upper" | "lower" | "grand_final" | "group"
+  groupLabel   String?                 // "A" | "B" | "C" | "D" (only for group stage)
+  format       String  @default("BO1") // "BO1" | "BO3" | "BO5" — per match override
+
+  // Team references — nullable because bracket slots may be TBD until previous match completes
+  team1Id      String?
+  team2Id      String?
+  score1       Int?
+  score2       Int?
+  status       String  @default("pending") // "pending" | "ready" | "live" | "completed"
+  winnerId     String?  // Team ID of winner (set when match completed)
+  loserId      String?  // Team ID of loser (for DE lower bracket feed)
+  mvpPlayerId  String?
+  scheduledAt  DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+
+  tournament  Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team1       Team?      @relation("Team1", fields: [team1Id], references: [id], onDelete: SetNull)
+  team2       Team?      @relation("Team2", fields: [team2Id], references: [id], onDelete: SetNull)
+  winner      Team?      @relation("MatchWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+  loser       Team?      @relation("MatchLoser", fields: [loserId], references: [id], onDelete: SetNull)
+  mvpPlayer   Player?    @relation("MvpPlayer", fields: [mvpPlayerId], references: [id], onDelete: SetNull)
+  pointRecords PlayerPoint[]
+
+  @@index([tournamentId])
+  @@index([status])
+  @@index([tournamentId, bracket, round])
+}
+
+model Participation {
+  id           String   @id @default(cuid())
+  playerId     String
+  tournamentId String
+  status       String   @default("registered") // "registered" | "approved" | "rejected" | "assigned"
+  tierOverride String?  // Tier assigned by admin during approval (overrides Player.tier for team generation)
+  pointsEarned Int      @default(0)
+  isMvp        Boolean  @default(false)
+  isWinner     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  player     Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, tournamentId])
+
+  @@index([tournamentId, status])
+  @@index([isMvp])
+}
+
+model Donation {
+  id           String   @id @default(cuid())
+  donorName    String
+  amount       Int      // in IDR
+  message      String?
+  type         String   @default("weekly") // "weekly" | "season"
+  status       String   @default("pending") // "pending" | "approved" | "rejected"
+  tournamentId String?
+  seasonId     String?
+  createdAt    DateTime @default(now())
+
+  tournament Tournament? @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
+  season     Season?     @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+
+  @@index([tournamentId])
+  @@index([seasonId])
+  @@index([status])
+}
+
+// ============================================
+// IDM LEAGUE - TOURNAMENT PRIZE DISTRIBUTION
+// ============================================
+
+model TournamentPrize {
+  id              String   @id @default(cuid())
+  tournamentId    String
+  label           String   // "Juara 1" | "Juara 2" | "Juara 3" | "MVP" | custom label
+  position        Int      @default(0) // Sort order (1=first)
+  prizeAmount     Int      @default(0) // in IDR
+  pointsPerPlayer Int      @default(0) // Auto-calculated: prizeAmount / recipientCount
+  recipientCount  Int      @default(1) // 1 for MVP, 3 for team (members per team)
+  createdAt       DateTime @default(now())
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@index([tournamentId])
+}
+
+// ============================================
+// IDM LEAGUE - PLAYER ACCOUNT SYSTEM
+// ============================================
+
+model Account {
+  id              String    @id @default(cuid())
+  playerId        String    @unique  // One account per player
+  username        String    @unique  // For login (gamertag-based)
+  passwordHash    String
+  email           String?   @unique  // Optional email for recovery
+  phone           String?             // WhatsApp number for recovery
+  donorBadgeCount Int       @default(0) // Permanent heart badge count from donations (1-4: small, 5+: big + pulse glow)
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  skins  PlayerSkin[]
+
+  @@index([username])
+  @@index([email])
+}
+
+// ============================================
+// IDM LEAGUE - SKIN / ACHIEVEMENT SKIN SYSTEM
+// ============================================
+
+model Skin {
+  id          String   @id @default(cuid())
+  type        String   @unique  // "champion" | "mvp" | "host" | "donor"
+  displayName String   // "Gold Crown" | "Platinum Star" | "Emerald Luxury" | "Maroon Heart"
+  description String   // What this skin represents
+  icon        String   // Emoji: "🥇" | "⭐" | "💎" | "❤️"
+  colorClass  String   // Tailwind color classes for rendering (JSON)
+  priority    Int      @default(0)  // Higher = shown first when stacking: champion=4, mvp=3, host=2, donor=1
+  duration    String   @default("permanent") // "weekly" | "permanent"
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  playerSkins PlayerSkin[]
+
+  @@index([type])
+  @@index([priority])
+}
+
+model PlayerSkin {
+  id        String   @id @default(cuid())
+  accountId String
+  skinId    String
+  awardedBy String?  // Admin ID who awarded (null = auto-awarded)
+  reason    String?  // "Juara 1 Week 5" | "MVP Week 3" | "Donatur" | "Penyewa Turnamen"
+  expiresAt DateTime? // null = permanent, or next match day for weekly skins
+  createdAt DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  skin    Skin    @relation(fields: [skinId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, skinId])
+  @@index([accountId])
+  @@index([expiresAt])
+}
+
+// ============================================
+// IDM LEAGUE - ADMIN AUTHENTICATION
+// ============================================
+
+model Admin {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  role         String   @default("admin") // "super_admin" | "admin"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ============================================
+// IDM LEAGUE - CLUB & LEAGUE SYSTEM
+// ============================================
+
+// ClubProfile — persistent club identity across all seasons
+// Members, logo, and name live here (not per-season)
+model ClubProfile {
+  id          String   @id @default(cuid())
+  name        String   @unique // Unique club name across the platform
+  logo        String?
+  bannerImage String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members         ClubMember[]     // Persistent membership (join/leave tracked)
+  seasonEntries   Club[]           // One entry per season+division
+  championSeasons Season[]         @relation("SeasonChampion")
+}
+
+// Club — season-specific entry (per season + division)
+// Contains Liga stats (W/L/PTS/GD) and match relations
+model Club {
+  id          String  @id @default(cuid())
+  profileId   String  // FK → ClubProfile (persistent identity)
+  division    String  // "male" | "female"
+  seasonId    String
+  wins        Int     @default(0)
+  losses      Int     @default(0)
+  points      Int     @default(0)
+  gameDiff    Int     @default(0)
+
+  profile     ClubProfile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  season      Season         @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  homeMatches LeagueMatch[]  @relation("HomeClub")
+  awayMatches LeagueMatch[]  @relation("AwayClub")
+  playoffHome PlayoffMatch[] @relation("PlayoffHome")
+  playoffAway PlayoffMatch[] @relation("PlayoffAway")
+
+  @@unique([profileId, seasonId, division])
+  @@index([seasonId])
+  @@index([division])
+  @@index([profileId])
+}
+
+// ClubMember — persistent membership linked to ClubProfile
+// Tracks join/leave dates for proper point attribution
+model ClubMember {
+  id        String    @id @default(cuid())
+  profileId String    // FK → ClubProfile (persistent club)
+  playerId  String
+  role      String    @default("member") // "captain" | "member"
+  joinedAt  DateTime  @default(now())    // When player joined the club
+  leftAt    DateTime?                    // When player left (null = currently active)
+
+  profile ClubProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  player  Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, playerId])
+  @@index([playerId])
+  @@index([profileId])
+  @@index([leftAt]) // For querying active members
+}
+
+model LeagueMatch {
+  id       String  @id @default(cuid())
+  seasonId String
+  club1Id  String
+  club2Id  String
+  score1   Int?
+  score2   Int?
+  week     Int
+  status   String  @default("upcoming") // "upcoming" | "live" | "completed"
+  format   String  @default("BO3") // "BO3" | "BO5"
+
+  season Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  club1  Club   @relation("HomeClub", fields: [club1Id], references: [id], onDelete: Cascade)
+  club2  Club   @relation("AwayClub", fields: [club2Id], references: [id], onDelete: Cascade)
+
+  @@index([seasonId, status])
+  @@index([seasonId, week])
+}
+
+model PlayoffMatch {
+  id       String  @id @default(cuid())
+  seasonId String
+  club1Id  String
+  club2Id  String
+  score1   Int?
+  score2   Int?
+  round    String  // "semifinal1" | "semifinal2" | "grand_final"
+  status   String  @default("upcoming") // "upcoming" | "live" | "completed"
+  format   String  @default("BO5")
+
+  season Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  club1  Club   @relation("PlayoffHome", fields: [club1Id], references: [id], onDelete: Cascade)
+  club2  Club   @relation("PlayoffAway", fields: [club2Id], references: [id], onDelete: Cascade)
+
+  @@index([seasonId])
+  @@index([status])
+}
+
+// ============================================
+// IDM LEAGUE - CMS (CONTENT MANAGEMENT SYSTEM)
+// ============================================
+
+model CmsSection {
+  id          String   @id @default(cuid())
+  slug        String   @unique // "header" | "hero" | "about" | "kompetisi" | "clubs" | "champions" | "mvp" | "cta" | "footer"
+  title       String   @default("")
+  subtitle    String   @default("")
+  description String   @default("")
+  bannerUrl   String?  // Section background/banner image
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cards CmsCard[]
+}
+
+model CmsCard {
+  id          String   @id @default(cuid())
+  sectionId   String
+  title       String   @default("")
+  subtitle    String   @default("")
+  description String   @default("")
+  imageUrl    String?  // Card image
+  videoUrl    String?  // Card video URL (YouTube/Cloudinary)
+  linkUrl     String?  // Optional link
+  tag         String?  // Badge tag text
+  tagColor    String?  // Badge tag color
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  section CmsSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
+}
+
+model CmsSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique // "logo_url" | "site_title" | "hero_tagline" etc.
+  value     String   @default("")
+  type      String   @default("text") // "text" | "image" | "json"
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// IDM LEAGUE - POINT TRANSACTION AUDIT TRAIL
+// ============================================
+
+model PlayerPoint {
+  id           String   @id @default(cuid())
+  playerId     String
+  tournamentId String?  // null for non-tournament adjustments
+  matchId      String?  // null for non-match points
+  amount       Int      // positive = earned, negative = deduction
+  reason       String   // "participation" | "match_win" | "prize_juara1" | "prize_juara2" | "prize_juara3" | "prize_mvp" | "admin_adjustment" | "tier_upgrade_bonus"
+  description  String   // Human-readable detail e.g. "Menang match vs Team Alpha"
+  createdAt    DateTime @default(now())
+
+  player     Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  tournament Tournament? @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
+  match      Match?     @relation(fields: [matchId], references: [id], onDelete: SetNull)
+
+  @@index([playerId])
+  @@index([tournamentId])
+  @@index([reason])
+  @@index([playerId, tournamentId])
+}
+
+// ============================================
+// IDM LEAGUE - ACHIEVEMENT SYSTEM
+// ============================================
+
+model Achievement {
+  id          String  @id @default(cuid())
+  name        String  @unique  // "weekly_champion" | "back_to_back" | "hat_trick_hero" etc.
+  displayName String  // "Weekly Champion" | "Back-to-Back Winner" etc.
+  description String  // Human-readable description
+  category    String  // "tournament" | "mvp" | "points" | "club"
+  icon        String  // Emoji or icon name: "🏆" | "🔥" | "⭐" etc.
+  tier        String  @default("bronze") // "bronze" | "silver" | "gold" | "platinum" | "diamond"
+  
+  // Criteria configuration (JSON) - dynamic, no hardcoded
+  criteria    String  // JSON string
+  
+  // Reward configuration (optional)
+  rewardPoints Int    @default(0)
+  
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  playerAchievements PlayerAchievement[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model PlayerAchievement {
+  id            String   @id @default(cuid())
+  playerId      String
+  achievementId String
+  tournamentId  String?  // Tournament where achievement was earned (if applicable)
+  earnedAt      DateTime @default(now())
+  
+  // Context data (JSON) - additional info about how they earned it
+  context       String?
+
+  player      Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  tournament  Tournament? @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
+
+  @@unique([playerId, achievementId])
+  @@index([playerId])
+  @@index([achievementId])
+  @@index([earnedAt])
+}
+
+// ============================================
+// IDM LEAGUE - SPONSOR SYSTEM
+// ============================================
+
+model Sponsor {
+  id          String   @id @default(cuid())
+  name        String   // Brand name
+  logo        String?  // Logo URL
+  website     String?  // Website URL
+  description String?  // Brief description
+  tier        String   @default("bronze") // "platinum" | "gold" | "silver" | "bronze"
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tournamentSponsors TournamentSponsor[]
+  sponsoredPrizes    SponsoredPrize[]
+  banners            SponsorBanner[]
+
+  @@index([tier])
+  @@index([isActive])
+}
+
+model TournamentSponsor {
+  id           String   @id @default(cuid())
+  tournamentId String
+  sponsorId    String
+  role         String   @default("supporter") // "presented_by" | "main_sponsor" | "co_sponsor" | "supporter"
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  sponsor    Sponsor    @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, sponsorId])
+  @@index([tournamentId])
+}
+
+model SponsoredPrize {
+  id           String   @id @default(cuid())
+  tournamentId String
+  sponsorId    String
+  name         String   // "Voucher XYZ 100K" | "Exclusive Merchandise"
+  description  String?
+  prizeType    String   @default("voucher") // "voucher" | "merchandise" | "cash" | "other"
+  value        Int      @default(0) // Estimated value in IDR
+  quantity     Int      @default(1)
+  position     String?  // "juara1" | "juara2" | "juara3" | "mvp" | "all_participants"
+  imageUrl     String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  sponsor    Sponsor    @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+
+  @@index([tournamentId])
+  @@index([sponsorId])
+}
+
+model SponsorBanner {
+  id           String    @id @default(cuid())
+  sponsorId    String
+  placement    String    // "bracket_top" | "bracket_side" | "stream_overlay" | "landing_page" | "dashboard"
+  imageUrl     String
+  linkUrl      String?
+  width        Int?
+  height       Int?
+  isActive     Boolean   @default(true)
+  displayOrder Int       @default(0)
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime  @default(now())
+
+  sponsor Sponsor @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+
+  @@index([placement])
+  @@index([sponsorId])
+}
