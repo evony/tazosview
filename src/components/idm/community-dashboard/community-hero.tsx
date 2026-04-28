@@ -130,7 +130,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
         <img
           src={heroBannerDashboard}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-35 pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover object-top opacity-35 pointer-events-none scale-105 translate-y-[8%]"
           aria-hidden="true"
         />
       )}
