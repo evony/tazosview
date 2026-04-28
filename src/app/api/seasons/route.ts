@@ -31,6 +31,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
+  // Validate: only 1 active season per division at a time
+  const existingActive = await db.season.findFirst({
+    where: { division, status: 'active' },
+  });
+  if (existingActive) {
+    return NextResponse.json({
+      error: `Sudah ada season aktif untuk divisi "${division}" (${existingActive.name}). Tutup season yang aktif terlebih dahulu sebelum membuat season baru.`,
+    }, { status: 400 });
+  }
+
   const season = await db.season.create({
     data: {
       name,

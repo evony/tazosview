@@ -54,7 +54,9 @@ export async function GET(request: Request) {
     orderBy: { number: 'desc' },
   });
   // Use the season that has clubs for all club/league-related queries, fall back to latest season
-  const activeSeasonId = seasonWithClubs?.id || season.id;
+  // But for player leaderboard (per-season points), always use the LATEST active/completed season
+  const activeSeasonId = season.id; // Latest season for this division (for per-season points & tournaments)
+  const clubSeasonId = seasonWithClubs?.id || season.id; // Season with clubs (for club-related queries)
   const seasonForClubs = seasonWithClubs || season;
 
   // Run ALL independent queries in parallel
@@ -71,9 +73,9 @@ export async function GET(request: Request) {
     tournaments,
     leagueMatches,
   ] = await Promise.all([
-    // Active/recent tournament — use activeSeasonId for consistency with clubs
+    // Active/recent tournament — use clubSeasonId (season with data)
     db.tournament.findFirst({
-      where: { seasonId: activeSeasonId },
+      where: { seasonId: clubSeasonId },
       orderBy: { weekNumber: 'desc' },
       include: {
         teams: { include: { teamPlayers: { include: { player: true } } } },
@@ -86,9 +88,9 @@ export async function GET(request: Request) {
     // Total players
     db.player.count({ where: { division, isActive: true } }),
 
-    // ALL approved donations for the season — use activeSeasonId for consistency
+    // ALL approved donations for the season — use clubSeasonId (season with data)
     db.donation.findMany({
-      where: { seasonId: activeSeasonId, status: 'approved' },
+      where: { seasonId: clubSeasonId, status: 'approved' },
     }),
 
     // Per-season points aggregation — compute from PlayerPoint records
@@ -104,16 +106,16 @@ export async function GET(request: Request) {
       where: { division, isActive: true },
     }),
 
-    // Clubs standings — use the season that actually has clubs
+    // Clubs standings — use clubSeasonId (season with clubs)
     db.club.findMany({
-      where: { seasonId: activeSeasonId },
+      where: { seasonId: clubSeasonId },
       orderBy: [{ points: 'desc' }, { gameDiff: 'desc' }],
       include: { profile: { include: { _count: { select: { members: true } } } }, season: { select: { name: true, division: true } } },
     }),
 
-    // Recent matches — use activeSeasonId for consistency with clubs
+    // Recent matches — use clubSeasonId (season with data)
     db.leagueMatch.findMany({
-      where: { seasonId: activeSeasonId, status: 'completed' },
+      where: { seasonId: clubSeasonId, status: 'completed' },
       orderBy: { week: 'desc' },
       take: 3,
       include: { club1: { include: { profile: true } }, club2: { include: { profile: true } } },
@@ -121,7 +123,7 @@ export async function GET(request: Request) {
 
     // Upcoming matches
     db.leagueMatch.findMany({
-      where: { seasonId: activeSeasonId, status: 'upcoming' },
+      where: { seasonId: clubSeasonId, status: 'upcoming' },
       orderBy: { week: 'asc' },
       take: 3,
       include: { club1: { include: { profile: true } }, club2: { include: { profile: true } } },
@@ -129,7 +131,7 @@ export async function GET(request: Request) {
 
     // Playoff matches
     db.playoffMatch.findMany({
-      where: { seasonId: activeSeasonId },
+      where: { seasonId: clubSeasonId },
       include: { club1: { include: { profile: true } }, club2: { include: { profile: true } } },
       orderBy: { round: 'asc' },
     }),
@@ -152,9 +154,9 @@ export async function GET(request: Request) {
       },
     }),
 
-    // All league matches grouped by week — use activeSeasonId for consistency
+    // All league matches grouped by week — use clubSeasonId (season with data)
     db.leagueMatch.findMany({
-      where: { seasonId: activeSeasonId },
+      where: { seasonId: clubSeasonId },
       orderBy: [{ week: 'asc' }],
       include: { club1: { include: { profile: true } }, club2: { include: { profile: true } } },
     }),
@@ -374,7 +376,7 @@ export async function GET(request: Request) {
   };
 
   // All seasons info for season selector — include champion player data
-  const allSeasonsInfo = await Promise.all(allSeasons.map(async (s: { id: string; name: string; number: number; status: string; startDate: Date | null; endDate: Date | null; championClubId: string | null; championPlayerId: string | null; _count?: { tournaments?: number } }) => {
+  const allSeasonsInfo = await Promise.all(allSeasons.map(async (s: { id: string; name: string; number: number; status: string; startDate: Date | null; endDate: Date | null; championClubId: string | null; championPlayerId: string | null; championPlayerPoints: number | null; _count?: { tournaments?: number } }) => {
     let championPlayer: SeasonChampionPlayer | null = null;
     if (s.championPlayerId) {
       const player = await db.player.findUnique({
