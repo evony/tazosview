@@ -7,7 +7,7 @@ import {
   Home, Flame, LogOut, KeyRound,
   PanelLeftClose, ChevronRight, Download, X, UserCircle,
   Zap, Star, HelpCircle, Bell,
-  Gamepad2, Trophy, Radio, Calendar
+  Gamepad2, Trophy, Radio, Calendar, ShoppingBag
 } from 'lucide-react';
 import { formatTarkamSeasonName } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -69,6 +69,9 @@ const CommunityDashboard = dynamic(() => import('./community-dashboard').then(m 
 const BantuanView = dynamic(() => import('./bantuan-view').then(m => ({ default: m.BantuanView })), {
   loading: () => viewLoading,
 });
+const MarketplaceView = dynamic(() => import('./marketplace-view').then(m => ({ default: m.MarketplaceView })), {
+  loading: () => viewLoading,
+});
 
 /* ─── Navigation Items — Community-focused ─── */
 type NavItemDef = {
@@ -83,6 +86,7 @@ const communityNavItems: NavItemDef[] = [
   { id: 'community', label: 'Komunitas', icon: Users },
   { id: 'dashboard', label: 'Male', icon: Zap, division: 'male' },
   { id: 'dashboard', label: 'Female', icon: Star, division: 'female' },
+  { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag },
 ];
 
 /* Division sub-menu items — shown when a division is active */
@@ -242,6 +246,7 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
           if (isActive) {
             if (item.division === 'male') iconBg = 'bg-idm-male/15';
             else if (item.division === 'female') iconBg = 'bg-idm-female/15';
+            else if (item.id === 'marketplace') iconBg = 'bg-idm-gold-warm/15';
             else iconBg = dt.iconBg;
           }
 
@@ -315,6 +320,8 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
           isCommunity
           onClick={() => setCurrentView('bantuan')}
         />
+
+        {/* Marketplace — visible in Lainnya section */}
 
         {/* Notifikasi */}
         <NavButton
@@ -569,6 +576,7 @@ export function AppShell() {
       case 'register': return <RegistrationForm />;
       case 'community': return <CommunityDashboard />;
       case 'bantuan': return <BantuanView />;
+      case 'marketplace': return <MarketplaceView />;
       // mytournament removed — integrated into Dashboard
       default: return <Dashboard />;
     }
@@ -633,7 +641,7 @@ export function AppShell() {
         {/* Main Content */}
         <main className={`flex-1 min-w-0 overflow-y-auto ${dt.bgMesh}`}>
           {(() => {
-            const contentClass = `pt-6 px-3 pb-28 sm:pt-6 sm:px-4 sm:pb-28 lg:p-8 lg:pb-8 ${currentView === 'admin' ? 'max-w-[2200px]' : currentView === 'dashboard' || currentView === 'community' ? '' : 'max-w-[1600px]'} mx-auto`;
+            const contentClass = `pt-6 px-3 pb-28 sm:pt-6 sm:px-4 sm:pb-28 lg:p-8 lg:pb-8 ${currentView === 'admin' ? 'max-w-[2200px]' : currentView === 'dashboard' || currentView === 'community' || currentView === 'marketplace' ? '' : 'max-w-[1600px]'} mx-auto`;
             const content = <div key={currentView} className={contentClass}>{renderView()}</div>;
             return isMobile
               ? <PullToRefresh onRefresh={async () => { queryClient.invalidateQueries(); }}>{content}</PullToRefresh>

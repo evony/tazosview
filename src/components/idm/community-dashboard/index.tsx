@@ -7,7 +7,7 @@ import {
   Users, Swords, Trophy, Crown, Medal,
   Flame, Radio, Star,
   Gamepad2, Target, Calendar,
-  Clock, Gift, ShoppingBag,
+  Clock, Gift,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -33,8 +33,7 @@ import { MvpSpotlight } from './mvp-spotlight';
 import { UpcomingMatches } from './upcoming-matches';
 import { CommunityStreaks } from './community-streaks';
 import { CommunityDonors } from './community-donors';
-import { CommunityMarketplace } from './community-marketplace';
-// CommunityActivityMarquee removed — too noisy for community dashboard
+// CommunityMarketplace moved to standalone MarketplaceView nav item
 import { SeasonComparison } from './season-comparison';
 import { DonationModal } from '../donation-modal';
 
@@ -510,11 +509,6 @@ export function CommunityDashboard() {
       {/* ═══ 8. Matches — Full width with internal tabs ═══ */}
       <Section sectionId="matches">
         <MatchesSection maleData={maleData} femaleData={femaleData} />
-      </Section>
-
-      {/* ═══ 9. Marketplace — Jual-beli item & jasa game ═══ */}
-      <Section title="Marketplace" icon={ShoppingBag} iconColor="text-idm-gold-warm" sectionId="marketplace">
-        <CommunityMarketplace />
       </Section>
 
       {/* ═══ Donation Modal ═══ */}
