@@ -113,21 +113,24 @@ export function AdminSettingsPanel() {
     onError: () => toast.error('Gagal menyimpan setting'),
   });
 
-  // Reseed database
-  const reseedDatabase = useMutation({
+  // Reset points & tournament data
+  const resetTournamentData = useMutation({
     mutationFn: async () => {
-      const res = await fetch('/api/seed?force=true', {
+      const res = await fetch('/api/reset', {
         method: 'POST',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to reseed');
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || 'Failed to reset');
+      }
       return res.json();
     },
     onSuccess: () => {
       qc.invalidateQueries();
-      toast.success('Database berhasil di-reseed!');
+      toast.success('Poin & data turnamen berhasil di-reset!');
     },
-    onError: () => toast.error('Gagal melakukan reseed'),
+    onError: (e: Error) => toast.error(e.message || 'Gagal melakukan reset'),
   });
 
   // Export data
@@ -284,33 +287,35 @@ export function AdminSettingsPanel() {
               <Label className="text-xs text-red-500 mb-2 block flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" /> Danger Zone
               </Label>
+              <p className="text-[10px] text-muted-foreground mb-2">
+                Reset semua poin pemain ke 0, hapus data turnamen & match. Data pemain, club, admin, dan CMS tetap aman.
+              </p>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-xs text-red-500 border-red-500/30 hover:bg-red-500/10">
+                  <Button variant="outline" size="sm" className="text-xs text-orange-500 border-orange-500/30 hover:bg-orange-500/10">
                     <RefreshCw className="w-3 h-3 mr-1" />
-                    Reseed Database
+                    Reset Poin & Turnamen
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Reseed Database?</AlertDialogTitle>
+                    <AlertDialogTitle>Reset Poin & Turnamen?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Semua data saat ini akan dihapus dan diganti dengan data awal.
-                      Tindakan ini tidak dapat dibatalkan.
+                      Semua poin pemain akan direset ke 0, streak & wins dihapus, dan seluruh data turnamen/match/donasi akan dihapus. Data pemain, club, admin, dan CMS tetap tersimpan. Tindakan ini tidak dapat dibatalkan.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Batal</AlertDialogCancel>
                     <AlertDialogAction
-                      className="bg-red-500 hover:bg-red-600"
-                      onClick={() => reseedDatabase.mutate()}
+                      className="bg-orange-500 hover:bg-orange-600"
+                      onClick={() => resetTournamentData.mutate()}
                     >
-                      {reseedDatabase.isPending ? (
+                      {resetTournamentData.isPending ? (
                         <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                       ) : (
                         <RefreshCw className="w-3 h-3 mr-1" />
                       )}
-                      Reseed
+                      Reset
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
