@@ -6,7 +6,7 @@ import { useAppStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Crown, Star, Swords, TrendingUp, Users, Zap } from 'lucide-react';
-import { clubToString } from '@/lib/utils';
+import { clubToString, formatTarkamSeasonName } from '@/lib/utils';
 import { ActivityFeed } from '@/components/idm/activity-feed';
 
 export function Dashboard() {
@@ -63,7 +63,7 @@ export function Dashboard() {
             <Badge className={`${accentBg} ${accentText} border-0 text-xs ${isMale ? 'division-badge-glow-male' : 'division-badge-glow-female'}`}>
               {division === 'male' ? '🕺' : '💃'} {division.charAt(0).toUpperCase() + division.slice(1)} Tarkam
             </Badge>
-            <Badge variant="outline" className="text-[10px]">{data.season.name}</Badge>
+            <Badge variant="outline" className="text-[10px]">{formatTarkamSeasonName(data.season.name, data.season.number)}</Badge>
             {hasActive && (
               <Badge className="bg-red-500/10 text-red-400 border-0 text-[10px]">
                 <span className="flex h-1.5 w-1.5 mr-1 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" /></span>

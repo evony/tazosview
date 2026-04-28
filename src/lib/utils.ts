@@ -137,3 +137,18 @@ export function clubToString(club: string | { id: string; name: string; logo?: s
   if (typeof club === 'string') return club;
   return club.name || '';
 }
+
+/**
+ * Transform season name for Tarkam display.
+ * "IDM League Season 1 - Male" → "IDM TARKAM Season 1"
+ * "Season 2 - Female" → "IDM TARKAM Season 2"
+ * Falls back to "IDM TARKAM Season {number}" if name doesn't match pattern.
+ */
+export function formatTarkamSeasonName(rawName: string, seasonNumber?: number): string {
+  if (!rawName) return seasonNumber ? `IDM TARKAM Season ${seasonNumber}` : 'IDM TARKAM';
+  return rawName
+    .replace(/IDM\s+League\s+Season\s+/i, 'IDM TARKAM Season ')
+    .replace(/\s*[-–]\s*(Male|Female|male|female)\s*$/i, '')
+    .replace(/^Season\s+/i, 'IDM TARKAM Season ')
+    .trim();
+}

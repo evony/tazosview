@@ -45,3 +45,25 @@ Stage Summary:
 - Liga seasons auto-close with `championClubId` (top club)
 - Tarkam seasons auto-close with `championPlayerId` (top player by points in that division)
 - This fix is non-breaking — wrapped in try/catch as before, admin can still manually override via Season Panel
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Replace "IDM League Season 1" display with "IDM TARKAM Season x" in admin panel dashboard and other Tarkam views
+
+Work Log:
+- Added `formatTarkamSeasonName()` utility function to `src/lib/utils.ts` — transforms "IDM League Season 1 - Male" → "IDM TARKAM Season 1"
+- Updated `admin-panel.tsx` Season Info Indicator to use `formatTarkamSeasonName(stats.season.name, stats.season.number)` instead of raw `stats.season.name`
+- Updated `dashboard/dashboard.tsx` season name badge to use `formatTarkamSeasonName(data.season.name, data.season.number)`
+- Updated `community-dashboard/season-comparison.tsx` to use shared `formatTarkamSeasonName` instead of its own inline `formatSeasonName`
+- Kept `league-view.tsx` unchanged — it's for Liga seasons (division='liga'), so raw name stays as-is
+- Kept `admin-season-panel.tsx` unchanged — it manages season CRUD, admin needs to see actual database names
+- Verified ESLint passes with no errors
+- Verified dev server running normally
+
+Stage Summary:
+- Admin panel dashboard now shows "IDM TARKAM Season x" instead of "IDM League Season 1 - Male"
+- Player dashboard also shows "IDM TARKAM Season x"
+- Season comparison uses shared formatter function
+- Liga views (league-view.tsx, admin-season-panel.tsx) keep raw season names as those are Liga-specific
+- Centralized formatter in utils.ts for consistent display across all Tarkam views

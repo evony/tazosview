@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { GitCompareArrows, Trophy, Users, Swords, Crown } from 'lucide-react';
 import { useCommunityTheme } from '@/hooks/use-community-theme';
-import { getAvatarUrl } from '@/lib/utils';
+import { getAvatarUrl, formatTarkamSeasonName } from '@/lib/utils';
 import Image from 'next/image';
 import type { StatsData, SeasonInfo } from '@/types/stats';
 
@@ -85,13 +85,8 @@ function ComparisonBar({
   );
 }
 
-/* ── Transform season name: "IDM League Season 1 - Male" → "Season Tarkam 1" ── */
-function formatSeasonName(rawName: string): string {
-  return rawName
-    .replace(/IDM\s+League\s+Season\s+/i, 'Season Tarkam ')
-    .replace(/\s*[-–]\s*(Male|Female|male|female)\s*$/i, '')
-    .trim();
-}
+/* ── Transform season name: uses shared formatTarkamSeasonName ── */
+const formatSeasonName = formatTarkamSeasonName;
 
 export function SeasonComparison({ maleData, femaleData }: SeasonComparisonProps) {
   const dt = useCommunityTheme();

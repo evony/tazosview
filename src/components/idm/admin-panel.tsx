@@ -38,7 +38,7 @@ import { AdminSeasonPanel } from './admin-season-panel';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
-import { formatCurrency, getAvatarUrl } from '@/lib/utils';
+import { formatCurrency, getAvatarUrl, formatTarkamSeasonName } from '@/lib/utils';
 
 // Player form type
 interface PlayerForm {
@@ -553,7 +553,7 @@ export function AdminPanel() {
         {stats?.season && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-idm-gold-warm/[0.06] border border-idm-gold-warm/10">
             <Calendar className="w-3.5 h-3.5 text-idm-gold-warm shrink-0" />
-            <span className="text-[11px] font-medium text-idm-gold-warm truncate">{stats.season.name || `Season ${stats.season.number}`}</span>
+            <span className="text-[11px] font-medium text-idm-gold-warm truncate">{formatTarkamSeasonName(stats.season.name, stats.season.number)}</span>
             <Badge
               className={
                 stats.season.status === 'active'
