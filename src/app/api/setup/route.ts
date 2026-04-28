@@ -47,6 +47,7 @@ export async function POST(request: Request) {
     // ======== STEP 2: Seed database if empty ========
     if (seasonCount === 0) {
       // Clear any leftover partial data (respect foreign key order)
+      await db.marketplaceItem.deleteMany();
       await db.playerAchievement.deleteMany();
       await db.playerPoint.deleteMany();
       await db.teamPlayer.deleteMany();

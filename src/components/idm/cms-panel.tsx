@@ -535,11 +535,57 @@ function MarketplaceManager() {
     { id: 'add' as const, label: '+ Tambah' },
   ];
 
+  const purgeAll = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/marketplace/purge', { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) throw new Error('Failed');
+      return res.json();
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['marketplace-admin'] });
+      toast.success(`${data.deleted} marketplace item berhasil dihapus`);
+    },
+  });
+
+  const [confirmPurge, setConfirmPurge] = useState(false);
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <ShoppingBag className="w-4 h-4 text-idm-gold-warm" />
-        <h3 className="text-sm font-bold">Kelola Marketplace</h3>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <ShoppingBag className="w-4 h-4 text-idm-gold-warm" />
+          <h3 className="text-sm font-bold">Kelola Marketplace</h3>
+        </div>
+        {/* Purge All Button — Super Admin only */}
+        {items.length > 0 && (
+          <div className="flex items-center gap-2">
+            {!confirmPurge ? (
+              <button
+                onClick={() => setConfirmPurge(true)}
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3 h-3" />
+                Hapus Semua
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-red-400 font-medium">Hapus semua iklan?</span>
+                <button
+                  onClick={() => { purgeAll.mutate(); setConfirmPurge(false); }}
+                  className="px-2 py-1 rounded-md text-[10px] font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors cursor-pointer"
+                >
+                  Ya, Hapus
+                </button>
+                <button
+                  onClick={() => setConfirmPurge(false)}
+                  className="px-2 py-1 rounded-md text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Admin Tab Bar */}

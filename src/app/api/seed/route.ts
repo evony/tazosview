@@ -26,6 +26,7 @@ export async function POST(request: Request) {
 
   try {
     // Clear existing data (respect foreign key order)
+    await db.marketplaceItem.deleteMany();
     await db.playerAchievement.deleteMany();
     await db.playerPoint.deleteMany();
     await db.teamPlayer.deleteMany();
