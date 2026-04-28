@@ -1118,9 +1118,9 @@ export function MatchDayCenter() {
               </SectionCard>
             </div>
 
-            {/* Recent League Results */}
+            {/* Recent Tarkam Results */}
             <div className="stagger-item-fast stagger-d1">
-              <SectionCard title="Hasil League" icon={Radio} badge="Terbaru">
+              <SectionCard title="Hasil Tarkam" icon={Radio} badge="Terbaru">
                 <div className="space-y-2">
                   {data.recentMatches?.slice(0, 6).map(m => {
                     const winner1 = m.score1 > m.score2;

@@ -18,9 +18,12 @@ const LEAGUE_CACHE_HEADERS_SHORT = {
 
 export async function GET() {
   try {
-  // Get all seasons (active + completed)
+  // Get all Tarkam seasons (active + completed) — exclude Liga seasons
   const seasons = await withDbRetry(() => db.season.findMany({
-    where: { status: { in: ['active', 'completed'] } },
+    where: {
+      status: { in: ['active', 'completed'] },
+      division: { in: ['male', 'female'] },  // Only Tarkam seasons — exclude 'liga'
+    },
     orderBy: { number: 'desc' },
     include: {
       championClub: {

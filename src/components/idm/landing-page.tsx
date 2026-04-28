@@ -5,7 +5,7 @@ import { useAppStore } from '@/lib/store';
 import { useCrossTabInvalidation } from '@/lib/cross-tab-sync';
 
 import Image from 'next/image';
-import { Crown, Users, Swords, Sparkles, Play, Flame, ChevronRight, Zap } from 'lucide-react';
+import { Crown, Users, Swords, Flame, ChevronRight, Zap } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import type { StatsData } from '@/types/stats';
 
@@ -15,8 +15,7 @@ import { HighlightsSection } from './landing/highlights-section';
 import { ExperiencesSection } from './landing/experiences-section';
 import { TournamentHub } from './landing/tournament-hub';
 import { ClubsSection } from './landing/clubs-section';
-import { ChampionsSection } from './landing/champions-section';
-import { MvpSection } from './landing/mvp-section';
+import { HallOfFameSection } from './landing/hall-of-fame-section';
 import { HowItWorksSection } from './landing/how-it-works-section';
 import { CTASection } from './landing/cta-section';
 import { LandingFooter } from './landing/landing-footer';
@@ -148,7 +147,7 @@ export function LandingPage() {
   }, []);
 
   useEffect(() => {
-    const sectionIds = ['kompetisi', 'highlights', 'experiences', 'champions', 'mvp', 'clubs', 'how-it-works'];
+    const sectionIds = ['kompetisi', 'highlights', 'experiences', 'hall-of-fame', 'clubs', 'how-it-works'];
     const observer = new IntersectionObserver(
       (entries) => { entries.forEach((entry) => { if (entry.isIntersecting) setActiveSection(entry.target.id); }); },
       { rootMargin: '-40% 0px -55% 0px' }
@@ -217,8 +216,7 @@ export function LandingPage() {
             {[
               { id: 'kompetisi', label: 'Kompetisi', mdLabel: 'Kompetisi' },
               { id: 'highlights', label: 'Highlights', mdLabel: 'Highlight' },
-              { id: 'champions', label: 'Champion', mdLabel: 'Champion' },
-              { id: 'mvp', label: 'MVP', mdLabel: 'MVP' },
+              { id: 'hall-of-fame', label: 'Hall of Fame', mdLabel: 'HOF' },
               { id: 'clubs', label: 'Club', mdLabel: 'Club' },
               { id: 'how-it-works', label: 'Cara Main', mdLabel: 'Cara Main' },
             ].map(item => (
@@ -264,12 +262,11 @@ export function LandingPage() {
         <div className="flex items-center justify-around h-16 px-2">
           {[
             { id: 'kompetisi', label: 'Kompetisi', icon: Swords, special: false },
-            { id: 'champions', label: 'Champion', icon: Crown, special: true },
-            { id: 'mvp', label: 'MVP', icon: Sparkles, special: false },
+            { id: 'hall-of-fame', label: 'HOF', icon: Crown, special: true },
             { id: 'clubs', label: 'Club', icon: Users, special: false },
             { id: 'how-it-works', label: 'Cara Main', icon: Zap, special: false },
           ].map(item => {
-            const isActive = (activeSection === 'champions' || activeSection === 'mvp') && item.id === 'champions' || activeSection === item.id;
+            const isActive = activeSection === item.id;
             return (
               <button
                 key={item.id}
@@ -345,6 +342,19 @@ export function LandingPage() {
 
       <SectionDivider />
 
+      {/* Hall of Fame — merged Champions + MVP (before video section for professional flow) */}
+      <div className="section-reveal">
+      <HallOfFameSection
+        maleData={maleData}
+        femaleData={femaleData}
+        isDataLoading={isDataLoading}
+        cmsSections={cmsSections}
+        setSelectedPlayer={setSelectedPlayer}
+      />
+      </div>
+
+      <SectionDivider />
+
       {/* Experiences — Video Highlights */}
       <div className="section-reveal">
       <ExperiencesSection
@@ -360,33 +370,7 @@ export function LandingPage() {
 
       <SectionDivider />
 
-      {/* Champions — shown first for achievement showcase */}
-      <div className="section-reveal">
-      <ChampionsSection
-        maleData={maleData}
-        femaleData={femaleData}
-        isDataLoading={isDataLoading}
-        cmsSections={cmsSections}
-        setSelectedPlayer={setSelectedPlayer}
-      />
-      </div>
-
-      <SectionDivider />
-
-      {/* MVP */}
-      <div className="section-reveal">
-      <MvpSection
-        maleData={maleData}
-        femaleData={femaleData}
-        isDataLoading={isDataLoading}
-        cmsSections={cmsSections}
-        setSelectedPlayer={setSelectedPlayer}
-      />
-      </div>
-
-      <SectionDivider />
-
-      {/* Clubs — moved below MVP */}
+      {/* Clubs */}
       <div className="section-reveal">
       <ClubsSection
         maleData={maleData}

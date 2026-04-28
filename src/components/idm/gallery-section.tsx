@@ -27,7 +27,7 @@ const GALLERY_ITEMS: GalleryItem[] = [
   // ─── Turnamen ───
   {
     id: 'g1', src: '/gallery/tournament-stage.png', alt: 'Tournament Stage',
-    title: 'IDM League Arena', description: 'Panggung utama IDM League dengan efek holografik dan pencahayaan neon yang memukau',
+    title: 'IDM Tarkam Arena', description: 'Panggung utama IDM Tarkam dengan efek holografik dan pencahayaan neon yang memukau',
     category: 'tournament', date: '2025-01-15', tag: 'LIVE EVENT', tagColor: 'bg-red-500/90 text-white',
     featured: true,
   },
@@ -77,7 +77,7 @@ const GALLERY_ITEMS: GalleryItem[] = [
   // ─── Prestasi ───
   {
     id: 'g10', src: '/gallery/champion-celebration.png', alt: 'Champion Celebration',
-    title: 'Juara League!', description: 'Momen kemenangan tim juara — confetti, trophy, dan air mata bahagia',
+    title: 'Juara Tarkam!', description: 'Momen kemenangan tim juara — confetti, trophy, dan air mata bahagia',
     category: 'achievement', date: '2025-02-15', tag: 'CHAMPION', tagColor: 'bg-yellow-500/90 text-white',
     featured: true,
   },
@@ -110,7 +110,7 @@ const COLLECTIONS: Collection[] = [
     id: 'col-tournament',
     title: 'Tournament Arena',
     subtitle: 'Panggung Kejayaan',
-    description: 'A visual journey through intense dance battles, championship moments, and the electric atmosphere of IDM League tournaments.',
+    description: 'A visual journey through intense dance battles, championship moments, and the electric atmosphere of IDM Tarkam tournaments.',
     coverSrc: '/gallery/tournament-stage.png',
     category: 'tournament',
     count: GALLERY_ITEMS.filter(g => g.category === 'tournament').length,
@@ -134,7 +134,7 @@ const COLLECTIONS: Collection[] = [
     coverSrc: '/gallery/champion-celebration.png',
     category: 'achievement',
     count: GALLERY_ITEMS.filter(g => g.category === 'achievement').length,
-    accentColor: 'gold', // League color
+    accentColor: 'gold', // Tarkam color
   },
 ];
 
@@ -564,7 +564,7 @@ export function GallerySection() {
               Momen Komunitas
             </h2>
             <p className="text-sm text-stone-500 dark:text-stone-400 mt-4 max-w-lg mx-auto leading-relaxed font-sans">
-              Kumpulan momen terbaik dari kegiatan komunitas IDM League — dari panggung turnamen hingga cerita di balik layar
+              Kumpulan momen terbaik dari kegiatan komunitas IDM Tarkam — dari panggung turnamen hingga cerita di balik layar
             </p>
           </motion.div>
 

@@ -17,7 +17,7 @@ import { AnimatedSection, SectionHeader } from './shared';
 import type { StatsData } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════════════
-   LIGA IDM — VIDEO HIGHLIGHTS SECTION
+   TARKAM IDM — VIDEO HIGHLIGHTS SECTION
    Engaging video gallery showcasing tournament moments
    Layout: LEFT large banner + RIGHT scrollable video list
    ═══════════════════════════════════════════════════════════════ */

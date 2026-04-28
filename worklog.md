@@ -96,3 +96,79 @@ Stage Summary:
 - Account + Admin merged from 2-3 separate cards into 1 compact card
 - Reduced visual clutter from 3 bottom elements to 1 compact element + 1 prominent top element
 - Collapsed sidebar also improved with mini season indicator and smart identity icons
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Filter /api/league route to only return Tarkam seasons
+
+Work Log:
+- Read `/api/league/route.ts` — found season query at line ~22-23 with no division filter, fetching ALL seasons including Liga
+- Updated comment from `// Get all seasons (active + completed)` to `// Get all Tarkam seasons (active + completed) — exclude Liga seasons`
+- Added `division: { in: ['male', 'female'] }` filter to the `db.season.findMany` where clause to exclude Liga seasons (division: 'liga')
+- No other logic changed — the rest of the route already calculates Tarkam points correctly
+- Verified ESLint passes with no errors
+
+Stage Summary:
+- `/api/league` now only fetches Tarkam seasons (division: 'male' or 'female'), excluding Liga seasons
+- This prevents Liga season data from being mixed into Tarkam-specific views
+- Minimal change — only the season query filter was updated, all downstream logic unchanged
+
+---
+Task ID: 1 (current session)
+Agent: Main Agent
+Task: Merge Champions + MVP sections into a single "Hall of Fame" section
+
+Work Log:
+- Read existing `champions-section.tsx` and `mvp-section.tsx` to understand card logic and section structure
+- Created `/home/z/my-project/src/components/idm/landing/hall-of-fame-section.tsx` combining both sections:
+  - Copied `CompactChampionCard` and `CompactMVPCard` components directly into the new file (as specified)
+  - Added tab interface with "Champion" | "MVP" tabs using `useState`
+  - Styled tab bar with gold accents (border-idm-gold-warm/20, bg-idm-gold-warm/15 for active)
+  - Added `AnimatePresence` + `motion.div` from framer-motion for smooth tab transitions
+  - Used `layoutId="hof-tab-indicator"` for animated tab underline indicator
+  - Section ID set to `hall-of-fame` for navigation scroll
+  - Section label: "Hall of Fame" with Crown icon
+  - Section title: "Hall of Fame"
+  - Section subtitle: "Juara season dan pemain terbaik Tarkam IDM"
+  - Background: same as original champions section (bg-[#0a0a14] with gold grid overlay and radial glows)
+  - Both male/female cards side by side in grid (same as current)
+  - All existing card logic preserved (player click handlers, empty states, etc.)
+- Updated `landing-page.tsx`:
+  - Replaced `ChampionsSection` and `MvpSection` imports with single `HallOfFameSection`
+  - Replaced two separate section blocks with one `HallOfFameSection` (removed one `SectionDivider` since sections merged)
+  - Updated desktop nav: merged 'champions' + 'mvp' into single 'hall-of-fame' item (label: "Hall of Fame", mdLabel: "HOF")
+  - Updated mobile bottom nav: merged 'champions' + 'mvp' into single 'hall-of-fame' item (label: "HOF", icon: Crown, special: true)
+  - Simplified `isActive` logic in mobile nav (removed complex cross-section check)
+  - Updated section observer IDs: ['kompetisi', 'highlights', 'experiences', 'hall-of-fame', 'clubs', 'how-it-works']
+  - Removed unused `Sparkles` and `Play` imports from lucide-react
+- ESLint passes with no errors
+- Dev server compiles and runs successfully
+
+Stage Summary:
+- Champions + MVP sections merged into single "Hall of Fame" section with tab interface
+- Reduces visual fatigue from two nearly identical sections
+- Navigation updated across desktop nav, mobile bottom nav, and section observer
+- All card logic, click handlers, empty states preserved exactly as-is
+- One `SectionDivider` removed (was between Champions and MVP)
+---
+Task ID: 1
+Agent: Main Agent
+Task: Merge Champions + MVP sections into single Hall of Fame section with tabs, reorder landing page, filter API for Tarkam seasons, replace remaining Liga text
+
+Work Log:
+- Created `/home/z/my-project/src/components/idm/landing/hall-of-fame-section.tsx` — merged CompactChampionCard + CompactMVPCard into one section with Champion|MVP tabs
+- Updated `/home/z/my-project/src/components/idm/landing-page.tsx` — replaced ChampionsSection + MvpSection with HallOfFameSection, reordered sections (Hall of Fame before Experiences), updated desktop+mobile nav, updated section observer IDs
+- Updated `/home/z/my-project/src/app/api/league/route.ts` — added `division: { in: ['male', 'female'] }` filter to season query to exclude Liga seasons
+- Updated `/home/z/my-project/src/components/idm/gallery-section.tsx` — replaced "IDM League Arena" → "IDM Tarkam Arena", "Juara League!" → "Juara Tarkam!", "IDM League" → "IDM Tarkam" in all display text
+- Updated `/home/z/my-project/src/components/idm/landing/experiences-section.tsx` — updated comment from "LIGA IDM" to "TARKAM IDM"
+- Updated `/home/z/my-project/src/components/idm/match-day-center.tsx` — changed "Hasil League" → "Hasil Tarkam"
+- ESLint passes cleanly, dev server running without errors
+
+Stage Summary:
+- Champions + MVP merged into Hall of Fame section with tab interface (AnimatePresence transitions, gold-styled tab bar)
+- Landing page section order now: Hero → Kompetisi → Highlights → Hall of Fame → Experiences → Clubs → How It Works → CTA
+- /api/league now only returns Tarkam seasons (division: male/female), excluding Liga seasons
+- All display-facing "League/Liga" text replaced with "Tarkam" across gallery, experiences, match-day-center
+- Liga navigation menu in app-shell.tsx kept as-is (per user requirement)
+- Admin components kept as-is (need Liga references for admin purposes)
