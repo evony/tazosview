@@ -30,10 +30,43 @@ export function getPusher(): Pusher | null {
 // Channel and event constants
 export const PUSHER_CHANNELS = {
   FEED: 'idm-feed',
+  LEADERBOARD: 'idm-leaderboard',
+  TOURNAMENT: 'idm-tournament',
+  LEAGUE: 'idm-league',
 } as const;
 
 export const PUSHER_EVENTS = {
+  // Feed channel
   DONATION_APPROVED: 'donation-approved',
   DONATION_REJECTED: 'donation-rejected',
   FEED_UPDATED: 'feed-updated',
+
+  // Leaderboard channel
+  LEADERBOARD_UPDATED: 'leaderboard-updated',
+
+  // Tournament channel
+  TOURNAMENT_SCORED: 'tournament-scored',
+  TOURNAMENT_FINALIZED: 'tournament-finalized',
+  TOURNAMENT_STATUS_CHANGED: 'tournament-status-changed',
+
+  // League channel
+  LEAGUE_MATCH_SCORED: 'league-match-scored',
+  SEASON_CLOSED: 'season-closed',
 } as const;
+
+/**
+ * Helper to trigger a Pusher event with graceful fallback if Pusher is not configured
+ */
+export async function pusherTrigger(
+  channel: string,
+  event: string,
+  data: Record<string, unknown>
+): Promise<void> {
+  try {
+    const pusher = getPusher();
+    if (!pusher) return;
+    await pusher.trigger(channel, event, data);
+  } catch (error) {
+    console.warn(`[Pusher] Failed to trigger ${event} on ${channel}:`, error);
+  }
+}

@@ -168,6 +168,20 @@ export async function POST(
     revalidatePath('/');
     revalidatePath('/api/league');
 
+    // Pusher: Notify real-time clients about season closure
+    try {
+      const { pusherTrigger, PUSHER_CHANNELS, PUSHER_EVENTS } = await import('@/lib/pusher');
+      await pusherTrigger(PUSHER_CHANNELS.LEAGUE, PUSHER_EVENTS.SEASON_CLOSED, {
+        seasonId: id, division: season.division,
+      });
+      await pusherTrigger(PUSHER_CHANNELS.LEADERBOARD, PUSHER_EVENTS.LEADERBOARD_UPDATED, {
+        division: season.division, seasonId: id,
+      });
+      await pusherTrigger(PUSHER_CHANNELS.FEED, PUSHER_EVENTS.FEED_UPDATED, {
+        type: 'season_closed', seasonId: id,
+      });
+    } catch { /* non-critical */ }
+
     return NextResponse.json({
       success: true,
       message: `Season "${season.name}" berhasil ditutup!${updateData.championPlayerId ? ' Champion otomatis ditentukan dari per-season points.' : updateData.championClubId ? ' Champion club otomatis ditentukan dari poin liga.' : ' Tidak ada champion yang ditentukan (belum ada point record).'} `,

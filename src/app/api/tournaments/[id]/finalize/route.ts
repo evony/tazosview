@@ -428,6 +428,20 @@ export async function POST(
     },
   });
 
+  // Pusher: Notify real-time clients about tournament finalization
+  try {
+    const { pusherTrigger, PUSHER_CHANNELS, PUSHER_EVENTS } = await import('@/lib/pusher');
+    await pusherTrigger(PUSHER_CHANNELS.TOURNAMENT, PUSHER_EVENTS.TOURNAMENT_FINALIZED, {
+      tournamentId: id, division: tournament.division, seasonId: tournament.seasonId,
+    });
+    await pusherTrigger(PUSHER_CHANNELS.LEADERBOARD, PUSHER_EVENTS.LEADERBOARD_UPDATED, {
+      division: tournament.division, seasonId: tournament.seasonId,
+    });
+    await pusherTrigger(PUSHER_CHANNELS.FEED, PUSHER_EVENTS.FEED_UPDATED, {
+      type: 'finalized', tournamentId: id,
+    });
+  } catch { /* non-critical */ }
+
   return NextResponse.json({ ...result, achievementsAwarded, skinsAwarded });
 
   } catch (error: unknown) {
