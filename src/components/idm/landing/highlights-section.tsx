@@ -534,7 +534,7 @@ function ThumbnailCard({
               alt={item.title}
               fill
               sizes="112px"
-              className="object-cover object-top transition-opacity duration-300"
+              className="object-contain object-center transition-opacity duration-300 bg-[#0d0d1a]"
               style={{ opacity: isActive ? 0.7 : 0.35 }}
             />
           ) : item.clubName ? (
@@ -877,7 +877,7 @@ export function HighlightsSection({
                   className="perspective-card relative rounded-2xl overflow-hidden border transition-all duration-500 group/featured cursor-pointer"
                   style={{
                     borderColor: hexToRgba(active.accentColor, 0.2),
-                    minHeight: '420px',
+                    minHeight: '440px',
                     height: '100%',
                     transition: 'transform 0.15s ease-out, border-color 0.3s, box-shadow 0.3s',
                   }}
@@ -906,7 +906,7 @@ export function HighlightsSection({
                       alt={active.title}
                       fill
                       sizes="(max-width: 1024px) 100vw, 60vw"
-                      className="object-cover object-top transition-transform duration-700 group-hover/featured:scale-105"
+                      className="object-contain object-center transition-transform duration-700 group-hover/featured:scale-105 bg-[#0d0d1a]"
                     />
                   ) : (
                     <div

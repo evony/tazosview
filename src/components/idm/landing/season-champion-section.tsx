@@ -191,7 +191,7 @@ function ChampionCard({
       {/* Champion player display */}
       <div
         className="relative flex rounded-xl overflow-hidden border m-4 cursor-pointer group/avatar"
-        style={{ height: '260px', borderColor: hexToRgba(accent, 0.12) }}
+        style={{ height: '280px', borderColor: hexToRgba(accent, 0.12) }}
         role="button"
         tabIndex={0}
         aria-label={`View champion profile: ${latestChampion.player.gamertag}`}
@@ -247,7 +247,7 @@ function ChampionCard({
           alt={latestChampion.player.gamertag}
           fill
           sizes="50vw"
-          className="object-cover object-top transition-transform duration-500 group-hover/avatar:scale-110"
+          className="object-contain object-center transition-transform duration-500 group-hover/avatar:scale-105 bg-[#0d0d1a]"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/5 to-transparent" />
