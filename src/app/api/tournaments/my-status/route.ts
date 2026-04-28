@@ -24,12 +24,14 @@ export async function GET(request: Request) {
     if (name) searchTerms.push(name);
     if (gamertag && gamertag !== name) searchTerms.push(gamertag);
 
+    // SQLite does not support `mode: 'insensitive'` in Prisma.
+    // Use `contains` for flexible matching (case-insensitive in SQLite by default).
     if (searchTerms.length > 0) {
       const orConditions: Record<string, unknown>[] = [];
       for (const term of searchTerms) {
         orConditions.push(
-          { name: { equals: term, mode: 'insensitive' }, isActive: true, ...(division ? { division } : {}) },
-          { gamertag: { equals: term, mode: 'insensitive' }, isActive: true, ...(division ? { division } : {}) },
+          { name: { contains: term }, isActive: true, ...(division ? { division } : {}) },
+          { gamertag: { contains: term }, isActive: true, ...(division ? { division } : {}) },
         );
       }
       playerWhere.OR = orConditions;

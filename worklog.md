@@ -468,3 +468,37 @@ Stage Summary:
 - Liga navigation menu preserved as-is per user requirement
 - 13 dead/orphaned files removed, codebase cleaned up
 - All 7 transformation recommendations fully implemented and verified
+
+---
+Task ID: 8
+Agent: Main Agent
+Task: Fix Tour Saya error, restructure dashboard from 5→3 tabs, integrate Tour Saya into dashboard, simplify navigation and community dashboard
+
+Work Log:
+- Fixed API `/api/tournaments/my-status` — replaced `mode: 'insensitive'` with `contains` for SQLite compatibility (Prisma doesn't support mode: insensitive on SQLite)
+- Restructured Dashboard from 5 tabs → 3 tabs:
+  - **Beranda**: Integrated Tour Saya search + Quick Stats + Active Tournament + Top Players + Recent Results
+  - **Peringkat**: Full standings (unchanged)
+  - **Info**: Secondary content — Rivalry, Streak, Activity, Donors, Overview, Milestones
+- Integrated "Tour Saya" search directly into Beranda tab:
+  - Search bar at top of Beranda with name/gamertag input
+  - Full tournament status results inline (team, matches, live match, next opponent)
+  - Auto-fills logged-in player's gamertag
+  - Removed separate MyTournamentCard view
+- Simplified navigation:
+  - Removed "Tour Saya" from division sub-menu (now in Dashboard Beranda)
+  - Division sub-menu now: Arena Live + Peraturan (2 items instead of 3)
+  - Removed `mytournament` from AppView type in store
+  - Updated all sidebar and mobile sub-nav references
+- Simplified Community Dashboard from 12 sections → 8 sections:
+  - Removed: Activity Marquee, Jadwal Tournament (redundant), Rules & Format (available in Peraturan page)
+  - Kept: Hero, QuickSearch, Stats, Season, Champions+MVP, Rankings, Streak, Matches, Donasi+Pencapaian
+- Fixed lint error: replaced useEffect setState with useState initializer for auto-fill search
+- All lint passes, dev server running, API returning 200
+
+Stage Summary:
+- Tour Saya now works (API fix) and is integrated into Dashboard Beranda (no separate view)
+- Dashboard reduced from 5 confusing tabs to 3 focused tabs matching user mental model
+- Navigation simplified (3 sub-items → 2 sub-items)
+- Community Dashboard reduced from 12 sections → 8 sections (less overwhelming)
+- mytournament view type removed from store and navigation entirely

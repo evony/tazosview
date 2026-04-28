@@ -7,7 +7,7 @@ import {
   Users, Swords, Trophy, Crown, Medal,
   Flame, Radio, Star,
   Gamepad2, Target, Calendar,
-  Clock, Award, BookOpen, Zap,
+  Clock, Award,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -33,7 +33,7 @@ import { MvpSpotlight } from './mvp-spotlight';
 import { UpcomingMatches } from './upcoming-matches';
 import { CommunityStreaks } from './community-streaks';
 import { CommunityDonors } from './community-donors';
-import { CommunityActivityMarquee } from './community-activity-marquee';
+// CommunityActivityMarquee removed — too noisy for community dashboard
 import { SeasonComparison } from './season-comparison';
 import { CommunityAchievements } from './community-achievements';
 
@@ -459,17 +459,12 @@ export function CommunityDashboard() {
         <CommunityStats maleData={maleData} femaleData={femaleData} leagueData={leagueData} />
       </Section>
 
-      {/* ═══ 4. Live Activity Marquee — Full width ═══ */}
-      <Section sectionId="live">
-        <CommunityActivityMarquee />
-      </Section>
-
-      {/* ═══ 5. Season — Full width with internal tabs (Progress | Perbandingan) ═══ */}
+      {/* ═══ 4. Season — Full width with internal tabs (Progress | Perbandingan) ═══ */}
       <Section sectionId="season">
         <SeasonProgressSection maleData={maleData} femaleData={femaleData} />
       </Section>
 
-      {/* ═══ 6. Champions & MVP — Full width with internal tabs ═══ */}
+      {/* ═══ 5. Champions & MVP — Full width with internal tabs ═══ */}
       <Section sectionId="champions">
         <ChampionsMvpSection
           maleData={maleData}
@@ -478,7 +473,7 @@ export function CommunityDashboard() {
         />
       </Section>
 
-      {/* ═══ 7. Rankings — Full width ═══ */}
+      {/* ═══ 6. Rankings + Streak — Full width ═══ */}
       <Section title="Peringkat" icon={Trophy} iconColor="text-idm-gold-warm" sectionId="rankings">
         <CommunityLeaderboard
           maleData={maleData}
@@ -488,85 +483,16 @@ export function CommunityDashboard() {
         />
       </Section>
 
-      {/* ═══ 8. Jadwal Tournament — Full width ═══ */}
-      <Section title="Jadwal Tournament" icon={Calendar} sectionId="schedule">
-        <div className="space-y-3">
-          {/* Male Schedule */}
-          <div className={`rounded-xl border bg-[#0d0d1a] border-[#06b6d4]/10 p-4`}>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded flex items-center justify-center bg-[#06b6d4]/10">
-                <Zap className="w-3.5 h-3.5 text-[#22d3ee]" />
-              </div>
-              <span className="text-xs font-bold text-[#22d3ee] uppercase tracking-wider">Male Division</span>
-              <span className="text-[9px] ml-auto text-muted-foreground">Setiap Sabtu</span>
-            </div>
-            {maleData?.activeTournament ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02]">
-                  <span className="text-[11px] font-semibold">{maleData.activeTournament.name || `Week ${maleData.activeTournament.weekNumber}`}</span>
-                  <Badge className={`text-[8px] ${maleData.activeTournament.status === 'live' || maleData.activeTournament.status === 'in_progress' ? 'bg-red-500/10 text-red-500 border-0' : 'bg-[#06b6d4]/10 text-[#22d3ee] border-0'}`}>
-                    {maleData.activeTournament.status === 'live' || maleData.activeTournament.status === 'in_progress' ? 'LIVE' : maleData.activeTournament.status === 'completed' ? 'SELESAI' : 'MENDATANG'}
-                  </Badge>
-                </div>
-                {maleData.activeTournament.scheduledAt && (
-                  <p className="text-[10px] text-muted-foreground px-3">
-                    {new Date(maleData.activeTournament.scheduledAt).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <p className="text-[11px] text-muted-foreground px-3 py-2">Belum ada tournament terjadwal</p>
-            )}
-          </div>
-
-          {/* Female Schedule */}
-          <div className={`rounded-xl border bg-[#0d0d1a] border-[#a855f7]/10 p-4`}>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded flex items-center justify-center bg-[#a855f7]/10">
-                <Star className="w-3.5 h-3.5 text-[#c084fc]" />
-              </div>
-              <span className="text-xs font-bold text-[#c084fc] uppercase tracking-wider">Female Division</span>
-              <span className="text-[9px] ml-auto text-muted-foreground">Setiap Minggu</span>
-            </div>
-            {femaleData?.activeTournament ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02]">
-                  <span className="text-[11px] font-semibold">{femaleData.activeTournament.name || `Week ${femaleData.activeTournament.weekNumber}`}</span>
-                  <Badge className={`text-[8px] ${femaleData.activeTournament.status === 'live' || femaleData.activeTournament.status === 'in_progress' ? 'bg-red-500/10 text-red-500 border-0' : 'bg-[#a855f7]/10 text-[#c084fc] border-0'}`}>
-                    {femaleData.activeTournament.status === 'live' || femaleData.activeTournament.status === 'in_progress' ? 'LIVE' : femaleData.activeTournament.status === 'completed' ? 'SELESAI' : 'MENDATANG'}
-                  </Badge>
-                </div>
-                {femaleData.activeTournament.scheduledAt && (
-                  <p className="text-[10px] text-muted-foreground px-3">
-                    {new Date(femaleData.activeTournament.scheduledAt).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <p className="text-[11px] text-muted-foreground px-3 py-2">Belum ada tournament terjadwal</p>
-            )}
-          </div>
-
-          {/* Info card */}
-          <div className="rounded-xl border border-idm-gold-warm/10 bg-idm-gold-warm/5 p-3">
-            <p className="text-[10px] text-idm-gold-warm/70 text-center">
-              Turnamen diadakan setiap minggu — Cek bracket dan antrian match di menu Arena Live
-            </p>
-          </div>
-        </div>
-      </Section>
-
-      {/* ═══ 9. Matches — Full width with internal tabs ═══ */}
-      <Section sectionId="matches">
-        <MatchesSection maleData={maleData} femaleData={femaleData} />
-      </Section>
-
-      {/* ═══ 10. Streak — Full width ═══ */}
       <Section title="Streak Terpanjang" icon={Flame} iconColor="text-orange-500" sectionId="streaks">
         <CommunityStreaks />
       </Section>
 
-      {/* ═══ 11. Donasi + Pencapaian — Equal 2-col ═══ */}
+      {/* ═══ 7. Matches — Full width with internal tabs ═══ */}
+      <Section sectionId="matches">
+        <MatchesSection maleData={maleData} femaleData={femaleData} />
+      </Section>
+
+      {/* ═══ 8. Donasi + Pencapaian — Equal 2-col ═══ */}
       <LayoutRow cols="2">
         <Section title="Donasi Komunitas" icon={Medal} iconColor="text-pink-400">
           <CommunityDonors maleData={maleData} femaleData={femaleData} />
@@ -575,70 +501,6 @@ export function CommunityDashboard() {
           <CommunityAchievements maleData={maleData} femaleData={femaleData} leagueData={leagueData} />
         </Section>
       </LayoutRow>
-
-      {/* ═══ 12. Rules & Format — Full width closing ═══ */}
-      <Section title="Rules & Format" icon={BookOpen} sectionId="rules">
-        <div className="space-y-3">
-          {/* Scoring System */}
-          <div className="rounded-xl border border-idm-gold-warm/10 bg-[#0d0d1a] p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded flex items-center justify-center bg-idm-gold-warm/10">
-                <Trophy className="w-3.5 h-3.5 text-idm-gold-warm" />
-              </div>
-              <span className="text-xs font-bold text-idm-gold-warm uppercase tracking-wider">Sistem Poin</span>
-            </div>
-            <div className="space-y-1.5">
-              {[
-                { label: 'Menang', value: '+3 poin', highlight: true },
-                { label: 'Kalah', value: '+1 poin', highlight: false },
-                { label: 'Walkout', value: '0 poin', highlight: false },
-                { label: 'MVP', value: '+2 bonus', highlight: true },
-                { label: 'Streak 3+', value: '+1 bonus', highlight: true },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/[0.02]">
-                  <span className="text-[11px] text-muted-foreground">{item.label}</span>
-                  <span className={`text-xs font-bold ${item.highlight ? 'text-idm-gold-warm' : 'text-foreground'}`}>{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Format */}
-          <div className="rounded-xl border border-idm-gold-warm/10 bg-[#0d0d1a] p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded flex items-center justify-center bg-idm-gold-warm/10">
-                <Swords className="w-3.5 h-3.5 text-idm-gold-warm" />
-              </div>
-              <span className="text-xs font-bold text-idm-gold-warm uppercase tracking-wider">Format Turnamen</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2.5 rounded-lg bg-white/[0.02] text-center">
-                <p className="text-[10px] text-muted-foreground">Jadwal</p>
-                <p className="text-xs font-bold">Setiap Minggu</p>
-              </div>
-              <div className="p-2.5 rounded-lg bg-white/[0.02] text-center">
-                <p className="text-[10px] text-muted-foreground">Durasi</p>
-                <p className="text-xs font-bold">2-4 Jam</p>
-              </div>
-              <div className="p-2.5 rounded-lg bg-white/[0.02] text-center">
-                <p className="text-[10px] text-muted-foreground">Format</p>
-                <p className="text-xs font-bold">1 vs 1</p>
-              </div>
-              <div className="p-2.5 rounded-lg bg-white/[0.02] text-center">
-                <p className="text-[10px] text-muted-foreground">Paralel</p>
-                <p className="text-xs font-bold">Ya</p>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA to Peraturan page */}
-          <div className="rounded-xl border border-idm-gold-warm/10 bg-idm-gold-warm/5 p-3 text-center">
-            <p className="text-[10px] text-idm-gold-warm/70">
-              Lihat peraturan lengkap di menu Peraturan pada divisi Anda
-            </p>
-          </div>
-        </div>
-      </Section>
 
       {/* Player & Club Profile Modals — same as division dashboard */}
       {selectedPlayer && (

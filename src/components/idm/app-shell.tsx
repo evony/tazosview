@@ -7,7 +7,7 @@ import {
   Home, Flame, LogOut, KeyRound,
   PanelLeftClose, ChevronRight, Download, X, UserCircle,
   Zap, Star, HelpCircle, Bell,
-  Gamepad2, Trophy, Radio, Target, Calendar
+  Gamepad2, Trophy, Radio, Calendar
 } from 'lucide-react';
 import { formatTarkamSeasonName } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -61,9 +61,7 @@ const MatchDayCenter = dynamic(() => import('./match-day-center').then(m => ({ d
 const RegistrationForm = dynamic(() => import('./registration-form').then(m => ({ default: m.RegistrationForm })), {
   loading: () => <div className="max-w-md mx-auto"><div className="skeleton-shimmer h-96 rounded-2xl" /></div>,
 });
-const MyTournamentCard = dynamic(() => import('./my-tournament-card').then(m => ({ default: m.MyTournamentCard })), {
-  loading: () => <div className="max-w-lg mx-auto"><div className="skeleton-shimmer h-96 rounded-2xl" /></div>,
-});
+// MyTournamentCard removed — integrated into Dashboard Beranda tab
 const CommunityDashboard = dynamic(() => import('./community-dashboard').then(m => ({ default: m.CommunityDashboard })), {
   loading: () => viewLoading,
 });
@@ -85,7 +83,6 @@ const communityNavItems: NavItemDef[] = [
 
 /* Division sub-menu items — shown when a division is active */
 const divisionSubItems: NavItemDef[] = [
-  { id: 'mytournament', label: 'Tour Saya', icon: Target, isSubItem: true },
   { id: 'matchday', label: 'Arena Live', icon: Radio, isSubItem: true },
   { id: 'league', label: 'Peraturan', icon: Trophy, isSubItem: true },
 ];
@@ -264,8 +261,8 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
           );
         })}
 
-        {/* ═══ Division Sub-menu — Tour Saya, Match Day, League ═══ */}
-        {(['dashboard', 'mytournament', 'matchday', 'league'] as AppView[]).includes(currentView) && (
+        {/* ═══ Division Sub-menu — Arena Live, Peraturan ═══ */}
+        {(['dashboard', 'matchday', 'league'] as AppView[]).includes(currentView) && (
           <>
             {collapsed && <div className="my-1 mx-auto w-6 h-px bg-border/40" />}
             {!collapsed && (
@@ -565,7 +562,7 @@ export function AppShell() {
       case 'admin': return adminAuth.isAuthenticated ? <AdminPanel /> : (() => { /* Open unified modal on admin tab instead of inline login */ setTimeout(() => { setAccountModalDefaultTab('admin'); setAccountModalOpen(true); setCurrentView('dashboard'); }, 0); return null; })();
       case 'register': return <RegistrationForm />;
       case 'community': return <CommunityDashboard />;
-      case 'mytournament': return <MyTournamentCard />;
+      // mytournament removed — integrated into Dashboard
       default: return <Dashboard />;
     }
   };
@@ -629,7 +626,7 @@ export function AppShell() {
         {/* Main Content */}
         <main className={`flex-1 min-w-0 overflow-y-auto ${dt.bgMesh}`}>
           {(() => {
-            const contentClass = `pt-6 px-3 pb-28 sm:pt-6 sm:px-4 sm:pb-28 lg:p-8 lg:pb-8 ${currentView === 'admin' ? 'max-w-[2200px]' : currentView === 'dashboard' || currentView === 'mytournament' || currentView === 'community' ? '' : 'max-w-[1600px]'} mx-auto`;
+            const contentClass = `pt-6 px-3 pb-28 sm:pt-6 sm:px-4 sm:pb-28 lg:p-8 lg:pb-8 ${currentView === 'admin' ? 'max-w-[2200px]' : currentView === 'dashboard' || currentView === 'community' ? '' : 'max-w-[1600px]'} mx-auto`;
             const content = <div key={currentView} className={contentClass}>{renderView()}</div>;
             return isMobile
               ? <PullToRefresh onRefresh={async () => { queryClient.invalidateQueries(); }}>{content}</PullToRefresh>
@@ -641,7 +638,7 @@ export function AppShell() {
       {/* ═══ Mobile Bottom Nav — 4 items: Home, Komunitas, Male, Female ═══ */}
       <nav className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 ${dt.glassStrong} border-t border-border safe-area-bottom`}>
         {/* Division sub-nav — appears when in division view */}
-        {(['dashboard', 'mytournament', 'matchday', 'league'] as AppView[]).includes(currentView) && (
+        {(['dashboard', 'matchday', 'league'] as AppView[]).includes(currentView) && (
           <div className="flex items-center justify-around px-2 py-1 border-b border-border/40">
             {divisionSubItems.map((item) => {
               const Icon = item.icon;
