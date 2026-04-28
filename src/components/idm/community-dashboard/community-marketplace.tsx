@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, Search, MessageCircle, Crown, Sparkles,
   Shirt, Gamepad2, UserCheck, Wand2, Package, ChevronRight,
-  Flame, Tag
+  Flame, Tag, Plus
 } from 'lucide-react';
+import { SubmitMarketplaceModal } from './submit-marketplace-modal';
 
 /* ═══════════════════════════════════════════════════════
    TYPES
@@ -92,12 +93,9 @@ export function CommunityMarketplace() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [submitOpen, setSubmitOpen] = useState(false);
 
-  useEffect(() => {
-    fetchItems();
-  }, [activeCategory, searchQuery]);
-
-  async function fetchItems() {
+  const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -113,7 +111,11 @@ export function CommunityMarketplace() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [activeCategory, searchQuery]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
 
   const premiumItems = items.filter(i => i.isPremium);
   const regularItems = items.filter(i => !i.isPremium);
@@ -131,8 +133,19 @@ export function CommunityMarketplace() {
             <p className="text-[10px] text-muted-foreground">Jual-beli item & jasa game</p>
           </div>
         </div>
-        <div className="text-[10px] text-muted-foreground/50">
-          {items.length} iklan
+        <div className="flex items-center gap-2">
+          <div className="text-[10px] text-muted-foreground/50">
+            {items.length} iklan
+          </div>
+          {/* Pasang Iklan Button */}
+          <button
+            onClick={() => setSubmitOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-idm-gold-warm/15 border border-idm-gold-warm/25 text-[10px] sm:text-xs font-bold text-idm-gold-warm hover:bg-idm-gold-warm/25 transition-colors cursor-pointer"
+          >
+            <Plus className="w-3 h-3" />
+            <span className="hidden sm:inline">Pasang Iklan</span>
+            <span className="sm:hidden">Jual</span>
+          </button>
         </div>
       </div>
 
@@ -214,13 +227,27 @@ export function CommunityMarketplace() {
             <ShoppingBag className="w-7 h-7 text-idm-gold-warm/40" />
           </div>
           <p className="text-sm font-semibold text-muted-foreground/60 mb-1">Belum Ada Iklan</p>
-          <p className="text-[10px] text-muted-foreground/40 max-w-[200px]">
+          <p className="text-[10px] text-muted-foreground/40 max-w-[200px] mb-4">
             {activeCategory !== 'all'
               ? `Belum ada iklan di kategori ${getCategoryLabel(activeCategory)}`
               : 'Marketplace segera hadir!'}
           </p>
+          <button
+            onClick={() => setSubmitOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-idm-gold-warm/10 border border-idm-gold-warm/20 text-[10px] font-bold text-idm-gold-warm hover:bg-idm-gold-warm/20 transition-colors cursor-pointer"
+          >
+            <Plus className="w-3 h-3" />
+            Jadilah yang pertama menjual!
+          </button>
         </motion.div>
       )}
+
+      {/* ── Submit Modal ── */}
+      <SubmitMarketplaceModal
+        open={submitOpen}
+        onClose={() => setSubmitOpen(false)}
+        onSuccess={fetchItems}
+      />
     </div>
   );
 }

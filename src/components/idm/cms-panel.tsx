@@ -434,6 +434,7 @@ function SectionEditor({
 /* ========== Marketplace Manager ========== */
 function MarketplaceManager() {
   const qc = useQueryClient();
+  const [adminTab, setAdminTab] = useState<'pending' | 'approved' | 'rejected' | 'add'>('pending');
   const [form, setForm] = useState({
     sellerName: '',
     sellerWhatsapp: '',
@@ -445,15 +446,20 @@ function MarketplaceManager() {
     isPremium: false,
   });
 
+  // Fetch all items (admin mode — sees all statuses)
   const { data: rawItems = { items: [] }, isLoading } = useQuery({
-    queryKey: ['marketplace-admin'],
+    queryKey: ['marketplace-admin', adminTab],
     queryFn: async () => {
-      const res = await fetch('/api/marketplace');
+      const status = adminTab === 'add' ? 'all' : adminTab;
+      const res = await fetch(`/api/marketplace?admin=true&status=${status}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed');
       return res.json();
     },
   });
   const items = (rawItems as any)?.items || rawItems;
+
+  // Count pending
+  const pendingCount = adminTab === 'pending' ? items.length : null;
 
   const createItem = useMutation({
     mutationFn: async () => {
@@ -476,6 +482,20 @@ function MarketplaceManager() {
     mutationFn: async (id: string) => {
       const res = await fetch(`/api/marketplace/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) throw new Error('Failed');
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['marketplace-admin'] }),
+  });
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const res = await fetch(`/api/marketplace/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      return res.json();
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['marketplace-admin'] }),
   });
@@ -504,76 +524,139 @@ function MarketplaceManager() {
     { value: 'lainnya', label: 'Lainnya' },
   ];
 
+  const STATUS_BADGE: Record<string, { label: string; class: string }> = {
+    pending: { label: 'Menunggu', class: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/20' },
+    approved: { label: 'Disetujui', class: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
+    rejected: { label: 'Ditolak', class: 'bg-red-500/15 text-red-400 border-red-500/20' },
+  };
+
+  const adminTabs = [
+    { id: 'pending' as const, label: 'Menunggu' },
+    { id: 'approved' as const, label: 'Disetujui' },
+    { id: 'rejected' as const, label: 'Ditolak' },
+    { id: 'add' as const, label: '+ Tambah' },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-2">
         <ShoppingBag className="w-4 h-4 text-idm-gold-warm" />
         <h3 className="text-sm font-bold">Kelola Marketplace</h3>
-        <Badge className="bg-idm-gold-warm/10 text-idm-gold-warm text-[9px] border-0">{items.length} IKLAN</Badge>
+      </div>
+
+      {/* Admin Tab Bar */}
+      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/10">
+        {adminTabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setAdminTab(tab.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              adminTab === tab.id
+                ? 'bg-idm-gold-warm/15 text-idm-gold-warm shadow-sm border border-idm-gold-warm/20'
+                : 'text-muted-foreground hover:text-foreground border border-transparent'
+            }`}
+          >
+            {tab.label}
+            {tab.id === 'pending' && pendingCount !== null && pendingCount > 0 && (
+              <Badge className="bg-yellow-500/20 text-yellow-400 text-[8px] border-0 px-1 py-0">{pendingCount}</Badge>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Add New Item Form */}
-      <Card className="border border-dashed border-idm-gold-warm/30 bg-idm-gold-warm/5">
-        <CardContent className="p-4">
-          <h4 className="text-xs font-semibold mb-3 flex items-center gap-2">
-            <Plus className="w-3.5 h-3.5 text-idm-gold-warm" /> Tambah Iklan Baru
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <Input placeholder="Nama Penjual / Toko" value={form.sellerName} onChange={e => setForm(p => ({ ...p, sellerName: e.target.value }))} className="text-xs" />
-            <Input placeholder="WhatsApp (08xxx)" value={form.sellerWhatsapp} onChange={e => setForm(p => ({ ...p, sellerWhatsapp: e.target.value }))} className="text-xs" />
-            <Input placeholder="Judul Item" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className="text-xs" />
-            <Input placeholder="Harga (IDR)" type="number" value={form.price || ''} onChange={e => setForm(p => ({ ...p, price: parseInt(e.target.value) || 0 }))} className="text-xs" />
-            <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} className="text-xs px-3 py-2 rounded-md bg-background border border-input">
-              {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
-            <CloudinaryImageField label="Gambar Item" value={form.imageUrl} onChange={url => setForm(p => ({ ...p, imageUrl: url }))} folder="cms/marketplace" />
-            <div className="sm:col-span-2">
-              <Input placeholder="Deskripsi singkat..." value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} className="text-xs" />
+      {adminTab === 'add' && (
+        <Card className="border border-dashed border-idm-gold-warm/30 bg-idm-gold-warm/5">
+          <CardContent className="p-4">
+            <h4 className="text-xs font-semibold mb-3 flex items-center gap-2">
+              <Plus className="w-3.5 h-3.5 text-idm-gold-warm" /> Tambah Iklan Baru (Auto-Approved)
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Input placeholder="Nama Penjual / Toko" value={form.sellerName} onChange={e => setForm(p => ({ ...p, sellerName: e.target.value }))} className="text-xs" />
+              <Input placeholder="WhatsApp (08xxx)" value={form.sellerWhatsapp} onChange={e => setForm(p => ({ ...p, sellerWhatsapp: e.target.value }))} className="text-xs" />
+              <Input placeholder="Judul Item" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className="text-xs" />
+              <Input placeholder="Harga (IDR)" type="number" value={form.price || ''} onChange={e => setForm(p => ({ ...p, price: parseInt(e.target.value) || 0 }))} className="text-xs" />
+              <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} className="text-xs px-3 py-2 rounded-md bg-background border border-input">
+                {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+              <CloudinaryImageField label="Gambar Item" value={form.imageUrl} onChange={url => setForm(p => ({ ...p, imageUrl: url }))} folder="cms/marketplace" />
+              <div className="sm:col-span-2">
+                <Input placeholder="Deskripsi singkat..." value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} className="text-xs" />
+              </div>
+              <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+                <input type="checkbox" checked={form.isPremium} onChange={e => setForm(p => ({ ...p, isPremium: e.target.checked }))} className="rounded" />
+                <Crown className="w-3 h-3 text-idm-gold-warm" /> Premium / Featured
+              </label>
             </div>
-            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-              <input type="checkbox" checked={form.isPremium} onChange={e => setForm(p => ({ ...p, isPremium: e.target.checked }))} className="rounded" />
-              <Crown className="w-3 h-3 text-idm-gold-warm" /> Premium / Featured
-            </label>
-          </div>
-          <Button size="sm" className="mt-3 text-xs bg-idm-gold-warm hover:bg-[#b8912e] text-black" disabled={!form.sellerName || !form.title || !form.description || createItem.isPending} onClick={() => createItem.mutate()}>
-            {createItem.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Plus className="w-3 h-3 mr-1" />} Tambah Iklan
-          </Button>
-        </CardContent>
-      </Card>
+            <Button size="sm" className="mt-3 text-xs bg-idm-gold-warm hover:bg-[#b8912e] text-black" disabled={!form.sellerName || !form.title || !form.description || createItem.isPending} onClick={() => createItem.mutate()}>
+              {createItem.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Plus className="w-3 h-3 mr-1" />} Tambah Iklan
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Items List */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-idm-gold-warm" /></div>
-      ) : items.length === 0 ? (
-        <div className="py-8 text-center">
-          <ShoppingBag className="w-10 h-10 text-muted-foreground/20 mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">Belum ada iklan di marketplace</p>
-        </div>
-      ) : (
-        <div className="space-y-2 max-h-96 overflow-y-auto">
-          {items.map((item: any) => (
-            <div key={item.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-border/10 hover:border-border/20 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-muted/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                {item.imageUrl ? <img src={item.imageUrl} alt="" className="w-full h-full object-cover" /> : <ShoppingBag className="w-4 h-4 text-muted-foreground/30" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold truncate">{item.title}</span>
-                  {item.isPremium && <Crown className="w-3 h-3 text-idm-gold-warm flex-shrink-0" />}
+      {adminTab !== 'add' && (
+        isLoading ? (
+          <div className="flex items-center justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-idm-gold-warm" /></div>
+        ) : items.length === 0 ? (
+          <div className="py-8 text-center">
+            <ShoppingBag className="w-10 h-10 text-muted-foreground/20 mx-auto mb-2" />
+            <p className="text-xs text-muted-foreground">
+              {adminTab === 'pending' ? 'Tidak ada iklan menunggu approval' : adminTab === 'approved' ? 'Belum ada iklan disetujui' : 'Tidak ada iklan ditolak'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-[420px] overflow-y-auto">
+            {items.map((item: any) => {
+              const statusBadge = STATUS_BADGE[item.status] || STATUS_BADGE.pending;
+              return (
+                <div key={item.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-border/10 hover:border-border/20 transition-colors">
+                  <div className="w-10 h-10 rounded-lg bg-muted/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {item.imageUrl ? <img src={item.imageUrl} alt="" className="w-full h-full object-cover" /> : <ShoppingBag className="w-4 h-4 text-muted-foreground/30" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold truncate">{item.title}</span>
+                      {item.isPremium && <Crown className="w-3 h-3 text-idm-gold-warm flex-shrink-0" />}
+                      <Badge className={`${statusBadge.class} text-[7px] border px-1 py-0`}>{statusBadge.label}</Badge>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground truncate">{item.sellerName} • Rp {(item.price || 0).toLocaleString('id-ID')} • {item.category}</p>
+                    {item.sellerWhatsapp && <p className="text-[9px] text-muted-foreground/40">WA: {item.sellerWhatsapp}</p>}
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {/* Approve/Reject buttons for pending items */}
+                    {item.status === 'pending' && (
+                      <>
+                        <button onClick={() => updateStatus.mutate({ id: item.id, status: 'approved' })} className="p-1 rounded text-emerald-400/50 hover:text-emerald-400 cursor-pointer" title="Setujui">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </button>
+                        <button onClick={() => updateStatus.mutate({ id: item.id, status: 'rejected' })} className="p-1 rounded text-red-400/50 hover:text-red-400 cursor-pointer" title="Tolak">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
+                    {/* Re-approve rejected items */}
+                    {item.status === 'rejected' && (
+                      <button onClick={() => updateStatus.mutate({ id: item.id, status: 'approved' })} className="p-1 rounded text-emerald-400/50 hover:text-emerald-400 cursor-pointer" title="Setujui Kembali">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </button>
+                    )}
+                    {/* Premium toggle for approved items */}
+                    {item.status === 'approved' && (
+                      <button onClick={() => togglePremium.mutate({ id: item.id, isPremium: !item.isPremium })} className={`p-1 rounded cursor-pointer ${item.isPremium ? 'text-idm-gold-warm hover:text-idm-gold-warm/60' : 'text-muted-foreground/30 hover:text-muted-foreground/60'}`} title={item.isPremium ? 'Hapus Premium' : 'Jadikan Premium'}>
+                        <Crown className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <button onClick={() => deleteItem.mutate(item.id)} className="p-1 rounded text-muted-foreground/30 hover:text-red-400 cursor-pointer" title="Hapus">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground truncate">{item.sellerName} • Rp {(item.price || 0).toLocaleString('id-ID')}</p>
-              </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <button onClick={() => togglePremium.mutate({ id: item.id, isPremium: !item.isPremium })} className={`p-1 rounded text-[9px] cursor-pointer ${item.isPremium ? 'text-idm-gold-warm hover:text-idm-gold-warm/60' : 'text-muted-foreground/30 hover:text-muted-foreground/60'}`} title={item.isPremium ? 'Hapus Premium' : 'Jadikan Premium'}>
-                  <Crown className="w-3.5 h-3.5" />
-                </button>
-                <button onClick={() => deleteItem.mutate(item.id)} className="p-1 rounded text-muted-foreground/30 hover:text-red-400 cursor-pointer" title="Hapus">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )
       )}
     </div>
   );

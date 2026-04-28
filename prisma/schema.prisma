@@ -642,22 +642,24 @@ model SponsorBanner {
 // ============================================
 
 model MarketplaceItem {
-  id          String   @id @default(cuid())
-  sellerName  String   // Nama penjual / toko
-  sellerAvatar String? // Avatar URL penjual
+  id            String   @id @default(cuid())
+  sellerName    String   // Nama penjual / toko
+  sellerAvatar  String?  // Avatar URL penjual
   sellerWhatsapp String? // Nomor WhatsApp penjual
-  title       String   // Judul item: "Avatar VIP Gold", "Jasa GB Rank S"
-  description String   // Deskripsi detail
-  price       Int      // Harga dalam IDR
-  category    String   // "avatar" | "accessory" | "jasa_gb" | "jasa_joki" | "baju" | "item" | "lainnya"
-  imageUrl    String?  // Gambar item
-  isPremium   Boolean  @default(false) // Featured / iklan premium
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  title         String   // Judul item: "Avatar VIP Gold", "Jasa GB Rank S"
+  description   String   // Deskripsi detail
+  price         Int      // Harga dalam IDR
+  category      String   // "avatar" | "accessory" | "jasa_gb" | "jasa_joki" | "baju" | "item" | "lainnya"
+  imageUrl      String?  // Gambar item
+  isPremium     Boolean  @default(false) // Featured / iklan premium
+  status        String   @default("pending") // "pending" | "approved" | "rejected" — user submissions start as pending, admin-created = approved
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([category])
   @@index([isActive])
   @@index([isPremium])
+  @@index([status])
   @@index([createdAt])
 }

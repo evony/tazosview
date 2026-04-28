@@ -4,14 +4,36 @@ import { requireAdmin } from '@/lib/api-auth';
 
 const VALID_CATEGORIES = ['avatar', 'accessory', 'jasa_gb', 'jasa_joki', 'baju', 'item', 'lainnya'];
 
-// GET /api/marketplace — List marketplace items (public)
+// GET /api/marketplace — List marketplace items (public: approved only, admin: all)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const search = searchParams.get('search');
+    const status = searchParams.get('status'); // Admin filter: "pending" | "approved" | "rejected" | "all"
+    const adminMode = searchParams.get('admin') === 'true';
 
     const where: Record<string, unknown> = { isActive: true };
+
+    // Public only sees approved items; admin can filter by status
+    if (adminMode) {
+      try {
+        const authResult = await requireAdmin(request);
+        if (!(authResult instanceof NextResponse)) {
+          // Admin authenticated — apply status filter
+          if (status && status !== 'all') {
+            where.status = status;
+          }
+        } else {
+          // Admin auth failed — fall back to approved only
+          where.status = 'approved';
+        }
+      } catch {
+        where.status = 'approved';
+      }
+    } else {
+      where.status = 'approved';
+    }
 
     if (category && VALID_CATEGORIES.includes(category)) {
       where.category = category;
@@ -30,7 +52,7 @@ export async function GET(request: NextRequest) {
         { isPremium: 'desc' },
         { createdAt: 'desc' },
       ],
-      take: 20,
+      take: 50,
     });
 
     return NextResponse.json({ items });
@@ -43,7 +65,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/marketplace — Create a marketplace item (admin only)
+// POST /api/marketplace — Create a marketplace item (admin only, auto-approved)
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireAdmin(request);
@@ -87,6 +109,7 @@ export async function POST(request: NextRequest) {
         category,
         imageUrl: imageUrl || null,
         isPremium: isPremium ?? false,
+        status: 'approved', // Admin-created items are auto-approved
       },
     });
 

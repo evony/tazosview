@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/api-auth';
 
-const VALID_CATEGORIES = ['avatar', 'accessory', 'jasa_gb', 'jasa_joki', 'baju', 'item', 'lainnya'];
+const VALID_CATEGORIES = ['avatar', 'accessory', 'jasa_joki', 'baju', 'item', 'lainnya'];
 
 // DELETE /api/marketplace/[id] — Soft delete a marketplace item (admin only)
 export async function DELETE(
@@ -40,6 +40,7 @@ export async function DELETE(
 }
 
 // PATCH /api/marketplace/[id] — Update a marketplace item (admin only)
+// Supports: update fields, approve, reject
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -59,7 +60,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { sellerName, sellerAvatar, sellerWhatsapp, title, description, price, category, imageUrl, isPremium, isActive } = body;
+    const { sellerName, sellerAvatar, sellerWhatsapp, title, description, price, category, imageUrl, isPremium, isActive, status } = body;
 
     // Validate category if provided
     if (category !== undefined && !VALID_CATEGORIES.includes(category)) {
@@ -77,6 +78,14 @@ export async function PATCH(
       );
     }
 
+    // Validate status if provided
+    if (status !== undefined && !['pending', 'approved', 'rejected'].includes(status)) {
+      return NextResponse.json(
+        { error: 'Invalid status. Must be: pending, approved, or rejected' },
+        { status: 400 }
+      );
+    }
+
     const updated = await db.marketplaceItem.update({
       where: { id },
       data: {
@@ -90,6 +99,7 @@ export async function PATCH(
         ...(imageUrl !== undefined && { imageUrl }),
         ...(isPremium !== undefined && { isPremium }),
         ...(isActive !== undefined && { isActive }),
+        ...(status !== undefined && { status }),
       },
     });
 
