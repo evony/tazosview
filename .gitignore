@@ -58,3 +58,4 @@ Caddyfile
 /db/
 /mini-services/
 /worklog.md
+/sql-seed/
