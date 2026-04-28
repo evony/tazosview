@@ -291,20 +291,37 @@ export async function POST(
     });
 
     if (completedCount >= SEASON_TOTAL_WEEKS) {
-      // Determine season champion: club with most points in this season
-      const topClub = await db.club.findFirst({
-        where: { seasonId: tournament.seasonId },
-        orderBy: [{ points: 'desc' }, { gameDiff: 'desc' }],
-        select: { id: true } as const,
+      const season = await db.season.findUnique({
+        where: { id: tournament.seasonId },
+        select: { id: true, division: true },
       });
+
+      const updateData: { status: string; endDate: Date; championClubId?: string | null; championPlayerId?: string | null } = {
+        status: 'completed',
+        endDate: new Date(),
+      };
+
+      if (season?.division === 'liga') {
+        // Liga mode: champion is the club with most points
+        const topClub = await db.club.findFirst({
+          where: { seasonId: tournament.seasonId },
+          orderBy: [{ points: 'desc' }, { gameDiff: 'desc' }],
+          select: { id: true },
+        });
+        updateData.championClubId = topClub?.id || null;
+      } else {
+        // Tarkam mode: champion is the player with most points in this division
+        const topPlayer = await db.player.findFirst({
+          where: { division: season?.division || 'male', isActive: true },
+          orderBy: [{ points: 'desc' }, { totalWins: 'desc' }],
+          select: { id: true },
+        });
+        updateData.championPlayerId = topPlayer?.id || null;
+      }
 
       await db.season.update({
         where: { id: tournament.seasonId },
-        data: {
-          status: 'completed',
-          endDate: new Date(),
-          championClubId: topClub?.id || null,
-        },
+        data: updateData,
       });
     }
   } catch (e) {

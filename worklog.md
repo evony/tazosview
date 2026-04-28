@@ -24,3 +24,24 @@ Stage Summary:
 - Champion is now determined by Tarkam ranking (#1 club by total member points) instead of Season.championClubId
 - API `/api/league` now returns `tarkamChampion` instead of `ligaChampion`
 - All 12 files updated, ESLint passes, dev server running successfully
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix auto-close season logic to use championPlayerId for Tarkam seasons
+
+Work Log:
+- Read `/api/tournaments/[id]/finalize/route.ts` — found auto-close season always sets `championClubId` regardless of season type
+- Read `prisma/schema.prisma` — confirmed Season has both `championClubId` (Liga) and `championPlayerId` (Tarkam) fields
+- Read Player model — confirmed `points`, `totalWins`, `division`, `isActive` fields exist for Tarkam champion lookup
+- Modified finalize route auto-close logic to branch on `season.division`:
+  - `division === 'liga'` → sets `championClubId` (top Club by points, gameDiff)
+  - `division !== 'liga'` (Tarkam male/female) → sets `championPlayerId` (top Player by points, totalWins in that division)
+- Verified ESLint passes with no errors
+- Verified dev server running normally
+
+Stage Summary:
+- Auto-close season now correctly differentiates Liga vs Tarkam season types
+- Liga seasons auto-close with `championClubId` (top club)
+- Tarkam seasons auto-close with `championPlayerId` (top player by points in that division)
+- This fix is non-breaking — wrapped in try/catch as before, admin can still manually override via Season Panel
