@@ -1411,7 +1411,7 @@ div.group:hover .donor-rank-badge {
 @keyframes splash-logo-reveal {
   from {
     opacity: 0;
-    transform: scale(0.6) translateY(20px);
+    transform: scale(0.8) translateY(10px);
   }
   to {
     opacity: 1;
@@ -1441,11 +1441,11 @@ div.group:hover .donor-rank-badge {
 @keyframes splash-title-enter {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(8px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -1453,7 +1453,7 @@ div.group:hover .donor-rank-badge {
 @keyframes splash-letter-pop {
   from {
     opacity: 0;
-    transform: scale(0.5) translateY(8px);
+    transform: scale(0.85) translateY(4px);
   }
   to {
     opacity: 1;

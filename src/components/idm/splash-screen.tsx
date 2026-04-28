@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 /* Auto-dismiss after this duration (ms) — no tap, no audio */
-const SPLASH_DURATION = 3500;
+const SPLASH_DURATION = 2500;
 
 export function SplashScreen({ onFinish }: { onFinish: () => void }) {
   const [fadeOut, setFadeOut] = useState(false);
@@ -80,8 +80,8 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
       {/* ═══ Main Content ═══ */}
       <div className="relative z-10 flex flex-col items-center">
 
-        {/* Main Logo — cinematic reveal */}
-        <div className="mb-8" style={{ animation: 'splash-logo-reveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both' }}>
+        {/* Main Logo — fast reveal */}
+        <div className="mb-6" style={{ animation: 'splash-logo-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both' }}>
           <div className="relative">
             {/* Glow ring */}
             <div
@@ -92,8 +92,8 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
               }}
             />
             {/* Logo */}
-            <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black/50">
-              <img src="/logo.webp" alt="Tarkam IDM" className="w-full h-full object-cover" />
+            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black/50">
+              <img src="/logo.webp" alt="TARKAM" className="w-full h-full object-cover" />
             </div>
             {/* Border ring */}
             <div
@@ -106,29 +106,19 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
           </div>
         </div>
 
-        {/* Title */}
+        {/* Title — instant bold entrance */}
         <div
           className="text-center"
-          style={{ animation: 'splash-title-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both' }}
+          style={{ animation: 'splash-title-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both' }}
         >
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">
-            <span
-              className="text-gradient-fury inline-block"
-              style={{ animation: 'splash-letter-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 1s both' }}
-            >
-              Tarkam
-            </span>
-            <span className="text-white inline-block ml-2">{' '}</span>
-            <span
-              className="text-white inline-block"
-              style={{ animation: 'splash-letter-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 1.15s both' }}
-            >
-              IDM
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight">
+            <span className="text-gradient-fury inline-block">
+              TARKAM
             </span>
           </h1>
           <p
             className="text-xs sm:text-sm text-white/40 mt-2 tracking-[0.25em] uppercase font-light"
-            style={{ animation: 'splash-subtitle-enter 0.6s ease-out 1.4s both' }}
+            style={{ animation: 'splash-subtitle-enter 0.4s ease-out 0.4s both' }}
           >
             Idol Meta · Fan Made Edition
           </p>
@@ -136,8 +126,8 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
 
         {/* Decorative dot divider */}
         <div
-          className="mt-6 flex items-center gap-3"
-          style={{ animation: 'splash-subtitle-enter 0.6s ease-out 1.5s both' }}
+          className="mt-5 flex items-center gap-3"
+          style={{ animation: 'splash-subtitle-enter 0.4s ease-out 0.5s both' }}
         >
           <div className="h-px w-10 bg-gradient-to-r from-transparent to-idm-gold-warm/30" />
           <div className="w-1.5 h-1.5 rounded-full bg-idm-gold-warm/40" />
@@ -146,8 +136,8 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
 
         {/* Auto progress bar */}
         <div
-          className="mt-8 w-48 sm:w-64"
-          style={{ animation: 'splash-subtitle-enter 0.4s ease-out 1.6s both' }}
+          className="mt-6 w-48 sm:w-64"
+          style={{ animation: 'splash-subtitle-enter 0.3s ease-out 0.6s both' }}
         >
           <div className="h-0.5 rounded-full bg-white/10 overflow-hidden">
             <div
@@ -157,7 +147,7 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
           </div>
           <p
             className="text-[10px] text-center mt-2 tracking-wider text-white/30"
-            style={{ animation: 'splash-subtitle-enter 0.3s ease-out 1.8s both' }}
+            style={{ animation: 'splash-subtitle-enter 0.3s ease-out 0.7s both' }}
           >
             MEMASUKI ARENA
           </p>
@@ -167,7 +157,7 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
       {/* BORNEO Pride Footer */}
       <div
         className="absolute bottom-0 inset-x-0"
-        style={{ animation: 'splash-subtitle-enter 0.6s ease-out 2s both' }}
+        style={{ animation: 'splash-subtitle-enter 0.4s ease-out 0.8s both' }}
       >
         <div className="h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
         <div className="py-4 flex flex-col items-center gap-1.5">
