@@ -256,7 +256,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           transition={{ delay: 0.4, duration: 0.6 }}
           className="text-sm sm:text-base text-idm-gold-warm/60 uppercase tracking-widest mb-1"
         >
-          Indonesian Dance Match
+          Komunitas Idol Meta
         </motion.p>
 
         <motion.p
@@ -265,7 +265,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           transition={{ delay: 0.5, duration: 0.5 }}
           className="text-xs sm:text-sm text-muted-foreground/60 max-w-md mb-6"
         >
-          Tempat dancer terbaik berkompetisi. Sawer untuk menambah prize pool dan dapatkan skin eksklusif!
+          Tempat pemain terbaik dari seluruh kota berkompetisi. Sawer untuk menambah prize pool dan dapatkan skin eksklusif!
         </motion.p>
 
         {/* Animated underline */}
