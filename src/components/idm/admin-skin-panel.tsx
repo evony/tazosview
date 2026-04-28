@@ -162,7 +162,7 @@ export function AdminSkinPanel() {
   const { data: skinsData, isLoading: skinsLoading } = useQuery({
     queryKey: ['admin-skins-catalog'],
     queryFn: async () => {
-      const res = await fetch('/api/skins');
+      const res = await fetch('/api/skins', { credentials: 'include' });
       return res.json();
     },
   });
@@ -178,7 +178,7 @@ export function AdminSkinPanel() {
   const { data: players } = useQuery({
     queryKey: ['admin-players-all'],
     queryFn: async () => {
-      const res = await fetch('/api/players?limit=100');
+      const res = await fetch('/api/players?limit=100', { credentials: 'include' });
       return res.json();
     },
   });

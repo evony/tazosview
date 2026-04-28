@@ -112,7 +112,7 @@ export function AdminSeasonPanel({ division, dt, setConfirmDialog, mode = 'liga'
   const { data: allSeasons, isLoading } = useQuery<SeasonData[]>({
     queryKey: ['admin-seasons'],
     queryFn: async () => {
-      const res = await fetch('/api/seasons');
+      const res = await fetch('/api/seasons', { credentials: 'include' });
       return res.json();
     },
   });
@@ -127,7 +127,7 @@ export function AdminSeasonPanel({ division, dt, setConfirmDialog, mode = 'liga'
     queryKey: ['admin-season-detail', expandedSeason],
     queryFn: async () => {
       if (!expandedSeason) return null;
-      const res = await fetch(`/api/seasons/${expandedSeason}`);
+      const res = await fetch(`/api/seasons/${expandedSeason}`, { credentials: 'include' });
       return res.json();
     },
     enabled: !!expandedSeason,
@@ -1286,7 +1286,7 @@ function AddClubToSeasonButton({ seasonId, seasonDivision, dt, qc }: {
   const { data: profiles } = useQuery<Array<{ id: string; name: string; logo: string | null; memberCount: number }>>({
     queryKey: ['club-profiles-all'],
     queryFn: async () => {
-      const res = await fetch('/api/clubs?unified=true');
+      const res = await fetch('/api/clubs?unified=true', { credentials: 'include' });
       if (!res.ok) return [];
       const data = await res.json();
       return data.map((c: { id: string; name: string; logo: string | null; memberCount?: number; seasonRecords?: Array<{ seasonId: string }> }) => ({
@@ -1303,7 +1303,7 @@ function AddClubToSeasonButton({ seasonId, seasonDivision, dt, qc }: {
   // Fetch current season clubs to filter out already-added ones
   const { data: seasonDetail } = useQuery<SeasonData>({
     queryKey: ['admin-season-detail', seasonId],
-    queryFn: async () => { const res = await fetch(`/api/seasons/${seasonId}`); return res.json(); },
+    queryFn: async () => { const res = await fetch(`/api/seasons/${seasonId}`, { credentials: 'include' }); return res.json(); },
     enabled: open,
   });
 
@@ -1395,7 +1395,7 @@ function ChampionSquadSelector({
   const { data: clubData, isLoading } = useQuery({
     queryKey: ['champion-club-members', championClubId],
     queryFn: async () => {
-      const res = await fetch(`/api/clubs/champion-members?clubId=${championClubId}`);
+      const res = await fetch(`/api/clubs/champion-members?clubId=${championClubId}`, { credentials: 'include' });
       if (!res.ok) return null;
       return res.json();
     },

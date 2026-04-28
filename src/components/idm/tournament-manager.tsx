@@ -217,7 +217,7 @@ export function TournamentManager({ division, dt, stats, setConfirmDialog }: Tou
     queryKey: ['admin-tournaments', seasonId],
     queryFn: async () => {
       if (!seasonId) return [];
-      const r = await fetch(`/api/tournaments?seasonId=${seasonId}`);
+      const r = await fetch(`/api/tournaments?seasonId=${seasonId}`, { credentials: 'include' });
       return r.json();
     },
     enabled: !!seasonId,
@@ -225,20 +225,20 @@ export function TournamentManager({ division, dt, stats, setConfirmDialog }: Tou
 
   const { data: selected } = useQuery({
     queryKey: ['admin-tournament', selectedId],
-    queryFn: async () => { if (!selectedId) return null; const r = await fetch(`/api/tournaments/${selectedId}`); return r.json(); },
+    queryFn: async () => { if (!selectedId) return null; const r = await fetch(`/api/tournaments/${selectedId}`, { credentials: 'include' }); return r.json(); },
     enabled: !!selectedId,
   });
 
   const { data: players } = useQuery({
     queryKey: ['admin-players', division],
-    queryFn: async () => { const r = await fetch(`/api/players?division=${division}`); return r.json(); },
+    queryFn: async () => { const r = await fetch(`/api/players?division=${division}`, { credentials: 'include' }); return r.json(); },
   });
 
   const { data: tournamentDonations } = useQuery({
     queryKey: ['admin-tournament-donations', selectedId],
     queryFn: async () => {
       if (!selectedId) return { total: { amount: 0, count: 0 }, donations: [] };
-      const r = await fetch(`/api/donations?status=approved&limit=100`);
+      const r = await fetch(`/api/donations?status=approved&limit=100`, { credentials: 'include' });
       return r.json();
     },
     enabled: !!selectedId,

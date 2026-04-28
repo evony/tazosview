@@ -92,7 +92,7 @@ export function AdminAchievementPanel() {
   const { data: achievements, isLoading } = useQuery({
     queryKey: ['admin-achievements'],
     queryFn: async () => {
-      const res = await fetch('/api/achievements');
+      const res = await fetch('/api/achievements', { credentials: 'include' });
       return res.json();
     },
   });
@@ -101,7 +101,7 @@ export function AdminAchievementPanel() {
   const { data: players } = useQuery({
     queryKey: ['admin-players-all'],
     queryFn: async () => {
-      const res = await fetch('/api/players?limit=100');
+      const res = await fetch('/api/players?limit=100', { credentials: 'include' });
       return res.json();
     },
   });

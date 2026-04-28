@@ -140,15 +140,15 @@ export function AdminSettingsPanel() {
       let data: Record<string, unknown> = {};
 
       if (type === 'players' || type === 'all') {
-        const res = await fetch('/api/players?limit=1000');
+        const res = await fetch('/api/players?limit=1000', { credentials: 'include' });
         data.players = await res.json();
       }
       if (type === 'tournaments' || type === 'all') {
-        const res = await fetch('/api/tournaments');
+        const res = await fetch('/api/tournaments', { credentials: 'include' });
         data.tournaments = await res.json();
       }
       if (type === 'matches' || type === 'all') {
-        const res = await fetch('/api/league-matches');
+        const res = await fetch('/api/league-matches', { credentials: 'include' });
         data.leagueMatches = await res.json();
       }
 
@@ -179,13 +179,13 @@ export function AdminSettingsPanel() {
       let filename = '';
 
       if (type === 'players') {
-        const res = await fetch('/api/players?limit=1000');
+        const res = await fetch('/api/players?limit=1000', { credentials: 'include' });
         const json = await res.json();
         data = json;
         headers = ['name', 'gamertag', 'division', 'tier', 'points', 'totalWins', 'totalMvp', 'city', 'phone'];
         filename = 'players';
       } else if (type === 'donations') {
-        const res = await fetch('/api/donations');
+        const res = await fetch('/api/donations', { credentials: 'include' });
         const json = await res.json();
         data = json.donations || json;
         headers = ['donorName', 'amount', 'message', 'type', 'createdAt'];

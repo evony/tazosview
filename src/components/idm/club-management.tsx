@@ -79,7 +79,7 @@ export function ClubManagement({ division, dt, seasonId, setConfirmDialog }: Clu
   const { data: clubs, isLoading } = useQuery<ClubData[]>({
     queryKey: ['admin-clubs-manage', division, 'unified'],
     queryFn: async () => {
-      const res = await fetch(`/api/clubs?unified=true&division=${division}`);
+      const res = await fetch(`/api/clubs?unified=true&division=${division}`, { credentials: 'include' });
       return res.json();
     },
   });
@@ -92,7 +92,7 @@ export function ClubManagement({ division, dt, seasonId, setConfirmDialog }: Clu
     queryKey: ['club-detail', expandedClub],
     queryFn: async () => {
       if (!expandedClub) return null;
-      const res = await fetch(`/api/clubs/${expandedClub}`);
+      const res = await fetch(`/api/clubs/${expandedClub}`, { credentials: 'include' });
       return res.json();
     },
     enabled: !!expandedClub,
@@ -102,7 +102,7 @@ export function ClubManagement({ division, dt, seasonId, setConfirmDialog }: Clu
   const { data: allPlayers } = useQuery({
     queryKey: ['admin-players', division],
     queryFn: async () => {
-      const res = await fetch(`/api/players?division=${division}`);
+      const res = await fetch(`/api/players?division=${division}`, { credentials: 'include' });
       return res.json();
     },
   });

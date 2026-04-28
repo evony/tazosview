@@ -79,7 +79,7 @@ export function AdminSponsorPanel() {
   const { data: sponsors, isLoading } = useQuery({
     queryKey: ['admin-sponsors'],
     queryFn: async () => {
-      const res = await fetch('/api/sponsors');
+      const res = await fetch('/api/sponsors', { credentials: 'include' });
       return res.json();
     },
   });

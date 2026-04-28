@@ -73,17 +73,17 @@ export function AdminPanel() {
 
   const { data: players } = useQuery({
     queryKey: ['admin-players', storeDivision],
-    queryFn: async () => { const res = await fetch(`/api/players?division=${storeDivision}`); return res.json(); },
+    queryFn: async () => { const res = await fetch(`/api/players?division=${storeDivision}`, { credentials: 'include' }); return res.json(); },
   });
 
   const { data: stats } = useQuery({
     queryKey: ['stats', storeDivision],
-    queryFn: async () => { const res = await fetch(`/api/stats?division=${storeDivision}`); return res.json(); },
+    queryFn: async () => { const res = await fetch(`/api/stats?division=${storeDivision}`, { credentials: 'include' }); return res.json(); },
   });
 
   const { data: donations } = useQuery({
     queryKey: ['admin-donations', storeDivision],
-    queryFn: async () => { const res = await fetch(`/api/donations?status=all`); return res.json(); },
+    queryFn: async () => { const res = await fetch(`/api/donations?status=all`, { credentials: 'include' }); return res.json(); },
   });
 
   const { data: cmsSettings } = useQuery({
@@ -97,7 +97,7 @@ export function AdminPanel() {
   const { data: clubs } = useQuery({
     queryKey: ['admin-clubs', storeDivision, 'unified'],
     queryFn: async () => {
-      const res = await fetch(`/api/clubs?unified=true&division=${storeDivision}`);
+      const res = await fetch(`/api/clubs?unified=true&division=${storeDivision}`, { credentials: 'include' });
       return res.json();
     },
   });
@@ -294,7 +294,7 @@ export function AdminPanel() {
   // Pending registrations
   const { data: pendingRegistrations } = useQuery({
     queryKey: ['admin-pending-registrations'],
-    queryFn: async () => { const res = await fetch('/api/players?registrationStatus=pending'); return res.json(); },
+    queryFn: async () => { const res = await fetch('/api/players?registrationStatus=pending', { credentials: 'include' }); return res.json(); },
   });
 
   // Active tournament registrations — tournaments not yet in team_generation or later
@@ -302,7 +302,7 @@ export function AdminPanel() {
     queryKey: ['admin-active-tournaments', stats?.season?.id],
     queryFn: async () => {
       if (!stats?.season?.id) return [];
-      const res = await fetch(`/api/tournaments?seasonId=${stats.season.id}`);
+      const res = await fetch(`/api/tournaments?seasonId=${stats.season.id}`, { credentials: 'include' });
       const all = await res.json();
       return all.filter((t: { status: string }) => !['team_generation', 'bracket_generation', 'main_event', 'finalization', 'completed'].includes(t.status));
     },
