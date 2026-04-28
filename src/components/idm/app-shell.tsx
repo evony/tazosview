@@ -86,8 +86,8 @@ const communityNavItems: NavItemDef[] = [
 /* Division sub-menu items — shown when a division is active */
 const divisionSubItems: NavItemDef[] = [
   { id: 'mytournament', label: 'Tour Saya', icon: Target, isSubItem: true },
-  { id: 'matchday', label: 'Match Day', icon: Radio, isSubItem: true },
-  { id: 'league', label: 'League', icon: Trophy, isSubItem: true },
+  { id: 'matchday', label: 'Arena Live', icon: Radio, isSubItem: true },
+  { id: 'league', label: 'Peraturan', icon: Trophy, isSubItem: true },
 ];
 
 /* ─── Collapsible Desktop Sidebar ─── */

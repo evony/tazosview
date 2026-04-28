@@ -5,35 +5,23 @@ import { useAppStore } from '@/lib/store';
 // Note: motion.div removed — replaced with CSS animations
 import {
   Trophy, Crown, Radio, Clock, Flame, Zap,
-  Users, TrendingUp, Star, ChevronRight,
-  Vote, BarChart3, Activity, Eye, MessageSquare, ThumbsUp,
-  ArrowRight, Circle, CheckCircle2, XCircle, Timer
+  Star,
+  Activity, CheckCircle2, Timer
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TierBadge } from './tier-badge';
 import { ShareButton } from './ui/share-button';
 import {
   MatchDayHeroSkeleton,
   MatchRowSkeleton,
-  TableSkeleton,
   StatsRowSkeleton,
 } from './ui/skeleton';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
 import { formatCurrency } from '@/lib/utils';
 import type { StatsData } from '@/types/stats';
 // container/item removed — replaced with CSS stagger-item classes
-
-interface PredictionState {
-  matchId: string;
-  team1Votes: number;
-  team2Votes: number;
-  userVote: 'team1' | 'team2' | null;
-}
 
 /* ─── Live Pulse Indicator ─── */
 function LivePulse() {
@@ -55,130 +43,6 @@ interface MatchEvent {
   team: 'team1' | 'team2' | 'neutral';
   description: string;
   player?: string;
-}
-
-/* ─── Prediction Vote Bar ─── */
-function PredictionBar({ team1Votes, team2Votes, userVote, onVote, team1Name, team2Name }: {
-  team1Votes: number; team2Votes: number;
-  userVote: 'team1' | 'team2' | null;
-  onVote: (team: 'team1' | 'team2') => void;
-  team1Name: string; team2Name: string;
-}) {
-  const dt = useDivisionTheme();
-  const division = useAppStore(s => s.division);
-  const totalVotes = team1Votes + team2Votes;
-  const team1Percent = totalVotes > 0 ? Math.round((team1Votes / totalVotes) * 100) : 50;
-  const team2Percent = totalVotes > 0 ? 100 - team1Percent : 50;
-
-  return (
-    <div className={`rounded-xl ${dt.bgSubtle} ${dt.border} border p-4`}>
-      <div className="flex items-center gap-2 mb-3">
-        <ThumbsUp className={`w-4 h-4 ${dt.neonText}`} />
-        <span className="text-xs font-semibold uppercase tracking-wider">Prediksi Match</span>
-        <Badge className={`${dt.casinoBadge} ml-auto text-[9px]`}>{totalVotes > 0 ? `${totalVotes} suara` : 'Belum ada suara'}</Badge>
-      </div>
-
-      {/* Vote Buttons */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <button
-          onClick={() => onVote('team1')}
-          className={`relative rounded-xl p-3 text-center transition-all duration-300 border-2 overflow-hidden ${
-            userVote === 'team1'
-              ? `border-current ${dt.neonText} ${dt.bgSubtle}`
-              : `${dt.borderSubtle} border-transparent ${dt.hoverBorder}`
-          }`}
-        >
-          {userVote === 'team1' && (
-            <div
-              className={`stagger-item-subtle absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-gradient-to-br ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} flex items-center justify-center`}
-            >
-              <CheckCircle2 className="w-3 h-3 text-white" />
-            </div>
-          )}
-          <div className={`w-10 h-10 mx-auto rounded-lg flex items-center justify-center text-xs font-bold mb-1.5 ${
-            userVote === 'team1'
-              ? `bg-gradient-to-br ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} text-white`
-              : `${dt.iconBg} ${dt.text}`
-          }`}>
-            {team1Name.slice(0, 2).toUpperCase()}
-          </div>
-          <p className="text-[11px] font-semibold truncate">{team1Name}</p>
-          <p className={`text-lg font-black mt-1 ${userVote === 'team1' ? dt.neonGradient : ''}`}>
-            {totalVotes > 0 ? `${team1Percent}%` : '-'}
-          </p>
-        </button>
-
-        <button
-          onClick={() => onVote('team2')}
-          className={`relative rounded-xl p-3 text-center transition-all duration-300 border-2 overflow-hidden ${
-            userVote === 'team2'
-              ? `border-current ${dt.neonText} ${dt.bgSubtle}`
-              : `${dt.borderSubtle} border-transparent ${dt.hoverBorder}`
-          }`}
-        >
-          {userVote === 'team2' && (
-            <div
-              className={`stagger-item-subtle absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-gradient-to-br ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} flex items-center justify-center`}
-            >
-              <CheckCircle2 className="w-3 h-3 text-white" />
-            </div>
-          )}
-          <div className={`w-10 h-10 mx-auto rounded-lg flex items-center justify-center text-xs font-bold mb-1.5 ${
-            userVote === 'team2'
-              ? `bg-gradient-to-br ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} text-white`
-              : `${dt.iconBg} ${dt.text}`
-          }`}>
-            {team2Name.slice(0, 2).toUpperCase()}
-          </div>
-          <p className="text-[11px] font-semibold truncate">{team2Name}</p>
-          <p className={`text-lg font-black mt-1 ${userVote === 'team2' ? dt.neonGradient : ''}`}>
-            {totalVotes > 0 ? `${team2Percent}%` : '-'}
-          </p>
-        </button>
-      </div>
-
-      {/* Visual Bar */}
-      {totalVotes > 0 ? (
-        <div className={`h-2 rounded-full ${dt.bgSubtle} overflow-hidden flex`}>
-          <div
-            className={`h-full rounded-l-full bg-gradient-to-r ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'}`}
-            style={{ width: `${team1Percent}%`, transition: 'width 0.8s ease-out' }}
-          />
-          <div
-            className={`h-full rounded-r-full bg-gradient-to-r ${division === 'male' ? 'from-idm-male-light to-idm-male' : 'from-idm-female-light to-idm-female'}`}
-            style={{ width: `${team2Percent}%`, opacity: 0.5, transition: 'width 0.8s ease-out' }}
-          />
-        </div>
-      ) : (
-        <p className="text-[10px] text-muted-foreground text-center italic">Vote untuk melihat bar prediksi — jadilah yang pertama memprediksi!</p>
-      )}
-    </div>
-  );
-}
-
-/* ─── Head-to-Head Stat Row ─── */
-function H2HStatRow({ label, team1Val, team2Val, highlight = 'higher' }: {
-  label: string; team1Val: number | string; team2Val: number | string; highlight?: 'higher' | 'lower' | 'none';
-}) {
-  const dt = useDivisionTheme();
-  const t1Num = typeof team1Val === 'number' ? team1Val : 0;
-  const t2Num = typeof team2Val === 'number' ? team2Val : 0;
-  const t1Highlight = highlight === 'higher' ? t1Num > t2Num : highlight === 'lower' ? t1Num < t2Num : false;
-  const t2Highlight = highlight === 'higher' ? t2Num > t1Num : highlight === 'lower' ? t2Num < t1Num : false;
-
-  return (
-    <div className={`flex items-center gap-3 py-2 px-3 rounded-lg ${dt.bgSubtle}`}>
-      <span className={`text-sm font-bold w-10 text-right ${t1Highlight ? dt.neonText : 'text-muted-foreground'}`}>
-        {team1Val}
-      </span>
-      <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex-1 text-center font-medium">
-        {label}
-      </span>
-      <span className={`text-sm font-bold w-10 text-left ${t2Highlight ? dt.neonText : 'text-muted-foreground'}`}>
-        {team2Val}
-      </span>
-    </div>
-  );
 }
 
 /* ─── Timeline Event ─── */
@@ -253,22 +117,6 @@ function SectionCard({ title, icon: Icon, badge, children, className = '' }: {
 export function MatchDayCenter() {
   const { division } = useAppStore();
   const dt = useDivisionTheme();
-  const [predictions, setPredictions] = useState<Map<string, PredictionState>>(new Map());
-  const [predictionsLoaded, setPredictionsLoaded] = useState(false);
-
-  // Load predictions from localStorage after mount (avoids hydration mismatch)
-  useEffect(() => {
-    if (!predictionsLoaded) {
-      try {
-        const saved = localStorage.getItem('idm-predictions');
-        if (saved) {
-          const parsed = JSON.parse(saved) as [string, PredictionState][];
-          setPredictions(new Map(parsed));
-        }
-      } catch {}
-      setPredictionsLoaded(true);
-    }
-  }, [predictionsLoaded]);
   const [selectedMatchIdx, setSelectedMatchIdx] = useState(0);
 
   const { data, isLoading } = useQuery<StatsData>({
@@ -278,13 +126,6 @@ export function MatchDayCenter() {
       return res.json();
     },
   });
-
-  // Persist predictions to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('idm-predictions', JSON.stringify(Array.from(predictions.entries())));
-    } catch {}
-  }, [predictions]);
 
   // Timeline events — only shows what admin actually inputs into the system.
   // No fake auto-detected game events, no simulated round timestamps.
@@ -345,48 +186,6 @@ export function MatchDayCenter() {
     return events;
   }, [data?.activeTournament, selectedMatchIdx]);
 
-  // Handle prediction vote
-  const handleVote = useCallback((matchId: string, team: 'team1' | 'team2') => {
-    setPredictions(prev => {
-      const newMap = new Map(prev);
-      const current = newMap.get(matchId) || { matchId, team1Votes: 0, team2Votes: 0, userVote: null as any };
-      if (current.userVote === team) return prev; // Already voted for this team
-
-      // If switching vote, remove from previous
-      if (current.userVote) {
-        if (current.userVote === 'team1') current.team1Votes--;
-        else current.team2Votes--;
-      }
-
-      // Add to new team
-      if (team === 'team1') current.team1Votes++;
-      else current.team2Votes++;
-      current.userVote = team;
-
-      newMap.set(matchId, { ...current });
-      return newMap;
-    });
-  }, []);
-
-  // Initialize predictions — all start from 0, votes come from real user input only
-  useEffect(() => {
-    if (!data?.activeTournament?.matches) return;
-    const newMap = new Map(predictions);
-    let changed = false;
-    data.activeTournament?.matches?.forEach(m => {
-      if (!newMap.has(m.id)) {
-        newMap.set(m.id, {
-          matchId: m.id,
-          team1Votes: 0,
-          team2Votes: 0,
-          userVote: null,
-        });
-        changed = true;
-      }
-    });
-    if (changed) setPredictions(newMap);
-  }, [data?.activeTournament?.matches]);
-
   if (isLoading) {
     return (
       <div className="space-y-5">
@@ -425,75 +224,6 @@ export function MatchDayCenter() {
   const t = data.activeTournament;
   const tournamentMatches = t?.matches || [];
   const selectedMatch = tournamentMatches[selectedMatchIdx] || tournamentMatches[0];
-  const predState = selectedMatch ? predictions.get(selectedMatch.id) : null;
-
-  // Generate H2H stats from actual tournament data (admin-input results only).
-  // No fake fallback data — if no matches have been played, stats show 0.
-  // All data comes from organizer score input, not from game integration.
-  const team1Stats = selectedMatch ? (() => {
-    const team1Name = selectedMatch.team1?.name || 'TBD';
-    const tMatches = data?.activeTournament?.matches || [];
-    let wins = 0, losses = 0, draws = 0, mvpCount = 0, totalRoundsWon = 0, totalRoundsLost = 0;
-    tMatches.forEach(m => {
-      if ((m.team1?.name || 'TBD') === team1Name) {
-        if (m.score1 !== null && m.score2 !== null) {
-          if (m.score1 > m.score2) wins++; else if (m.score1 < m.score2) losses++; else draws++;
-          totalRoundsWon += m.score1; totalRoundsLost += m.score2;
-        }
-        if (m.mvpPlayer && (m.team1?.name || 'TBD') === team1Name) mvpCount++;
-      } else if ((m.team2?.name || 'TBD') === team1Name) {
-        if (m.score1 !== null && m.score2 !== null) {
-          if (m.score2 > m.score1) wins++; else if (m.score2 < m.score1) losses++; else draws++;
-          totalRoundsWon += m.score2; totalRoundsLost += m.score1;
-        }
-        if (m.mvpPlayer && (m.team2?.name || 'TBD') === team1Name) mvpCount++;
-      }
-    });
-    return {
-      wins,
-      losses,
-      draws,
-      roundDiff: totalRoundsWon - totalRoundsLost,
-      points: wins * 3 + draws * 1 + mvpCount * 2,
-      mvpCount,
-      winRate: (wins + losses + draws) > 0 ? Math.round((wins / (wins + losses + draws)) * 100) : 0,
-      totalRoundsWon,
-      totalRoundsLost,
-      hasData: (wins + losses + draws) > 0,
-    };
-  })() : null;
-  const team2Stats = selectedMatch ? (() => {
-    const team2Name = selectedMatch.team2?.name || 'TBD';
-    const tMatches = data?.activeTournament?.matches || [];
-    let wins = 0, losses = 0, draws = 0, mvpCount = 0, totalRoundsWon = 0, totalRoundsLost = 0;
-    tMatches.forEach(m => {
-      if ((m.team1?.name || 'TBD') === team2Name) {
-        if (m.score1 !== null && m.score2 !== null) {
-          if (m.score1 > m.score2) wins++; else if (m.score1 < m.score2) losses++; else draws++;
-          totalRoundsWon += m.score1; totalRoundsLost += m.score2;
-        }
-        if (m.mvpPlayer && (m.team1?.name || 'TBD') === team2Name) mvpCount++;
-      } else if ((m.team2?.name || 'TBD') === team2Name) {
-        if (m.score1 !== null && m.score2 !== null) {
-          if (m.score2 > m.score1) wins++; else if (m.score2 < m.score1) losses++; else draws++;
-          totalRoundsWon += m.score2; totalRoundsLost += m.score1;
-        }
-        if (m.mvpPlayer && (m.team2?.name || 'TBD') === team2Name) mvpCount++;
-      }
-    });
-    return {
-      wins,
-      losses,
-      draws,
-      roundDiff: totalRoundsWon - totalRoundsLost,
-      points: wins * 3 + draws * 1 + mvpCount * 2,
-      mvpCount,
-      winRate: (wins + losses + draws) > 0 ? Math.round((wins / (wins + losses + draws)) * 100) : 0,
-      totalRoundsWon,
-      totalRoundsLost,
-      hasData: (wins + losses + draws) > 0,
-    };
-  })() : null;
 
   return (
     <div className="space-y-5">
@@ -686,13 +416,13 @@ export function MatchDayCenter() {
         </Card>
       </div>
 
-      {/* ═══════ TABS: Prediction / H2H / Timeline / Results ═══════ */}
-      <Tabs defaultValue="prediction" className="w-full">
+      {/* ═══════ TABS: Bracket / Queue / Timeline / Results ═══════ */}
+      <Tabs defaultValue="bracket" className="w-full">
         <div className={`border-b ${dt.border}`}>
           <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none">
             {[
-              { value: 'prediction', label: 'Prediksi', icon: ThumbsUp },
-              { value: 'h2h', label: 'H2H', icon: Users },
+              { value: 'bracket', label: 'Bracket', icon: Trophy },
+              { value: 'queue', label: 'Antrian', icon: Radio },
               { value: 'timeline', label: 'Lini Masa', icon: Activity },
               { value: 'results', label: 'Hasil', icon: Trophy },
             ].map(tab => (
@@ -708,200 +438,211 @@ export function MatchDayCenter() {
           </TabsList>
         </div>
 
-        {/* ═══ PREDICTION TAB ═══ */}
-        <TabsContent value="prediction" className="mt-4 space-y-4">
+        {/* ═══ BRACKET TAB ═══ */}
+        <TabsContent value="bracket" className="mt-4 space-y-4">
           <div className="space-y-4">
-            {/* Featured Match Prediction */}
-            {selectedMatch && predState && (
-              <div className="stagger-item-subtle stagger-d0">
-                <PredictionBar
-                  team1Votes={predState.team1Votes}
-                  team2Votes={predState.team2Votes}
-                  userVote={predState.userVote}
-                  onVote={(team) => handleVote(selectedMatch.id, team)}
-                  team1Name={selectedMatch.team1?.name || 'TBD'}
-                  team2Name={selectedMatch.team2?.name || 'TBD'}
-                />
-              </div>
-            )}
-
-            {/* All Match Predictions */}
-            <div className="stagger-item-subtle stagger-d1">
-              <SectionCard title="Semua Prediksi Match" icon={BarChart3} badge={`${tournamentMatches.length} match`}>
-                <div className="space-y-3">
-                  {tournamentMatches.map((m) => {
-                    const pState = predictions.get(m.id);
-                    if (!pState) return null;
-                    const total = pState.team1Votes + pState.team2Votes;
-                    const t1Pct = total > 0 ? Math.round((pState.team1Votes / total) * 100) : 50;
-
-                    return (
-                      <div key={m.id} className={`flex items-center gap-3 p-2.5 rounded-lg ${dt.bgSubtle} ${dt.borderSubtle} border`}>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[11px] font-semibold truncate">{m.team1?.name || 'TBD'}</span>
-                            <span className="text-[11px] font-semibold truncate">{(m.team2?.name || 'TBD')}</span>
-                          </div>
-                          <div className={`h-1.5 rounded-full ${dt.bg} overflow-hidden flex`}>
-                            <div
-                              className={`h-full rounded-l-full bg-gradient-to-r ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'}`}
-                              style={{ width: `${t1Pct}%` }}
-                            />
-                            <div
-                              className={`h-full rounded-r-full bg-gradient-to-r ${division === 'male' ? 'from-idm-male-light to-idm-male' : 'from-idm-female-light to-idm-female'}`}
-                              style={{ width: `${100 - t1Pct}%`, opacity: 0.5 }}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between mt-1">
-                            <span className={`text-[9px] font-bold ${pState.userVote === 'team1' ? dt.neonText : 'text-muted-foreground'}`}>{t1Pct}%</span>
-                            <span className="text-[9px] text-muted-foreground">{total} suara</span>
-                            <span className={`text-[9px] font-bold ${pState.userVote === 'team2' ? dt.neonText : 'text-muted-foreground'}`}>{100 - t1Pct}%</span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col gap-1.5 shrink-0">
-                          <button
-                            onClick={() => handleVote(m.id, 'team1')}
-                            className={`px-3 py-1.5 rounded-md text-[10px] min-h-[32px] font-bold transition-all ${
-                              pState.userVote === 'team1'
-                                ? `bg-gradient-to-r ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} text-white`
-                                : `${dt.bgSubtle} ${dt.text} ${dt.hoverBg}`
-                            }`}
-                          >
-                            {(m.team1?.name || 'TBD').slice(0, 2)}
-                          </button>
-                          <button
-                            onClick={() => handleVote(m.id, 'team2')}
-                            className={`px-3 py-1.5 rounded-md text-[10px] min-h-[32px] font-bold transition-all ${
-                              pState.userVote === 'team2'
-                                ? `bg-gradient-to-r ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} text-white`
-                                : `${dt.bgSubtle} ${dt.text} ${dt.hoverBg}`
-                            }`}
-                          >
-                            {(m.team2?.name || 'TBD').slice(0, 2)}
-                          </button>
-                        </div>
+            {/* Tournament Bracket Visualization */}
+            <SectionCard title="Bracket Turnamen" icon={Trophy} badge={tournamentMatches.length > 0 ? `${tournamentMatches.length} match` : undefined}>
+              {tournamentMatches.length === 0 ? (
+                <div className="text-center py-8">
+                  <Trophy className={`w-10 h-10 mx-auto mb-3 opacity-30`} />
+                  <p className="text-sm text-muted-foreground">Belum ada bracket — turnamen belum dimulai</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Group matches by round */}
+                  {Object.entries(
+                    tournamentMatches.reduce((acc: Record<string, typeof tournamentMatches>, m) => {
+                      const round = m.round ?? m.bracketPosition ?? 'Main';
+                      if (!acc[round]) acc[round] = [];
+                      acc[round].push(m);
+                      return acc;
+                    }, {})
+                  ).map(([round, matches]) => (
+                    <div key={round}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className={`${dt.casinoBadge} text-[9px]`}>
+                          {round === 'final' ? 'Final' : round === 'semifinal' || round === 'sf' ? 'Semifinal' : round === 'quarterfinal' || round === 'qf' ? 'Perempat Final' : `Round ${round}`}
+                        </Badge>
+                        <div className={`h-px flex-1 ${dt.borderSubtle}`} />
                       </div>
-                    );
-                  })}
+                      <div className="space-y-1.5">
+                        {matches.map((m) => {
+                          const isLive = m.status === 'live' || m.status === 'main_event';
+                          const isCompleted = m.status === 'completed';
+                          const team1Winner = m.score1 !== null && m.score2 !== null && m.score1 > m.score2;
+                          const team2Winner = m.score1 !== null && m.score2 !== null && m.score2 > m.score1;
+                          return (
+                            <div
+                              key={m.id}
+                              className={`flex items-center gap-2 p-2.5 rounded-lg border transition-colors ${
+                                isLive ? `${dt.border} border-red-500/30 bg-red-500/5` : isCompleted ? `${dt.borderSubtle} bg-green-500/5 border-green-500/10` : `${dt.borderSubtle} ${dt.bgSubtle}`
+                              }`}
+                            >
+                              {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0 animate-pulse" />}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-[11px] font-semibold truncate ${team1Winner ? dt.neonText : ''}`}>
+                                    {m.team1?.name || 'TBD'}
+                                  </span>
+                                  {team1Winner && <Trophy className="w-3 h-3 text-yellow-500 shrink-0" />}
+                                </div>
+                              </div>
+                              <div className="shrink-0 flex items-center gap-1.5 px-2">
+                                {m.score1 !== null && m.score2 !== null ? (
+                                  <>
+                                    <span className={`text-sm font-black tabular-nums ${team1Winner ? dt.neonText : 'text-muted-foreground'}`}>{m.score1}</span>
+                                    <span className="text-[10px] text-muted-foreground">-</span>
+                                    <span className={`text-sm font-black tabular-nums ${team2Winner ? dt.neonText : 'text-muted-foreground'}`}>{m.score2}</span>
+                                  </>
+                                ) : (
+                                  <span className="text-[10px] text-muted-foreground italic">vs</span>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0 text-right">
+                                <div className="flex items-center gap-2 justify-end">
+                                  {team2Winner && <Trophy className="w-3 h-3 text-yellow-500 shrink-0" />}
+                                  <span className={`text-[11px] font-semibold truncate ${team2Winner ? dt.neonText : ''}`}>
+                                    {m.team2?.name || 'TBD'}
+                                  </span>
+                                </div>
+                              </div>
+                              {m.mvpPlayer && (
+                                <Crown className="w-3.5 h-3.5 text-yellow-500 shrink-0" title={`MVP: ${m.mvpPlayer.gamertag}`} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </SectionCard>
-            </div>
+              )}
+            </SectionCard>
 
-            {/* Community Insight */}
-            <div className="stagger-item-subtle stagger-d2">
-              <SectionCard title="Insight Komunitas" icon={Eye} badge="Trending">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className={`p-3 rounded-xl ${dt.bgSubtle} ${dt.border} border text-center`}>
-                    <p className={`text-2xl font-black ${dt.neonGradient}`}>
-                      {predState ? Math.max(predState.team1Votes, predState.team2Votes) : 0}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">Suara Terbanyak</p>
-                  </div>
-                  <div className={`p-3 rounded-xl ${dt.bgSubtle} ${dt.border} border text-center`}>
-                    <p className={`text-2xl font-black ${dt.neonGradient}`}>
-                      {predState ? Math.round((Math.max(predState.team1Votes, predState.team2Votes) / (predState.team1Votes + predState.team2Votes)) * 100) : 0}%
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">Konsensus</p>
-                  </div>
-                </div>
-              </SectionCard>
-            </div>
+            {/* My Position in Bracket — quick info for logged-in player */}
+            <SectionCard title="Posisi Saya" icon={Star} badge="Login Required">
+              <div className="text-center py-4">
+                <Star className={`w-8 h-8 mx-auto mb-2 opacity-30`} />
+                <p className="text-xs text-muted-foreground">Login sebagai peserta untuk melihat posisi bracket Anda</p>
+              </div>
+            </SectionCard>
           </div>
         </TabsContent>
-        <TabsContent value="h2h" className="mt-4 space-y-4">
+
+        {/* ═══ QUEUE TAB ═══ */}
+        <TabsContent value="queue" className="mt-4 space-y-4">
           <div className="space-y-4">
-            {selectedMatch && team1Stats && team2Stats && (
-              <>
-                <div className="stagger-item-fast stagger-d0">
-                  <SectionCard title="Statistik H2H" icon={Users} badge="Statistik">
-                    {/* Team Headers */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="flex-1 text-center">
-                        <div className={`w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-lg font-bold ${
-                          selectedMatch.score1 !== null && selectedMatch.score2 !== null && selectedMatch.score1! > selectedMatch.score2!
-                            ? `bg-gradient-to-br ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} text-white`
-                            : `${dt.iconBg} ${dt.text}`
-                        }`}>
-                          {(selectedMatch.team1?.name || 'TBD').slice(0, 2).toUpperCase()}
-                        </div>
-                        <p className="text-xs font-bold mt-1.5">{selectedMatch.team1?.name || 'TBD'}</p>
-                      </div>
-                      <div className={`w-10 h-10 rounded-full ${dt.bgSubtle} ${dt.border} border flex items-center justify-center shrink-0`}>
-                        <Users className={`w-4 h-4 ${dt.neonText}`} />
-                      </div>
-                      <div className="flex-1 text-center">
-                        <div className={`w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-lg font-bold ${
-                          selectedMatch.score1 !== null && selectedMatch.score2 !== null && selectedMatch.score2! > selectedMatch.score1!
-                            ? `bg-gradient-to-br ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} text-white`
-                            : `${dt.iconBg} ${dt.text}`
-                        }`}>
-                          {(selectedMatch.team2?.name || 'TBD').slice(0, 2).toUpperCase()}
-                        </div>
-                        <p className="text-xs font-bold mt-1.5">{selectedMatch.team2?.name || 'TBD'}</p>
-                      </div>
-                    </div>
-
-                    {/* Stats Rows — all from organizer-input data, no fake stats */}
-                    <div className="space-y-1.5">
-                      <H2HStatRow label="Win" team1Val={team1Stats.wins} team2Val={team2Stats.wins} />
-                      <H2HStatRow label="Lose" team1Val={team1Stats.losses} team2Val={team2Stats.losses} highlight="lower" />
-                      <H2HStatRow label="Win Rate" team1Val={`${team1Stats.winRate}%`} team2Val={`${team2Stats.winRate}%`} />
-                      <H2HStatRow label="Ronde Dimenangkan" team1Val={team1Stats.totalRoundsWon} team2Val={team2Stats.totalRoundsWon} />
-                      <H2HStatRow label="Selisih Ronde" team1Val={team1Stats.roundDiff > 0 ? `+${team1Stats.roundDiff}` : team1Stats.roundDiff} team2Val={team2Stats.roundDiff > 0 ? `+${team2Stats.roundDiff}` : team2Stats.roundDiff} />
-                      <H2HStatRow label="Poin" team1Val={team1Stats.points} team2Val={team2Stats.points} />
-                      <H2HStatRow label="Penghargaan MVP" team1Val={team1Stats.mvpCount} team2Val={team2Stats.mvpCount} />
-                    </div>
-                    {!team1Stats.hasData && !team2Stats.hasData && (
-                      <p className="text-[10px] text-muted-foreground text-center mt-3 italic">Belum ada data match — statistik akan muncul setelah organizer submit hasil</p>
-                    )}
-                  </SectionCard>
+            {/* Live & Upcoming Match Queue */}
+            <SectionCard title="Antrian Pertandingan" icon={Radio} badge={tournamentMatches.length > 0 ? `${tournamentMatches.filter(m => m.status === 'live' || m.status === 'scheduled' || m.status === 'upcoming').length} match` : undefined}>
+              {tournamentMatches.length === 0 ? (
+                <div className="text-center py-8">
+                  <Radio className={`w-10 h-10 mx-auto mb-3 opacity-30`} />
+                  <p className="text-sm text-muted-foreground">Belum ada antrian match — turnamen belum dimulai</p>
                 </div>
-
-                {/* Win Probability — calculated from actual stats, not hardcoded */}
-                <div className="stagger-item-fast stagger-d1">
-                  <SectionCard title="Peluang Menang" icon={TrendingUp} badge="Berdasarkan Statistik">
-                    <div className={`p-4 rounded-xl ${dt.bgSubtle} ${dt.border} border`}>
-                      {team1Stats.hasData || team2Stats.hasData ? (() => {
-                        // Calculate probability from actual win rates and round differentials
-                        const t1Score = team1Stats.winRate + Math.max(team1Stats.roundDiff, 0) * 5 + team1Stats.mvpCount * 3;
-                        const t2Score = team2Stats.winRate + Math.max(team2Stats.roundDiff, 0) * 5 + team2Stats.mvpCount * 3;
-                        const totalScore = t1Score + t2Score || 1;
-                        const t1Prob = Math.round((t1Score / totalScore) * 100);
-                        const t2Prob = 100 - t1Prob;
-                        return (
-                          <>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-semibold">{selectedMatch.team1?.name || 'TBD'}</span>
-                              <span className="text-xs font-semibold">{selectedMatch.team2?.name || 'TBD'}</span>
-                            </div>
-                            <div className={`h-3 rounded-full ${dt.bg} overflow-hidden flex`}>
-                              <div
-                                className={`animate-fade-enter-sm h-full rounded-l-full bg-gradient-to-r ${division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'}`}
-                                style={{ width: `${t1Prob}%` }}
-                              />
-                              <div
-                                className={`animate-fade-enter-sm h-full rounded-r-full bg-gradient-to-r ${division === 'male' ? 'from-idm-male-light to-idm-male' : 'from-idm-female-light to-idm-female'}`}
-                                style={{ width: `${t2Prob}%`, opacity: 0.5 }}
-                              />
-                            </div>
-                            <div className="flex items-center justify-between mt-1.5">
-                              <span className={`text-sm font-black ${t1Prob >= t2Prob ? dt.neonText : 'text-muted-foreground'}`}>{t1Prob}%</span>
-                              <span className="text-[9px] text-muted-foreground">Berdasarkan win rate & selisih ronde</span>
-                              <span className={`text-sm font-black ${t2Prob > t1Prob ? dt.neonText : 'text-muted-foreground'}`}>{t2Prob}%</span>
-                            </div>
-                          </>
-                        );
-                      })() : (
-                        <div className="text-center py-4">
-                          <TrendingUp className={`w-6 h-6 mx-auto ${dt.text} mb-2`} />
-                          <p className="text-[10px] text-muted-foreground italic">Probabilitas akan dihitung setelah hasil match disubmit</p>
+              ) : (
+                <div className="space-y-2">
+                  {/* Live matches first */}
+                  {tournamentMatches.filter(m => m.status === 'live' || m.status === 'main_event').length > 0 && (
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-red-500">Sedang Berlangsung</span>
+                      </div>
+                      {tournamentMatches.filter(m => m.status === 'live' || m.status === 'main_event').map(m => (
+                        <div key={m.id} className={`flex items-center gap-2 p-3 rounded-lg border ${dt.border} border-red-500/30 bg-red-500/5`}>
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold truncate">{m.team1?.name || 'TBD'} vs {m.team2?.name || 'TBD'}</p>
+                            {m.score1 !== null && m.score2 !== null && (
+                              <p className="text-[10px] text-muted-foreground">{m.score1} - {m.score2}</p>
+                            )}
+                          </div>
+                          <Badge className="bg-red-500/10 text-red-500 text-[9px] border-0">LIVE</Badge>
                         </div>
-                      )}
+                      ))}
                     </div>
-                  </SectionCard>
+                  )}
+
+                  {/* Upcoming matches */}
+                  {tournamentMatches.filter(m => m.status === 'scheduled' || m.status === 'upcoming').length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="w-3.5 h-3.5 text-amber-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Berikutnya</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {tournamentMatches.filter(m => m.status === 'scheduled' || m.status === 'upcoming').map((m, idx) => (
+                          <div key={m.id} className={`flex items-center gap-2 p-2.5 rounded-lg border ${dt.borderSubtle} ${dt.bgSubtle}`}>
+                            <span className="text-[10px] font-bold text-muted-foreground w-5 text-center shrink-0">#{idx + 1}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-semibold truncate">{m.team1?.name || 'TBD'} vs {m.team2?.name || 'TBD'}</p>
+                            </div>
+                            <Badge className={`${dt.casinoBadge} text-[8px]`}>Menunggu</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Completed matches */}
+                  {tournamentMatches.filter(m => m.status === 'completed').length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-green-400">Selesai</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {tournamentMatches.filter(m => m.status === 'completed').map(m => {
+                          const team1Winner = (m.score1 ?? 0) > (m.score2 ?? 0);
+                          return (
+                            <div key={m.id} className={`flex items-center gap-2 p-2.5 rounded-lg border ${dt.borderSubtle} bg-green-500/5 border-green-500/10`}>
+                              <CheckCircle2 className="w-3 h-3 text-green-400 shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[11px] font-semibold truncate">
+                                  <span className={team1Winner ? dt.neonText : ''}>{m.team1?.name || 'TBD'}</span>
+                                  <span className="text-muted-foreground mx-1">{m.score1} - {m.score2}</span>
+                                  <span className={!team1Winner ? dt.neonText : ''}>{m.team2?.name || 'TBD'}</span>
+                                </p>
+                              </div>
+                              {m.mvpPlayer && (
+                                <Badge className="bg-yellow-500/10 text-yellow-500 text-[8px] border-0">
+                                  <Crown className="w-2.5 h-2.5 mr-0.5" />MVP
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </>
-            )}
+              )}
+            </SectionCard>
+
+            {/* Tournament Status Summary */}
+            <SectionCard title="Status Turnamen" icon={Zap}>
+              <div className="grid grid-cols-3 gap-3">
+                <div className={`p-3 rounded-xl ${dt.bgSubtle} ${dt.border} border text-center`}>
+                  <p className={`text-2xl font-black ${dt.neonGradient}`}>
+                    {tournamentMatches.filter(m => m.status === 'live' || m.status === 'main_event').length}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Live</p>
+                </div>
+                <div className={`p-3 rounded-xl ${dt.bgSubtle} ${dt.border} border text-center`}>
+                  <p className={`text-2xl font-black ${dt.neonGradient}`}>
+                    {tournamentMatches.filter(m => m.status === 'scheduled' || m.status === 'upcoming').length}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Menunggu</p>
+                </div>
+                <div className={`p-3 rounded-xl ${dt.bgSubtle} ${dt.border} border text-center`}>
+                  <p className={`text-2xl font-black ${dt.neonGradient}`}>
+                    {tournamentMatches.filter(m => m.status === 'completed').length}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Selesai</p>
+                </div>
+              </div>
+            </SectionCard>
           </div>
         </TabsContent>
 

@@ -296,3 +296,138 @@ Stage Summary:
 - Progress dots give visual feedback on current position and total items
 - Mobile users can swipe the featured card to navigate between highlights
 - All existing functionality preserved — only additive changes
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Transform "Match Day Center" into "Arena Live" — replace Prediksi tab with Bracket tab, replace H2H tab with Antrian tab
+
+Work Log:
+- Read `/home/z/my-project/worklog.md` for context
+- Read full `match-day-center.tsx` (1162 lines) to understand structure
+- Removed `PredictionState` interface (was lines 31-36)
+- Removed `PredictionBar` function component (was lines 60-157)
+- Removed `H2HStatRow` function component (was lines 160-182)
+- Removed `predictions` state, `predictionsLoaded` state, localStorage load/save effects, `handleVote` callback, prediction initialization effect from MatchDayCenter
+- Removed `predState` variable (was `predictions.get(selectedMatch.id)`)
+- Removed `team1Stats` and `team2Stats` computed variables (were for H2H tab)
+- Changed `<Tabs defaultValue="prediction">` → `<Tabs defaultValue="bracket">`
+- Changed tab definitions from `[Prediksi/ThumbsUp, H2H/Users, Lini Masa/Activity, Hasil/Trophy]` → `[Bracket/Trophy, Antrian/Radio, Lini Masa/Activity, Hasil/Trophy]`
+- Replaced entire `<TabsContent value="prediction">` block with new `<TabsContent value="bracket">` containing:
+  - "Bracket Turnamen" SectionCard with round-grouped tournament bracket visualization (final/semifinal/quarterfinal labels, live/completed/upcoming styling, winner indicators with Trophy icon, MVP Crown)
+  - "Posisi Saya" SectionCard with login-required placeholder
+- Replaced entire `<TabsContent value="h2h">` block with new `<TabsContent value="queue">` containing:
+  - "Antrian Pertandingan" SectionCard with live/upcoming/completed match queue (red pulse for live, amber for upcoming, green for completed, MVP badges)
+  - "Status Turnamen" SectionCard with 3-column grid summary (Live/Menunggu/Selesai counts)
+- Cleaned up imports: removed `Vote, BarChart3, Eye, MessageSquare, ThumbsUp, Users, TrendingUp, ChevronRight, ArrowRight, Circle, XCircle`
+- Kept imports used in new code: `Trophy, Crown, Radio, Clock, Flame, Zap, Star, Activity, CheckCircle2, Timer`
+- Also removed unused imports: `Button, Progress` (no longer referenced after removing prediction/h2h code)
+- Changed `useCallback` import removed (was only for handleVote), `useEffect` import removed (was only for prediction persistence)
+- ESLint passes with no errors
+- Dev server compiles and runs successfully
+
+Stage Summary:
+- "Match Day Center" transformed into "Arena Live" with Bracket + Antrian tabs replacing Prediksi + H2H
+- Component simplified from ~1162 lines to ~750 lines by removing prediction state management, H2H stats computation, and their UI components
+- Bracket tab shows tournament bracket grouped by round with live/completed styling
+- Antrian tab shows match queue in priority order (live → upcoming → completed) with tournament status summary
+- Timeline and Results tabs preserved exactly as-is
+- Hero banner preserved as-is
+- No broken references — all removed code and its dependents fully cleaned up
+
+---
+Task ID: 2 (current session)
+Agent: Main Agent
+Task: Transform League View into Peraturan (Rules & Format) page
+
+Work Log:
+- Read `/home/z/my-project/worklog.md` for context on previous changes
+- Read full `league-view.tsx` (~1100+ lines) — contained LeagueData/LeagueClub/LeagueMatchData/PlayoffData interfaces, useQuery fetching from /api/league, standings/schedule/stats/playoff tabs, pre-season state, no-season state, champion card, club roster expansion
+- Completely replaced file content with new Peraturan (Rules & Format) view
+- Removed all league-related code: interfaces (LeagueData, LeagueClub, LeagueMatchData, PlayoffData, ClubMember), useQuery hook, /api/league fetch, standings tab, schedule tab, stats tab, playoff tab, pre-season state, no-season state, tarkamChampion card, ClubProfile modal
+- New file is self-contained with only Peraturan content:
+  - `FaqItem` — expandable FAQ item with open/close toggle, uses useDivisionTheme()
+  - `RuleCard` — styled card with icon header and label/value item rows, uses useDivisionTheme()
+  - `LeagueView` — main component with 7 sections:
+    1. Hero Banner — "Peraturan & Format" title with BookOpen icon, division label, description
+    2. Sistem Poin Tarkam — scoring rules (win +3, lose +1, walkout 0, MVP +2, streak +1)
+    3. Format Turnamen — tournament format (weekly, 2-4h, single elimination, 1v1, parallel matches)
+    4. Peraturan Pertandingan — match rules (attendance, penalties, judging, MVP selection)
+    5. Peraturan Season — season rules (reset, champion, hall of fame)
+    6. Divisi Info — division-specific info (Male: Sabtu, Female: Minggu)
+    7. FAQ — 8 expandable questions about registration, scoring, schedule, duration, MVP, champion, resets, lateness
+- Uses useDivisionTheme() for consistent styling across all cards
+- Uses useAppStore() for division context (male/female) to customize division info and FAQ answers
+- No API calls — all content is static/rules-based
+- ESLint passes with no errors
+- Dev server compiles and runs successfully
+
+Stage Summary:
+- League View completely transformed from data-driven standings/schedule/playoff view to static Peraturan (Rules & Format) page
+- All league data fetching and rendering removed — no more /api/league dependency in this component
+- 7 well-structured sections covering tournament rules, scoring, format, and FAQ
+- Division-aware: shows different match day and FAQ answers based on male/female division
+- Self-contained component with no external data dependencies
+
+---
+Task ID: 3 (current session)
+Agent: Main Agent
+Task: Replace Dashboard "Peserta" tab with "Turnamen Aktif", "Statistik" tab with "Pencapaian"; Replace Community Dashboard "Rivalitas" with "Jadwal Tournament", "Galeri" with "Rules & Format"
+
+Work Log:
+- Read `/home/z/my-project/worklog.md` for context
+- Read `src/components/idm/dashboard/index.tsx` and `src/components/idm/community-dashboard/index.tsx`
+
+**Change 1: Dashboard "Peserta" → "Turnamen Aktif"**
+- Changed tab definition: `{ value: 'participants', label: 'Peserta', icon: Users }` → `{ value: 'participants', label: 'Turnamen Aktif', icon: Zap }`
+- Replaced `<TabsContent value="participants">` content: removed `<ParticipantGrid>`, replaced with active tournament status card showing:
+  - Live tournament status badge (LIVE/SELESAI/MENDATANG)
+  - Tournament name, schedule info
+  - Stats grid (Total Match, Selesai, Live)
+  - Prize pool display when available
+  - Recent match results with MVP badges
+  - Empty state when no tournament is active
+- Removed `ParticipantGrid` import
+- Removed `Users` from lucide-react imports, added `Zap`
+
+**Change 2: Dashboard "Statistik" → "Pencapaian"**
+- Changed tab definition: `{ value: 'stats', label: 'Statistik', icon: BarChart3 }` → `{ value: 'stats', label: 'Pencapaian', icon: Award }`
+- Replaced `<TabsContent value="stats">` content: removed `<StatsTab />`, replaced with:
+  - "Pencapaian Saya" card with login-required placeholder
+  - "Milestone Tersedia" card with 6 milestone items (10 Kemenangan, MVP Pertama, Streak 3+, Season Champion, 5x MVP, 50 Kemenangan) each with Lock icon
+- Removed `StatsTab` import
+- Removed `BarChart3` from lucide-react imports
+- Added `Award`, `Lock`, `Crown`, `Star` to lucide-react imports
+- Added `Card, CardContent` imports from `@/components/ui/card`
+
+**Change 3: Community Dashboard "Rivalitas Puncak" → "Jadwal Tournament"**
+- Replaced section 8 content: removed `<CommunityRivalry>`, replaced with tournament schedule view:
+  - Male Division schedule card (cyan accent, Setiap Sabtu) with active tournament status badge
+  - Female Division schedule card (purple accent, Setiap Minggu) with active tournament status badge
+  - Info card linking to Arena Live
+- Removed `CommunityRivalry` import
+- Added `Zap` to lucide-react imports
+- Added `Badge` import from `@/components/ui/badge`
+
+**Change 4: Community Dashboard "Galeri Komunitas" → "Rules & Format"**
+- Replaced section 12 content: removed `<CommunityGallery>`, replaced with rules & format view:
+  - Sistem Poin card (win +3, lose +1, walkout 0, MVP +2, streak +1)
+  - Format Turnamen card (2x2 grid: Jadwal, Durasi, Format, Paralel)
+  - CTA card linking to Peraturan page
+- Removed `CommunityGallery` import
+- Added `BookOpen` to lucide-react imports
+
+**Change 5: Cleanup**
+- Removed `CommunitySection` internal component (dead code that referenced `CommunityGallery`)
+- All unused imports cleaned up: `Users`, `BarChart3`, `ParticipantGrid`, `StatsTab`, `CommunityRivalry`, `CommunityGallery`
+- All new imports added correctly: `Zap`, `Award`, `Lock`, `Crown`, `Star`, `Card`, `CardContent`, `Badge`, `BookOpen`
+- ESLint passes with no errors
+- Dev server compiles and runs successfully
+
+Stage Summary:
+- Dashboard "Peserta" tab now shows "Turnamen Aktif" with live tournament status, match results, and prize pool
+- Dashboard "Statistik" tab now shows "Pencapaian" with achievement milestones and locked milestone items
+- Community Dashboard "Rivalitas Puncak" section replaced with "Jadwal Tournament" showing male/female division schedules
+- Community Dashboard "Galeri Komunitas" section replaced with "Rules & Format" showing scoring system and tournament format
+- 2-col Donasi + Pencapaian layout preserved as-is (CommunityAchievements import retained)
+- All imports cleaned, no broken references, ESLint passes

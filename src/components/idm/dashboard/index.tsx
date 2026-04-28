@@ -5,12 +5,13 @@ import { useAppStore } from '@/lib/store';
 /* framer-motion removed — using CSS animations for performance */
 import Image from 'next/image';
 import {
-  Heart, MapPin, Users, Trophy, Flame,
-  Shield, Music,
+  Heart, MapPin, Trophy, Flame,
+  Shield, Music, Zap, Award,
   Gift,
-  BarChart3, Calendar, Clock,
+  Calendar, Clock, Crown, Star, Lock,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -21,7 +22,7 @@ import {
 } from '../ui/skeleton';
 import { PlayerProfile } from '../player-profile';
 import { ClubProfile } from '../club-profile';
-import { ParticipantGrid } from '../participant-grid';
+
 import { StatusBadge } from '../status-badge';
 import { ShareButton } from '../ui/share-button';
 import React, { useState, useMemo } from 'react';
@@ -37,7 +38,7 @@ import { StandingsTab } from './standings-tab';
 import { MatchesTab } from './matches-tab';
 import { DonationModal } from '../donation-modal';
 import { ActivityFeed } from '../activity-feed';
-import { StatsTab } from './stats-tab';
+
 import { QuickStatsBar } from './quick-stats-bar';
 import { TopDonorsWidget } from './top-donors-widget';
 import { DivisionRivalryWidget } from './division-rivalry-widget';
@@ -298,8 +299,8 @@ export function Dashboard() {
                 { value: 'overview', label: 'Beranda', icon: Trophy },
                 { value: 'matches', label: 'Pertandingan', icon: Music },
                 { value: 'standings', label: 'Peringkat', icon: Shield },
-                { value: 'participants', label: 'Peserta', icon: Users },
-                { value: 'stats', label: 'Statistik', icon: BarChart3 },
+                { value: 'participants', label: 'Turnamen Aktif', icon: Zap },
+                { value: 'stats', label: 'Pencapaian', icon: Award },
               ].map(tab => (
                 <TabsTrigger
                   key={tab.value}
@@ -403,21 +404,173 @@ export function Dashboard() {
           />
         </TabsContent>
 
-        {/* ═══════════════ PARTICIPANTS TAB — Tournament Poster Grid ═══════════════ */}
-        <TabsContent value="participants" className="mt-3 sm:mt-4 lg:mt-6">
-          <div className="space-y-3 sm:space-y-4">
-            <div className="stagger-item-subtle">
-              <ParticipantGrid
-                players={(data.topPlayers || []) as any}
-                onPlayerClick={(player: any) => handleSelectPlayer(player)}
-              />
+        {/* ═══════════════ TURNAMEN AKTIF TAB ═══════════════ */}
+        <TabsContent value="participants" className="mt-4 space-y-4">
+          {data?.activeTournament ? (
+            <div className="space-y-4">
+              {/* Active Tournament Status */}
+              <Card className={`${dt.casinoCard} overflow-hidden`}>
+                <div className={dt.casinoBar} />
+                <CardContent className="p-0 relative z-10">
+                  <div className={`flex items-center gap-2.5 px-4 py-3 border-b ${dt.borderSubtle}`}>
+                    <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
+                      <Zap className={`w-3 h-3 ${dt.neonText}`} />
+                    </div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider">Turnamen Aktif</h3>
+                    <Badge className={`${dt.casinoBadge} ml-auto text-[9px]`}>
+                      {data.activeTournament.status === 'live' || data.activeTournament.status === 'in_progress' ? 'LIVE' : data.activeTournament.status === 'completed' ? 'SELESAI' : 'MENDATANG'}
+                    </Badge>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-12 h-12 rounded-xl ${dt.iconBg} flex items-center justify-center`}>
+                        <Music className={`w-6 h-6 ${dt.neonText}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold">{data.activeTournament.name || `Week ${data.activeTournament.weekNumber}`}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {data.activeTournament.scheduledAt ? new Date(data.activeTournament.scheduledAt).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Jadwal TBD'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className={`p-3 rounded-xl ${dt.bgSubtle} ${dt.border} border text-center`}>
+                        <p className={`text-xl font-black ${dt.neonGradient}`}>{data.activeTournament.matches?.length || 0}</p>
+                        <p className="text-[10px] text-muted-foreground">Total Match</p>
+                      </div>
+                      <div className={`p-3 rounded-xl ${dt.bgSubtle} ${dt.border} border text-center`}>
+                        <p className={`text-xl font-black ${dt.neonGradient}`}>{data.activeTournament.matches?.filter(m => m.status === 'completed').length || 0}</p>
+                        <p className="text-[10px] text-muted-foreground">Selesai</p>
+                      </div>
+                      <div className={`p-3 rounded-xl ${dt.bgSubtle} ${dt.border} border text-center`}>
+                        <p className={`text-xl font-black ${dt.neonGradient}`}>{data.activeTournament.matches?.filter(m => m.status === 'live' || m.status === 'main_event').length || 0}</p>
+                        <p className="text-[10px] text-muted-foreground">Live</p>
+                      </div>
+                    </div>
+
+                    {/* Prize pool if available */}
+                    {data.activeTournament.prizePool > 0 && (
+                      <div className={`flex items-center justify-between py-2 px-3 rounded-lg ${dt.bgSubtle}`}>
+                        <span className="text-[11px] text-muted-foreground font-medium">Hadiah</span>
+                        <span className={`text-sm font-bold ${dt.neonText}`}>{formatCurrency(data.activeTournament.prizePool)}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Match Results in this tournament */}
+              {data.activeTournament.matches && data.activeTournament.matches.filter(m => m.status === 'completed').length > 0 && (
+                <Card className={`${dt.casinoCard} overflow-hidden`}>
+                  <div className={dt.casinoBar} />
+                  <CardContent className="p-0 relative z-10">
+                    <div className={`flex items-center gap-2.5 px-4 py-3 border-b ${dt.borderSubtle}`}>
+                      <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
+                        <Trophy className={`w-3 h-3 ${dt.neonText}`} />
+                      </div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider">Hasil Terbaru</h3>
+                    </div>
+                    <div className="p-4 space-y-2">
+                      {data.activeTournament.matches.filter(m => m.status === 'completed').slice(0, 5).map(m => {
+                        const team1Winner = (m.score1 ?? 0) > (m.score2 ?? 0);
+                        return (
+                          <div key={m.id} className={`flex items-center gap-2 p-2.5 rounded-lg border ${dt.borderSubtle} ${dt.bgSubtle}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-semibold truncate">
+                                <span className={team1Winner ? dt.neonText : ''}>{m.team1?.name || 'TBD'}</span>
+                                <span className="text-muted-foreground mx-1">{m.score1} - {m.score2}</span>
+                                <span className={!team1Winner ? dt.neonText : ''}>{m.team2?.name || 'TBD'}</span>
+                              </p>
+                            </div>
+                            {m.mvpPlayer && (
+                              <Badge className="bg-yellow-500/10 text-yellow-500 text-[8px] border-0">
+                                <Crown className="w-2.5 h-2.5 mr-0.5" />MVP
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* No active matches message */}
+              {(!data.activeTournament.matches || data.activeTournament.matches.length === 0) && (
+                <div className="text-center py-8">
+                  <Zap className={`w-10 h-10 mx-auto mb-3 opacity-30`} />
+                  <p className="text-sm text-muted-foreground">Belum ada match di turnamen ini</p>
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-12">
+              <Zap className={`w-12 h-12 mx-auto mb-3 opacity-30`} />
+              <p className="text-sm font-semibold text-muted-foreground mb-1">Tidak Ada Turnamen Aktif</p>
+              <p className="text-[11px] text-muted-foreground">Turnamen berikutnya akan muncul di sini setelah dijadwalkan</p>
+            </div>
+          )}
         </TabsContent>
 
-        {/* ═══════════════ STATS TAB — Season Statistics Dashboard ═══════════════ */}
-        <TabsContent value="stats" className="mt-3 sm:mt-4 lg:mt-6">
-          <StatsTab />
+        {/* ═══════════════ PENCAPAIAN TAB ═══════════════ */}
+        <TabsContent value="stats" className="mt-4 space-y-4">
+          <div className="space-y-4">
+            {/* Achievement Milestones */}
+            <Card className={`${dt.casinoCard} overflow-hidden`}>
+              <div className={dt.casinoBar} />
+              <CardContent className="p-0 relative z-10">
+                <div className={`flex items-center gap-2.5 px-4 py-3 border-b ${dt.borderSubtle}`}>
+                  <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
+                    <Award className={`w-3 h-3 ${dt.neonText}`} />
+                  </div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider">Pencapaian Saya</h3>
+                </div>
+                <div className="p-4">
+                  <div className="text-center py-6">
+                    <Award className={`w-10 h-10 mx-auto mb-3 opacity-30`} />
+                    <p className="text-sm text-muted-foreground mb-1">Login untuk melihat pencapaian Anda</p>
+                    <p className="text-[11px] text-muted-foreground">Badge, milestone, dan career highlights akan muncul di sini</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Career Milestones available */}
+            <Card className={`${dt.casinoCard} overflow-hidden`}>
+              <div className={dt.casinoBar} />
+              <CardContent className="p-0 relative z-10">
+                <div className={`flex items-center gap-2.5 px-4 py-3 border-b ${dt.borderSubtle}`}>
+                  <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
+                    <Star className={`w-3 h-3 ${dt.neonText}`} />
+                  </div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider">Milestone Tersedia</h3>
+                </div>
+                <div className="p-4 space-y-2">
+                  {[
+                    { icon: Trophy, label: '10 Kemenangan', desc: 'Raih 10 kemenangan sepanjang season', color: 'text-yellow-500' },
+                    { icon: Crown, label: 'MVP Pertama', desc: 'Dipilih sebagai MVP di satu tournament', color: 'text-emerald-400' },
+                    { icon: Flame, label: 'Streak 3+', desc: 'Menang 3 pertandingan berturut-turut', color: 'text-orange-400' },
+                    { icon: Shield, label: 'Season Champion', desc: 'Jadi #1 di akhir season', color: 'text-purple-400' },
+                    { icon: Star, label: '5x MVP', desc: 'Meraih MVP sebanyak 5 kali', color: 'text-pink-400' },
+                    { icon: Zap, label: '50 Kemenangan', desc: 'Raih 50 kemenangan total career', color: 'text-cyan-400' },
+                  ].map((milestone, i) => (
+                    <div key={i} className={`flex items-center gap-3 p-3 rounded-lg ${dt.bgSubtle} ${dt.borderSubtle} border`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 shrink-0`}>
+                        <milestone.icon className={`w-4 h-4 ${milestone.color}`} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold">{milestone.label}</p>
+                        <p className="text-[9px] text-muted-foreground">{milestone.desc}</p>
+                      </div>
+                      <Lock className="w-3.5 h-3.5 text-muted-foreground/30 ml-auto shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
 
