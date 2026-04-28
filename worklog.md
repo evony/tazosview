@@ -67,3 +67,32 @@ Stage Summary:
 - Season comparison uses shared formatter function
 - Liga views (league-view.tsx, admin-season-panel.tsx) keep raw season names as those are Liga-specific
 - Centralized formatter in utils.ts for consistent display across all Tarkam views
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Redesign sidebar UX — move Season context to top as visual anchor, merge Account+Admin into compact bottom element
+
+Work Log:
+- Read `app-shell.tsx` DesktopSidebar component — identified 3 separate bottom cards (Player Account, Admin Status, Season Progress) creating visual clutter
+- Moved Season context UP — right after Logo+Toggle, before navigation
+  - Expanded: Full season card with "IDM TARKAM Season X" title, AKTIF/SELESAI status badge, gradient progress bar, week dot indicators, centered summary text
+  - Collapsed: Mini S{n} / {completed}/{total} indicator
+- Merged Player Account + Admin into one compact card at bottom
+  - Single card with two rows (player + admin) separated by subtle divider
+  - Player row: avatar icon + gamertag + account/logout buttons
+  - Admin row: shield icon + username + SA/ADM badge + admin panel/logout buttons
+  - Not logged in: single compact "Masuk Akun" button with avatar icon
+- Collapsed sidebar: smart identity indicator (admin shield, player avatar, or login button)
+- Moved toggle button inline with logo (removed separate toggle row)
+- Added Calendar icon import for season context
+- Added formatTarkamSeasonName import from utils
+- Verified ESLint passes with no errors
+- Verified dev server running normally
+
+Stage Summary:
+- Sidebar now follows F-pattern: Context (Season) → Navigation → Identity (Account+Admin)
+- Season progress is the visual anchor — first thing seen after branding
+- Account + Admin merged from 2-3 separate cards into 1 compact card
+- Reduced visual clutter from 3 bottom elements to 1 compact element + 1 prominent top element
+- Collapsed sidebar also improved with mini season indicator and smart identity icons

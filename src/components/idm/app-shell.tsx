@@ -7,8 +7,9 @@ import {
   Home, Flame, LogOut, KeyRound,
   PanelLeftClose, ChevronRight, Download, X, UserCircle,
   Zap, Star, HelpCircle, Bell,
-  Gamepad2, Trophy, Radio, Target
+  Gamepad2, Trophy, Radio, Target, Calendar
 } from 'lucide-react';
+import { formatTarkamSeasonName } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { CasinoHeroSkeleton, StatsRowSkeleton } from './ui/skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -132,31 +133,79 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
           <Image src="/logo1.webp" alt="IDM" width={48} height={48} className="w-full h-full object-cover" />
         </div>
         {!collapsed && (
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-gradient-fury text-base font-bold leading-tight truncate">Tarkam IDM</h1>
             <p className="text-[10px] text-muted-foreground">Fan Made Edition</p>
           </div>
         )}
-      </div>
-
-      {/* Toggle Button — with pulse indicator */}
-      <div className={`flex ${collapsed ? 'justify-center' : 'justify-end'} px-2 pb-2`}>
+        {/* Toggle — compact, inline with logo */}
         <button
           onClick={toggleSidebarCollapsed}
-          className="group relative p-1.5 rounded-lg transition-all duration-200"
+          className={`group relative p-1 rounded-lg transition-all duration-200 ${collapsed ? '' : 'shrink-0'}`}
           title={collapsed ? 'Buka sidebar' : 'Tutup sidebar'}
         >
-          {/* Pulse glow ring */}
-          <span className="absolute inset-0 rounded-lg bg-idm-gold/20" />
-          {/* Arrow icon */}
-          <span className="relative z-10 flex items-center justify-center text-muted-foreground group-hover:text-foreground group-hover:bg-muted/60 rounded-lg transition-colors">
+          <span className="relative z-10 flex items-center justify-center text-muted-foreground group-hover:text-foreground group-hover:bg-muted/60 rounded-md transition-colors">
             {collapsed
               ? <ChevronRight className="w-4 h-4" />
-              : <PanelLeftClose className="w-4 h-4" />
+              : <PanelLeftClose className="w-3.5 h-3.5" />
             }
           </span>
         </button>
       </div>
+
+      {/* ═══ Season Context — Visual Anchor, right after branding ═══ */}
+      {!collapsed && leagueSummary && (
+        <div className={`mx-4 mt-1 mb-2 p-2.5 rounded-xl ${dt.cardPremium} border border-border/40`}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <Calendar className={`w-3.5 h-3.5 ${dt.text}`} />
+              <span className={`text-[11px] font-bold ${dt.text} tracking-wide`}>IDM TARKAM Season {leagueSummary.seasonNumber}</span>
+            </div>
+            <span className={`text-[8px] font-semibold px-1.5 py-0.5 rounded-full ${
+              leagueSummary.status === 'active' ? 'bg-green-500/15 text-green-400' :
+              leagueSummary.status === 'completed' ? 'bg-idm-gold/15 text-idm-gold' :
+              'bg-muted text-muted-foreground'
+            }`}>
+              {leagueSummary.status === 'active' ? 'AKTIF' : leagueSummary.status === 'completed' ? 'SELESAI' : 'UPCOMING'}
+            </span>
+          </div>
+          {/* Week progress bar */}
+          <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className={`h-full rounded-full bg-gradient-to-r ${currentView === 'community' ? 'from-idm-gold-warm to-idm-amber' : division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} transition-all duration-700`}
+              style={{ width: `${leagueSummary.percentage || 0}%` }}
+            />
+          </div>
+          {/* Week dots indicator */}
+          <div className="flex items-center gap-1 mt-2">
+            {Array.from({ length: leagueSummary.totalWeeks || 10 }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-1 flex-1 rounded-full transition-colors ${
+                  i < (leagueSummary.completedWeeks || 0)
+                    ? division === 'male' ? 'bg-idm-male' : 'bg-idm-female'
+                    : 'bg-muted'
+                }`
+                }
+              />
+            ))}
+          </div>
+          <p className="text-[9px] text-muted-foreground mt-1.5 text-center">
+            Week {leagueSummary.completedWeeks}/{leagueSummary.totalWeeks || '?'} • {leagueSummary.percentage}%
+          </p>
+        </div>
+      )}
+
+      {/* Collapsed: mini season indicator */}
+      {collapsed && leagueSummary && (
+        <div className="px-2 py-1 flex flex-col items-center gap-1">
+          <div className={`w-8 h-8 rounded-lg ${dt.cardPremium} border border-border/40 flex flex-col items-center justify-center`}
+            title={`IDM TARKAM Season ${leagueSummary.seasonNumber} — Week ${leagueSummary.completedWeeks}/${leagueSummary.totalWeeks}`}>
+            <span className={`text-[8px] font-bold ${dt.text}`}>S{leagueSummary.seasonNumber}</span>
+            <span className="text-[6px] text-muted-foreground">{leagueSummary.completedWeeks}/{leagueSummary.totalWeeks || '?'}</span>
+          </div>
+        </div>
+      )}
 
       <div className="section-divider !my-0" />
 
@@ -288,98 +337,101 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
         />
       </nav>
 
-      {/* Bottom section — only when expanded */}
+      {/* ═══ Bottom Section — Unified Identity ═══ */}
       {!collapsed && (
         <>
-          {/* Player Account Status */}
-          {playerAuth.isAuthenticated && playerAuth.account && (
-            <div className={`mx-4 p-3 rounded-xl ${currentView === 'community' ? 'bg-idm-gold-warm/5 border border-idm-gold-warm/20' : division === 'male' ? 'bg-idm-male/5 border border-idm-male/20' : 'bg-idm-female/5 border border-idm-female/20'} mb-2`}>
-              <div className="flex items-center gap-2 mb-2">
-                <UserCircle className={`w-3 h-3 ${currentView === 'community' ? 'text-idm-gold-warm' : division === 'male' ? 'text-idm-male' : 'text-idm-female'}`} />
-                <span className={`text-[10px] font-semibold ${currentView === 'community' ? 'text-idm-gold-warm' : division === 'male' ? 'text-idm-male' : 'text-idm-female'} uppercase tracking-wider`}>
-                  Akun Saya
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-foreground font-medium truncate">{playerAuth.account.player.gamertag}</span>
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="sm" className={`h-6 w-6 p-0 text-muted-foreground ${currentView === 'community' ? 'hover:text-idm-gold-warm hover:bg-idm-gold-warm/10' : division === 'male' ? 'hover:text-idm-male hover:bg-idm-male/10' : 'hover:text-idm-female hover:bg-idm-female/10'}`}
-                    onClick={onOpenAccountModal} title="Akun Saya">
-                    <UserCircle className="w-3 h-3" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
-                    onClick={async () => { try { await fetch('/api/account/logout', { method: 'POST' }); } catch {} clearPlayerAuth(); toast.success('Berhasil logout'); }} title="Logout">
-                    <LogOut className="w-3 h-3" />
-                  </Button>
+          {/* Authenticated: Player + Admin merged into one compact row */}
+          {(playerAuth.isAuthenticated || adminAuth.isAuthenticated) ? (
+            <div className="mx-4 mb-3 p-2.5 rounded-xl bg-card/60 border border-border/50">
+              {/* Player row */}
+              {playerAuth.isAuthenticated && playerAuth.account && (
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${currentView === 'community' ? 'bg-idm-gold-warm/15' : division === 'male' ? 'bg-idm-male/15' : 'bg-idm-female/15'}`}>
+                    <UserCircle className={`w-3.5 h-3.5 ${currentView === 'community' ? 'text-idm-gold-warm' : division === 'male' ? 'text-idm-male' : 'text-idm-female'}`} />
+                  </div>
+                  <span className="text-[11px] text-foreground font-medium truncate flex-1">{playerAuth.account.player.gamertag}</span>
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                      onClick={onOpenAccountModal} title="Akun Saya">
+                      <UserCircle className="w-3 h-3" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                      onClick={async () => { try { await fetch('/api/account/logout', { method: 'POST' }); } catch {} clearPlayerAuth(); toast.success('Berhasil logout'); }} title="Logout">
+                      <LogOut className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
+              {/* Divider if both auth */}
+              {playerAuth.isAuthenticated && adminAuth.isAuthenticated && (
+                <div className="h-px bg-border/40 my-1.5" />
+              )}
+              {/* Admin row */}
+              {adminAuth.isAuthenticated && (
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-idm-gold/15">
+                    <Shield className="w-3.5 h-3.5 text-idm-gold" />
+                  </div>
+                  <span className="text-[11px] text-foreground font-medium truncate flex-1">{adminAuth.admin?.username}</span>
+                  {adminAuth.admin && (
+                    <span className="text-[7px] font-bold px-1 py-0.5 rounded bg-idm-gold/15 text-idm-gold uppercase tracking-wider shrink-0">
+                      {adminAuth.admin.role === 'super_admin' ? 'SA' : 'ADM'}
+                    </span>
+                  )}
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-idm-gold hover:bg-idm-gold/10"
+                      onClick={() => setCurrentView('admin')} title="Admin Panel">
+                      <KeyRound className="w-3 h-3" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                      onClick={handleLogout} title="Logout">
+                      <LogOut className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-
-          {/* Not logged in — show login prompt */}
-          {!playerAuth.isAuthenticated && (
-            <div className="mx-4 mb-2">
+          ) : (
+            /* Not logged in — compact login prompt */
+            <div className="mx-4 mb-3">
               <button
                 onClick={onOpenAccountModal}
-                className={`w-full flex items-center gap-2 p-2.5 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors cursor-pointer`}
+                className="w-full flex items-center gap-2 p-2.5 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors cursor-pointer"
               >
-                <UserCircle className="w-4 h-4 text-muted-foreground" />
+                <div className="w-6 h-6 rounded-full flex items-center justify-center bg-muted/40">
+                  <UserCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                </div>
                 <span className="text-[11px] text-muted-foreground font-medium">Masuk Akun</span>
               </button>
             </div>
           )}
-
-          {/* Admin Status / Logout */}
-          {adminAuth.isAuthenticated && (
-            <div className="mx-4 p-3 rounded-xl bg-idm-gold/5 border border-idm-gold/20 mb-2">
-              <div className="flex items-center gap-2 mb-2">
-                <Shield className="w-3 h-3 text-idm-gold" />
-                <span className="text-[10px] font-semibold text-idm-gold uppercase tracking-wider">
-                  {adminAuth.admin?.role === 'super_admin' ? 'Super Admin' : 'Admin'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-foreground font-medium">{adminAuth.admin?.username}</span>
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-idm-gold hover:bg-idm-gold/10"
-                    onClick={() => setCurrentView('admin')} title="Admin Panel">
-                    <KeyRound className="w-3 h-3" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
-                    onClick={handleLogout} title="Logout">
-                    <LogOut className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Season Status */}
-          <div className={`mx-4 p-3 rounded-xl ${dt.cardPremium} mb-3`}>
-            <div className="flex items-center gap-2 mb-2">
-              <Flame className={`w-3 h-3 ${dt.text}`} />
-              <span className={`text-[10px] font-semibold ${dt.text} uppercase tracking-wider`}>Season {leagueSummary?.seasonNumber ?? 1}</span>
-            </div>
-            <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className={`h-full rounded-full bg-gradient-to-r ${currentView === 'community' ? 'from-idm-gold-warm to-idm-amber' : division === 'male' ? 'from-idm-male to-idm-male-light' : 'from-idm-female to-idm-female-light'} transition-all duration-700`}
-                style={{ width: `${leagueSummary?.percentage || 0}%` }}
-              />
-            </div>
-            <p className="text-[9px] text-muted-foreground mt-1.5">
-              {leagueSummary ? `${leagueSummary.percentage}% • Week ${leagueSummary.completedWeeks}/${leagueSummary.totalWeeks || '?'}` : 'Memuat...'}
-            </p>
-          </div>
         </>
       )}
 
-      {/* Collapsed: mini admin indicator */}
-      {collapsed && adminAuth.isAuthenticated && (
-        <div className="px-2 pb-2 flex justify-center">
-          <div className="w-8 h-8 rounded-lg bg-idm-gold/10 border border-idm-gold/20 flex items-center justify-center"
-            title={`${adminAuth.admin?.username} (${adminAuth.admin?.role === 'super_admin' ? 'Super Admin' : 'Admin'})`}>
-            <Shield className="w-3.5 h-3.5 text-idm-gold" />
-          </div>
+      {/* Collapsed: mini identity indicator */}
+      {collapsed && (
+        <div className="px-2 pb-2 flex flex-col items-center gap-1">
+          {adminAuth.isAuthenticated && (
+            <div className="w-8 h-8 rounded-lg bg-idm-gold/10 border border-idm-gold/20 flex items-center justify-center"
+              title={`${adminAuth.admin?.username} (${adminAuth.admin?.role === 'super_admin' ? 'Super Admin' : 'Admin'})`}>
+              <Shield className="w-3.5 h-3.5 text-idm-gold" />
+            </div>
+          )}
+          {playerAuth.isAuthenticated && !adminAuth.isAuthenticated && (
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${currentView === 'community' ? 'bg-idm-gold-warm/10 border border-idm-gold-warm/20' : division === 'male' ? 'bg-idm-male/10 border border-idm-male/20' : 'bg-idm-female/10 border border-idm-female/20'}`}
+              title={playerAuth.account?.player.gamertag}>
+              <UserCircle className={`w-3.5 h-3.5 ${currentView === 'community' ? 'text-idm-gold-warm' : division === 'male' ? 'text-idm-male' : 'text-idm-female'}`} />
+            </div>
+          )}
+          {!playerAuth.isAuthenticated && !adminAuth.isAuthenticated && (
+            <button
+              onClick={onOpenAccountModal}
+              className="w-8 h-8 rounded-lg bg-muted/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              title="Masuk Akun"
+            >
+              <UserCircle className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       )}
     </aside>
