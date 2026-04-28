@@ -40,19 +40,7 @@ function formatTimeAgo(timestamp: string): string {
   return new Date(timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 }
 
-/* ========== Fallback Demo Items (shown when no data) ========== */
-const DEMO_ITEMS: FeedItem[] = [
-  { id: 'demo-1', type: 'champion', icon: '🏆', title: 'Team Alpha Juara Week 5!', subtitle: 'Divisi Male', timestamp: new Date().toISOString(), division: 'male', accent: '#d4a853' },
-  { id: 'demo-2', type: 'donation', icon: '💰', title: 'CommunityPartner menyawer Rp500rb', subtitle: 'Donasi Weekly', timestamp: new Date().toISOString(), accent: '#22c55e' },
-  { id: 'demo-3', type: 'score', icon: '⚽', title: 'Club A 3–1 Club B', subtitle: 'Week 5 • Club A menang!', timestamp: new Date().toISOString(), division: 'male', accent: '#06b6d4' },
-  { id: 'demo-4', type: 'mvp', icon: '⭐', title: 'Dancer_X MVP Week 5!', subtitle: 'Divisi Male', timestamp: new Date().toISOString(), division: 'male', accent: '#eab308' },
-  { id: 'demo-5', type: 'transfer', icon: '🔄', title: 'StarPlayer pindah ke Club C', subtitle: 'Dari Club A → Club C', timestamp: new Date().toISOString(), division: 'female', accent: '#a855f7' },
-  { id: 'demo-6', type: 'registration', icon: '🆕', title: 'NewDancer mendaftar sebagai pemain', subtitle: 'Divisi Female', timestamp: new Date().toISOString(), division: 'female', accent: '#22d3ee' },
-  { id: 'demo-7', type: 'donation', icon: '💰', title: 'AnonDonor menyawer Rp1jt', subtitle: 'Donasi Season', timestamp: new Date().toISOString(), accent: '#22c55e' },
-  { id: 'demo-8', type: 'champion', icon: '🏆', title: 'Team Omega Juara Week 4!', subtitle: 'Divisi Female', timestamp: new Date().toISOString(), division: 'female', accent: '#d4a853' },
-  { id: 'demo-9', type: 'score', icon: '⚽', title: 'Club D 2–2 Club E', subtitle: 'Week 5 • Seru!', timestamp: new Date().toISOString(), division: 'female', accent: '#06b6d4' },
-  { id: 'demo-10', type: 'donation', icon: '💎', title: 'VIPSupporter menyawer Rp250rb', subtitle: 'Donasi Season', timestamp: new Date().toISOString(), accent: '#22c55e' },
-];
+/* ========== No demo/fallback items — only show real data from the API ========== */
 
 /* ========== Accent colors per type ========== */
 const TYPE_ACCENT: Record<FeedItem['type'], string> = {
@@ -273,7 +261,7 @@ export function MarqueeTicker({ maleData, femaleData, leagueData }: UnifiedMarqu
       { id: 'stat-season', type: 'stat', icon: '📅', title: seasonInfo, subtitle: 'Season Berjalan', timestamp: new Date().toISOString(), accent: '#f59e0b' },
     );
 
-    const feedItems = (data?.items && data.items.length > 0) ? data.items : DEMO_ITEMS;
+    const feedItems = (data?.items && data.items.length > 0) ? data.items : [];
 
     return [...stats, ...feedItems];
   }, [data?.items, maleData, femaleData, leagueData]);
