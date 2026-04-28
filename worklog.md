@@ -431,3 +431,40 @@ Stage Summary:
 - Community Dashboard "Galeri Komunitas" section replaced with "Rules & Format" showing scoring system and tournament format
 - 2-col Donasi + Pencapaian layout preserved as-is (CommunityAchievements import retained)
 - All imports cleaned, no broken references, ESLint passes
+
+---
+Task ID: 7
+Agent: Main Agent
+Task: Fix remaining Liga→Tarkam text, clean up orphaned files, and finalize all transformations
+
+Work Log:
+- Fixed 7 end-user "Liga" → "Tarkam" text references:
+  - donation-modal.tsx: "Donasi Liga" → "Donasi Tarkam", "liga season berikutnya" → "tarkam season berikutnya" (3 places)
+  - club-profile.tsx: "Pemenang Liga IDM" → "Pemenang Tarkam IDM", "Pemenang Liga Season" → "Pemenang Tarkam Season", "Juara League" → "Juara Tarkam" (4 places)
+  - player-profile.tsx: "Liga" section header → "Tarkam" (2 places)
+  - tournament-manager.tsx: fallback division 'liga' → 'male'
+  - my-tournament-card.tsx: "tab League" → "tab Hasil"
+- Fixed 6 CMS seed data "Liga" → "Tarkam" entries in api/cms/seed/route.ts:
+  - "Liga IDM Season 1" → "Tarkam IDM Season 1"
+  - "Tournament & Liga" → "Tournament & Tarkam"
+  - "liga profesional" → "tarkam profesional"
+  - subtitle 'Liga' → 'Tarkam'
+  - "Daftar club dan peserta liga" → "Daftar club dan peserta tarkam"
+  - "Liga IDM" card title → "Tarkam IDM"
+- Removed 13 orphaned/dead-code files:
+  - community-rivalry.tsx, community-gallery.tsx, division-showcase.tsx (replaced sections)
+  - community-activity-feed.tsx, registration-banner.tsx, club-power-rankings.tsx (unused)
+  - champions-section.tsx, mvp-section.tsx, hall-of-fame-section.tsx (replaced by season-champion-section)
+  - player-spotlight.tsx, club-leaderboard.tsx (unused landing components)
+  - dashboard/stats-tab.tsx (replaced by Pencapaian)
+  - community-dashboard-old.tsx.bak (backup file)
+- ESLint passes with no errors
+- Dev server running, homepage returns 200
+
+Stage Summary:
+- ALL user-facing "Liga" text has been replaced with "Tarkam" across the entire codebase
+- Only admin-facing and internal code comments still reference "Liga" (appropriate for admin CRUD of Liga seasons)
+- Brand name "IDM League" preserved as-is (logo, login page, footer)
+- Liga navigation menu preserved as-is per user requirement
+- 13 dead/orphaned files removed, codebase cleaned up
+- All 7 transformation recommendations fully implemented and verified

@@ -510,10 +510,10 @@ export function PlayerProfile({ player, onClose, rank, skinMap }: PlayerProfileP
                   </Badge>
                 </div>
                 <div className={`p-3 rounded-xl ${dt.bgSubtle} border ${dt.borderSubtle} space-y-3`}>
-                  {/* Liga Matches */}
+                  {/* Tarkam Matches */}
                   {matchHistoryData.leagueMatches?.length > 0 && (
                     <div>
-                      <p className={`text-[10px] font-bold uppercase tracking-wider ${dt.text} mb-1.5`}>Liga</p>
+                      <p className={`text-[10px] font-bold uppercase tracking-wider ${dt.text} mb-1.5`}>Tarkam</p>
                       <div className="space-y-1.5">
                         {(showAllMatches ? matchHistoryData.leagueMatches : matchHistoryData.leagueMatches.slice(0, MATCH_LIMIT)).map((m: { id: string; week: number; score1: number | null; score2: number | null; status: string; isHome: boolean; club1: { name: string }; club2: { name: string }; result: string }) => (
                           <div key={m.id} className="flex items-center gap-2 text-xs">

@@ -175,7 +175,7 @@ const STATUS_SORT: Record<string, number> = {
 export function TournamentManager({ division, dt, stats, setConfirmDialog }: TournamentManagerProps) {
   const qc = useQueryClient();
   const seasonId = stats?.season?.id;
-  const seasonDivision = stats?.season?.division || 'liga';
+  const seasonDivision = stats?.season?.division || 'male';
 
   // State
   const [selectedId, setSelectedId] = useState<string | null>(null);

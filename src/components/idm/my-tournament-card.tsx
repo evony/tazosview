@@ -339,7 +339,7 @@ export function MyTournamentCard() {
                    'Belum Masuk Tim'}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  {data.tournament.isCompleted ? 'Turnamen ini sudah selesai. Cek hasilnya di tab League.' :
+                  {data.tournament.isCompleted ? 'Turnamen ini sudah selesai. Cek hasilnya di tab Hasil.' :
                    data.tournament.status === 'registration' ? 'Tournament sedang dalam fase pendaftaran.' :
                    data.tournament.status === 'approval' ? (data.participationStatus === 'registered' ? 'Pendaftaran kamu sedang menunggu persetujuan admin.' : data.participationStatus === 'approved' ? 'Kamu sudah disetujui! Tim akan segera dibentuk.' : data.message) :
                    data.message}

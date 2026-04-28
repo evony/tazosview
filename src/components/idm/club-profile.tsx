@@ -257,7 +257,7 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
   const winRate = totalMatches > 0 ? Math.round((club.wins / totalMatches) * 100) : 0;
   const isUndefeated = club.losses === 0 && club.wins > 0;
   const isChampion = rank === 1;
-  const rankLabel = rank === 1 ? '🏆 Juara League' : rank === 2 ? '🥈 Juara 2' : rank === 3 ? '🥉 Peringkat 3' : rank ? `#${rank}` : '';
+  const rankLabel = rank === 1 ? '🏆 Juara Tarkam' : rank === 2 ? '🥈 Juara 2' : rank === 3 ? '🥉 Peringkat 3' : rank ? `#${rank}` : '';
 
   // Fetch unified club profile with members from both divisions
   const { data: unifiedData, isLoading: isUnifiedLoading } = useQuery({
@@ -410,9 +410,9 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
               </div>
               <p className="text-[10px] text-muted-foreground mt-2 max-w-xs mx-auto">
                 {unifiedData?.championSeasons?.length
-                  ? `Pemenang Liga IDM — Club terbaik dengan performa luar biasa`
+                  ? `Pemenang Tarkam IDM — Club terbaik dengan performa luar biasa`
                   : rank === 1
-                  ? 'Juara League — Club terbaik dengan performa luar biasa'
+                  ? 'Juara Tarkam — Club terbaik dengan performa luar biasa'
                   : rank === 2
                   ? 'Juara 2 — Pesaing kuat yang mengejar gelar'
                   : 'Club kompetitif di season Tarkam IDM'
@@ -544,7 +544,7 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
                 {/* League Season Champion badges — from admin designation */}
                 {unifiedData?.championSeasons?.map((cs: { id: string; name: string; number: number; division: string }) => (
                   <Badge key={cs.id} className="bg-yellow-500/10 text-yellow-500 text-[10px] border-0">
-                    <Crown className="w-3 h-3 mr-1" /> Pemenang Liga Season {cs.number}
+                    <Crown className="w-3 h-3 mr-1" /> Pemenang Tarkam Season {cs.number}
                   </Badge>
                 ))}
                 {displayWins >= 1 && (
@@ -564,7 +564,7 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
                 )}
                 {rank === 1 && !unifiedData?.championSeasons?.length && (
                   <Badge className="bg-yellow-500/10 text-yellow-500 text-[10px] border-0">
-                    <Crown className="w-3 h-3 mr-1" /> Juara League
+                    <Crown className="w-3 h-3 mr-1" /> Juara Tarkam
                   </Badge>
                 )}
                 {rank && rank <= 4 && rank > 1 && (

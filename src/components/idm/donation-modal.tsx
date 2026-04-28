@@ -218,8 +218,8 @@ export function DonationModal({ open, onOpenChange, defaultType = 'season', defa
     },
     season: {
       icon: Sparkles,
-      title: 'Donasi Liga',
-      subtitle: 'Donasi untuk mendanai liga season berikutnya',
+      title: 'Donasi Tarkam',
+      subtitle: 'Donasi untuk mendanai tarkam season berikutnya',
       accent: '#22d3ee',
       accentLight: '#67e8f9',
       gradient: 'from-[#06b6d4] to-[#22d3ee]',
@@ -573,7 +573,7 @@ export function DonationModal({ open, onOpenChange, defaultType = 'season', defa
               <p className="text-[10px] text-center text-muted-foreground/60">
                 {effectiveType === 'weekly'
                   ? '💰 Sawer langsung menambah prize pool tournament mingguan'
-                  : '✨ Donasi membantu mendanai liga season berikutnya'
+                  : '✨ Donasi membantu mendanai tarkam season berikutnya'
                 }
               </p>
             </div>
