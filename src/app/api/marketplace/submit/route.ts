@@ -1,27 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requirePlayer } from '@/lib/api-auth';
 
 const VALID_CATEGORIES = ['avatar', 'accessory', 'jasa_gb', 'jasa_joki', 'baju', 'item', 'lainnya'];
 
-// POST /api/marketplace/submit — User submission (public, no auth required)
+// POST /api/marketplace/submit — User submission (REQUIRES player login)
 // Items are created with status "pending" and need admin approval
 export async function POST(request: NextRequest) {
   try {
+    // Require player authentication
+    const playerAuth = await requirePlayer(request);
+    if (playerAuth instanceof NextResponse) return playerAuth;
+
     const body = await request.json();
-    const { sellerName, sellerWhatsapp, title, description, price, category, imageUrl } = body;
+    const { sellerWhatsapp, title, description, price, category, imageUrl } = body;
 
     // Validate required fields
-    if (!sellerName || !title || !description || price === undefined || !category) {
+    if (!title || !description || price === undefined || !category) {
       return NextResponse.json(
-        { error: 'sellerName, title, description, price, and category are required' },
+        { error: 'title, description, price, and category are required' },
         { status: 400 }
       );
     }
 
     // Validate strings length (prevent spam)
-    if (sellerName.length > 50 || title.length > 100 || description.length > 500) {
+    if (title.length > 100 || description.length > 500) {
       return NextResponse.json(
-        { error: 'Text too long. Max: sellerName 50, title 100, description 500 characters' },
+        { error: 'Text too long. Max: title 100, description 500 characters' },
         { status: 400 }
       );
     }
@@ -42,27 +47,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limiting: max 3 pending submissions per sellerName per day
+    // Rate limiting: max 5 pending submissions per player per day
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const recentSubmissions = await db.marketplaceItem.count({
       where: {
-        sellerName,
+        playerId: playerAuth.playerId,
         status: 'pending',
         createdAt: { gte: oneDayAgo },
       },
     });
 
-    if (recentSubmissions >= 3) {
+    if (recentSubmissions >= 5) {
       return NextResponse.json(
-        { error: 'Kamu sudah mengajukan 3 iklan hari ini. Tunggu approval dari admin terlebih dahulu.' },
+        { error: 'Kamu sudah mengajukan 5 iklan hari ini. Tunggu approval dari admin terlebih dahulu.' },
         { status: 429 }
       );
     }
 
+    // Auto-fill seller info from player account
+    const player = playerAuth.player;
+
     const item = await db.marketplaceItem.create({
       data: {
-        sellerName,
-        sellerAvatar: null,
+        playerId: playerAuth.playerId,
+        sellerName: player.gamertag, // Auto-filled from gamertag
+        sellerAvatar: player.avatar, // Auto-filled from player avatar
         sellerWhatsapp: sellerWhatsapp || null,
         title,
         description,

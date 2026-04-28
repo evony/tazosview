@@ -621,7 +621,9 @@ function MarketplaceManager() {
                       {item.isPremium && <Crown className="w-3 h-3 text-idm-gold-warm flex-shrink-0" />}
                       <Badge className={`${statusBadge.class} text-[7px] border px-1 py-0`}>{statusBadge.label}</Badge>
                     </div>
-                    <p className="text-[10px] text-muted-foreground truncate">{item.sellerName} • Rp {(item.price || 0).toLocaleString('id-ID')} • {item.category}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {item.sellerName} {item.playerId && <span className="text-emerald-400">✓</span>} • Rp {(item.price || 0).toLocaleString('id-ID')} • {item.category}
+                    </p>
                     {item.sellerWhatsapp && <p className="text-[9px] text-muted-foreground/40">WA: {item.sellerWhatsapp}</p>}
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, ShoppingBag, Upload, CheckCircle, AlertCircle,
   UserCheck, Sparkles, Gamepad2, Wand2, Shirt, Package, Tag,
-  Loader2,
+  Loader2, LogIn, ShieldCheck,
 } from 'lucide-react';
+import { useAppStore } from '@/lib/store';
 
 /* ═══════════════════════════════════════════════════════
    TYPES
@@ -36,8 +37,10 @@ const CATEGORIES: { id: CategoryOption; label: string; icon: React.ReactNode; de
    SUBMIT MARKETPLACE MODAL
    ═══════════════════════════════════════════════════════ */
 export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarketplaceModalProps) {
+  const { playerAuth } = useAppStore();
+  const isLoggedIn = playerAuth.isAuthenticated && !!playerAuth.account;
+
   const [form, setForm] = useState({
-    sellerName: '',
     sellerWhatsapp: '',
     title: '',
     description: '',
@@ -49,6 +52,13 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Auto-fill WhatsApp from player phone when logged in
+  useEffect(() => {
+    if (isLoggedIn && playerAuth.account?.player?.phone && !form.sellerWhatsapp) {
+      setForm(p => ({ ...p, sellerWhatsapp: playerAuth.account!.player!.phone! }));
+    }
+  }, [isLoggedIn, playerAuth.account]);
 
   function handleClose() {
     if (isSubmitting) return;
@@ -71,6 +81,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
       const res = await fetch('/api/marketplace/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include player session cookie
         body: JSON.stringify({
           ...form,
           price: priceNum,
@@ -93,7 +104,6 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
       // Reset form after success
       setTimeout(() => {
         setForm({
-          sellerName: '',
           sellerWhatsapp: '',
           title: '',
           description: '',
@@ -110,6 +120,11 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
       setIsSubmitting(false);
     }
   }
+
+  // Get player info for display
+  const playerGamertag = playerAuth.account?.player?.gamertag || '';
+  const playerAvatar = playerAuth.account?.player?.avatar || null;
+  const playerTier = playerAuth.account?.player?.tier || '';
 
   return (
     <AnimatePresence>
@@ -148,8 +163,26 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
               </button>
             </div>
 
-            {/* Success State */}
-            {submitResult === 'success' ? (
+            {/* Not Logged In State */}
+            {!isLoggedIn ? (
+              <div className="flex flex-col items-center justify-center py-10 px-6">
+                <div className="w-14 h-14 rounded-full bg-idm-gold-warm/10 flex items-center justify-center mb-3">
+                  <LogIn className="w-7 h-7 text-idm-gold-warm/60" />
+                </div>
+                <p className="text-sm font-bold text-foreground mb-1">Login Diperlukan</p>
+                <p className="text-[10px] text-muted-foreground text-center max-w-[240px] mb-4">
+                  Kamu harus login dengan akun gamertag terlebih dahulu untuk memasang iklan di marketplace. Ini agar identitas penjual bisa diverifikasi.
+                </p>
+                <button
+                  onClick={handleClose}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-idm-gold-warm hover:bg-[#e5be4a] text-black text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  Login Sekarang
+                </button>
+              </div>
+            ) : submitResult === 'success' ? (
+              /* Success State */
               <div className="flex flex-col items-center justify-center py-10 px-6">
                 <motion.div
                   initial={{ scale: 0 }}
@@ -164,27 +197,32 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                 </p>
               </div>
             ) : (
-              /* Form */
+              /* Form — only shown when logged in */
               <form onSubmit={handleSubmit} className="p-4 space-y-4">
-                {/* Seller Info */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Info Penjual</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Nama kamu / nama toko"
-                    value={form.sellerName}
-                    onChange={(e) => setForm(p => ({ ...p, sellerName: e.target.value }))}
-                    maxLength={50}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-idm-gold-warm/30 focus:ring-1 focus:ring-idm-gold-warm/20 transition-colors"
-                  />
-                  <input
-                    type="tel"
-                    placeholder="WhatsApp (08xxx) — opsional"
-                    value={form.sellerWhatsapp}
-                    onChange={(e) => setForm(p => ({ ...p, sellerWhatsapp: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-idm-gold-warm/30 focus:ring-1 focus:ring-idm-gold-warm/20 transition-colors"
-                  />
+                {/* Verified Seller Badge */}
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+                  <div className="relative flex-shrink-0">
+                    {playerAvatar ? (
+                      <img src={playerAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-idm-gold-warm/15 flex items-center justify-center">
+                        <span className="text-sm font-bold text-idm-gold-warm">{playerGamertag.charAt(0)}</span>
+                      </div>
+                    )}
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <ShieldCheck className="w-2.5 h-2.5 text-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-foreground">{playerGamertag}</span>
+                      <Badge tier={playerTier} />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                      <span className="text-[9px] text-emerald-400 font-semibold">Penjual Terverifikasi</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Category Selection */}
@@ -253,6 +291,18 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                   <p className="text-[9px] text-muted-foreground/30">Masukkan 0 jika gratis</p>
                 </div>
 
+                {/* WhatsApp */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">WhatsApp (opsional)</label>
+                  <input
+                    type="tel"
+                    placeholder="08xxx — untuk dihubungi pembeli"
+                    value={form.sellerWhatsapp}
+                    onChange={(e) => setForm(p => ({ ...p, sellerWhatsapp: e.target.value }))}
+                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-idm-gold-warm/30 focus:ring-1 focus:ring-idm-gold-warm/20 transition-colors"
+                  />
+                </div>
+
                 {/* Image URL */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Gambar (opsional)</label>
@@ -281,14 +331,14 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                 <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-idm-gold-warm/5 border border-idm-gold-warm/10">
                   <AlertCircle className="w-3.5 h-3.5 text-idm-gold-warm/50 flex-shrink-0 mt-0.5" />
                   <p className="text-[9px] text-muted-foreground/50 leading-relaxed">
-                    Iklan kamu akan ditinjau admin terlebih dahulu sebelum tampil di marketplace. Maksimal 3 pengajuan per hari.
+                    Iklan kamu akan ditinjau admin terlebih dahulu sebelum tampil di marketplace. Maksimal 5 pengajuan per hari. Nama penjual otomatis menggunakan gamertag kamu.
                   </p>
                 </div>
 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting || !form.sellerName || !form.title || !form.description || !form.price}
+                  disabled={isSubmitting || !form.title || !form.description || !form.price}
                   className="w-full py-3 rounded-xl bg-idm-gold-warm hover:bg-[#e5be4a] disabled:opacity-40 disabled:cursor-not-allowed text-black text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
@@ -309,5 +359,22 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   TIER BADGE — inline small badge
+   ═══════════════════════════════════════════════════════ */
+function Badge({ tier }: { tier: string }) {
+  const config: Record<string, { bg: string; text: string; label: string }> = {
+    S: { bg: 'bg-amber-500/20', text: 'text-amber-400', label: 'S' },
+    A: { bg: 'bg-purple-500/20', text: 'text-purple-400', label: 'A' },
+    B: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', label: 'B' },
+  };
+  const c = config[tier] || config.B;
+  return (
+    <span className={`inline-flex items-center justify-center px-1.5 py-0 rounded text-[8px] font-black ${c.bg} ${c.text}`}>
+      {c.label}
+    </span>
   );
 }

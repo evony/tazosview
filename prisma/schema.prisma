@@ -44,6 +44,7 @@ model Player {
   achievements     PlayerAchievement[]
   account          Account?
   championSeasons  Season[]      @relation("SeasonPlayerChampion")
+  marketplaceItems MarketplaceItem[]
 
   @@index([division])
   @@index([division, isActive])
@@ -643,8 +644,9 @@ model SponsorBanner {
 
 model MarketplaceItem {
   id            String   @id @default(cuid())
-  sellerName    String   // Nama penjual / toko
-  sellerAvatar  String?  // Avatar URL penjual
+  playerId      String?  // FK → Player — null for admin-created items, required for user submissions
+  sellerName    String   // Nama penjual / toko (auto-filled from gamertag for logged-in users)
+  sellerAvatar  String?  // Avatar URL penjual (auto-filled from player avatar)
   sellerWhatsapp String? // Nomor WhatsApp penjual
   title         String   // Judul item: "Avatar VIP Gold", "Jasa GB Rank S"
   description   String   // Deskripsi detail
@@ -657,9 +659,12 @@ model MarketplaceItem {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  player Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
+
   @@index([category])
   @@index([isActive])
   @@index([isPremium])
   @@index([status])
+  @@index([playerId])
   @@index([createdAt])
 }

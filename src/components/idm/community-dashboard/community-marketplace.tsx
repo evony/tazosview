@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, Search, MessageCircle, Crown, Sparkles,
   Shirt, Gamepad2, UserCheck, Wand2, Package, ChevronRight,
-  Flame, Tag, Plus
+  Flame, Tag, Plus, ShieldCheck
 } from 'lucide-react';
 import { SubmitMarketplaceModal } from './submit-marketplace-modal';
 
@@ -14,6 +14,7 @@ import { SubmitMarketplaceModal } from './submit-marketplace-modal';
    ═══════════════════════════════════════════════════════ */
 interface MarketplaceItem {
   id: string;
+  playerId?: string;
   sellerName: string;
   sellerAvatar?: string;
   sellerWhatsapp?: string;
@@ -381,6 +382,9 @@ function MarketplaceCard({ item, isPremium = false }: { item: MarketplaceItem; i
               </div>
             )}
             <span className="text-[9px] text-muted-foreground/50 font-medium truncate">{item.sellerName}</span>
+            {item.playerId && (
+              <ShieldCheck className="w-3 h-3 text-emerald-400 flex-shrink-0" title="Penjual terverifikasi" />
+            )}
           </div>
         </div>
       </div>
