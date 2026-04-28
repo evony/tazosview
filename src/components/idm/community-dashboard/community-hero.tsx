@@ -117,7 +117,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
   return (
     <div
       className="relative overflow-hidden rounded-2xl border border-idm-gold-warm/20"
-      style={{ aspectRatio: heroBannerDashboard ? '1600 / 639' : undefined }}
+      style={{ aspectRatio: heroBannerDashboard ? '21 / 6' : undefined }}
     >
       {/* ═══ Background Layers ═══ */}
       {/* Base gradient */}
@@ -215,8 +215,8 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
         ))}
       </div>
 
-      {/* ═══ Content — centered over banner ═══ */}
-      <div className={`relative z-10 flex flex-col items-center justify-center p-6 sm:p-8 text-center ${heroBannerDashboard ? 'absolute inset-0' : ''}`}>
+      {/* ═══ Content ═══ */}
+      <div className="relative z-10 p-6 sm:p-8 pb-8">
         {/* Live badge */}
         {hasLive && (
           <motion.div
@@ -277,14 +277,14 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mx-auto mb-6"
+          className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mb-6"
         >
           Tempat pemain terbaik dari seluruh kota berkompetisi. Sawer untuk menambah prize pool dan dapatkan skin eksklusif!
         </motion.p>
 
         {/* Animated underline */}
         <motion.div
-          className="h-[1.5px] rounded-full mb-5 mx-auto"
+          className="h-[1.5px] rounded-full mb-5"
           style={{
             background: 'linear-gradient(90deg, transparent, #d4a853, transparent)',
           }}
@@ -298,7 +298,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}
-          className="flex flex-wrap items-center justify-center gap-3 mb-6"
+          className="flex flex-wrap items-center gap-3 mb-6"
         >
           {/* Pendaftaran button — shown when registration is open */}
           {isRegistrationOpen && (
@@ -355,7 +355,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          className="flex flex-wrap items-center justify-center gap-4 sm:gap-6"
+          className="flex flex-wrap items-center gap-4 sm:gap-6"
         >
           {/* Prize Pool — MOST PROMINENT stat */}
           {combinedPrizePool > 0 && (
