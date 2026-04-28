@@ -52,33 +52,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File size exceeds 10MB limit' }, { status: 400 });
     }
 
-    // Build upload parameters
-    const uploadParams: Record<string, string> = {
-      file,
+    // Build signature parameters (exclude file, api_key, and signature from signature computation)
+    // Cloudinary docs: signature = SHA1(sorted_params_except_file_apiKey_signature + api_secret)
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signatureParams: Record<string, string> = {
       folder,
-      api_key: API_KEY,
-      timestamp: Math.floor(Date.now() / 1000).toString(),
+      timestamp,
     };
 
     if (publicId) {
-      uploadParams.public_id = publicId;
+      signatureParams.public_id = publicId;
     }
 
     // Generate signature
-    // Cloudinary signature = SHA1(sorted_params + api_secret)
     const crypto = await import('crypto');
-    const sortedKeys = Object.keys(uploadParams).sort();
+    const sortedKeys = Object.keys(signatureParams).sort();
     const signatureString = sortedKeys
-      .map(key => `${key}=${uploadParams[key]}`)
+      .map(key => `${key}=${signatureParams[key]}`)
       .join('&') + API_SECRET;
     const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
 
-    uploadParams.signature = signature;
-
-    // Upload to Cloudinary using their upload API
+    // Build FormData with all required fields
     const formData = new FormData();
-    for (const [key, value] of Object.entries(uploadParams)) {
-      formData.append(key, value);
+    formData.append('file', file);
+    formData.append('api_key', API_KEY!);
+    formData.append('timestamp', timestamp);
+    formData.append('folder', folder);
+    formData.append('signature', signature);
+    if (publicId) {
+      formData.append('public_id', publicId);
     }
 
     const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
