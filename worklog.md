@@ -311,3 +311,27 @@ Stage Summary:
 - Admin credentials: superadmin / admin123
 - Application running successfully with Neon PostgreSQL ✅
 - Previous bugs also fixed (logo 404s, banner not showing in club profile modal)
+
+---
+Task ID: 1
+Agent: main
+Task: Unify marquee card styles - remove 2 different visual shapes in landing page marquee
+
+Work Log:
+- Investigated the landing page marquee (MarqueeTicker component in marquee-ticker.tsx)
+- Found the FeedCard component had two completely different visual styles:
+  - Stat cards (type: 'stat'): vertical layout, gold-warm background, big number + small label, no time badge
+  - Feed items (non-stat): horizontal compact layout, accent-colored gradient, title + subtitle + time badge + division dot
+- This created the visual inconsistency the user noticed - "satu besar satu compact"
+- Unified FeedCard to use a single compact horizontal layout for ALL items:
+  - Same accent-colored gradient background for both stat and feed items
+  - Same border style and hover behavior
+  - Same icon + title + subtitle horizontal flow
+  - Stat numbers use accent color for the title text
+  - Time badge and division dot still only show for feed items (not stats)
+  - Count-up animation still works for stat numbers
+
+Stage Summary:
+- Fixed visual inconsistency in marquee ticker - all cards now have uniform compact horizontal style
+- File modified: src/components/idm/marquee-ticker.tsx
+- Lint passes cleanly

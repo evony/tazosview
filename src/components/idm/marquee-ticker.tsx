@@ -79,57 +79,53 @@ function useCountUp(target: number, duration = 1200, delay = 200) {
   return { current };
 }
 
-/* ========== Single Feed Card ========== */
+/* ========== Single Feed Card — Unified compact horizontal style ========== */
 function FeedCard({ item }: { item: FeedItem }) {
   const accent = item.accent || TYPE_ACCENT[item.type] || '#d4a853';
   const isStat = item.type === 'stat';
   const { current } = useCountUp(item.numericValue || 0, 1200, 0);
 
+  /* Resolve display text — stat items show count-up number as title */
+  const displayTitle = isStat && item.numericValue && item.numericValue > 0
+    ? current.toLocaleString('id-ID')
+    : item.title;
+  const displaySubtitle = item.subtitle;
+
   return (
     <div
-      className={`flex items-center gap-2.5 px-4 py-2 rounded-lg shrink-0 border transition-all duration-300 cursor-default select-none ${
-        isStat
-          ? 'bg-idm-gold-warm/[0.06] border-idm-gold-warm/20 hover:border-idm-gold-warm/35 hover:shadow-[0_0_16px_rgba(212,168,83,0.1)]'
-          : 'hover:scale-[1.02]'
-      }`}
-      style={isStat ? {} : {
+      className="flex items-center gap-2 px-3.5 py-1.5 rounded-md shrink-0 border transition-all duration-300 cursor-default select-none hover:scale-[1.02]"
+      style={{
         background: `linear-gradient(135deg, ${hexToRgba(accent, 0x08)} 0%, ${hexToRgba(accent, 0x03)} 100%)`,
         borderColor: hexToRgba(accent, 0x20),
       }}
     >
       {/* Icon with glow */}
       <span
-        className="text-base shrink-0 drop-shadow-sm"
+        className="text-sm shrink-0 drop-shadow-sm"
         style={{ filter: `drop-shadow(0 0 4px ${hexToRgba(accent, 0x40)})` }}
       >
         {item.icon}
       </span>
 
-      {/* Content */}
-      <div className="flex items-center gap-2 min-w-0">
-        {isStat ? (
-          <div className="flex flex-col">
-            <span className="text-sm font-black text-gradient-fury whitespace-nowrap">
-              {item.numericValue && item.numericValue > 0 ? current : item.title}
-            </span>
-            <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider whitespace-nowrap">{item.subtitle}</span>
-          </div>
-        ) : (
-          <>
-            <p className="text-[11px] sm:text-xs font-bold text-foreground truncate max-w-[180px] sm:max-w-[240px]">
-              {item.title}
-            </p>
-            {item.subtitle && (
-              <>
-                <span className="text-muted-foreground/20 shrink-0 text-[8px]">◆</span>
-                <p className="text-[10px] text-muted-foreground/70 truncate max-w-[100px] sm:max-w-[140px] hidden sm:block">
-                  {item.subtitle}
-                </p>
-              </>
-            )}
-          </>
-        )}
-      </div>
+      {/* Title — same style for all items */}
+      <p
+        className={`font-bold whitespace-nowrap truncate max-w-[180px] sm:max-w-[220px] ${
+          isStat ? 'text-xs' : 'text-[11px] sm:text-xs'
+        }`}
+        style={{ color: isStat ? accent : undefined }}
+      >
+        {displayTitle}
+      </p>
+
+      {/* Subtitle — same style for all items */}
+      {displaySubtitle && (
+        <>
+          <span className="text-muted-foreground/20 shrink-0 text-[8px]">◆</span>
+          <p className="text-[10px] text-muted-foreground/70 truncate max-w-[100px] sm:max-w-[130px] hidden sm:block">
+            {displaySubtitle}
+          </p>
+        </>
+      )}
 
       {/* Time badge — only for feed items */}
       {!isStat && (
