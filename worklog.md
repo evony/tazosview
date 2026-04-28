@@ -283,3 +283,31 @@ Stage Summary:
 - Components use `useBackgroundImages()` hook with React Query caching — single network request shared across all components
 - Default fallbacks preserve original behavior (/bg-male.jpg, /bg-female.jpg, /bg-section.jpg) if settings not configured
 - Cloudinary domain whitelisted in next.config.ts for remote image optimization
+---
+Task ID: 1
+Agent: Main Agent
+Task: Delete gallery images and migrate database from SQLite to Neon PostgreSQL
+
+Work Log:
+- Found and deleted `/home/z/my-project/public/gallery/` folder (12 gallery PNG images)
+- Gallery section is no longer rendered anywhere (landing page, community dashboard, division dashboard)
+- Updated `prisma/schema.prisma`: changed provider from `sqlite` to `postgresql` with `directUrl` for Neon
+- Updated `.env`: replaced SQLite `file:` URL with Neon PostgreSQL connection strings
+- Ran `bun run db:push` to push all 29 tables to Neon PostgreSQL
+- Regenerated Prisma Client for PostgreSQL
+- Seeded Neon database with: 1 super admin, 2 seasons (male/female), 10 CMS settings, 7 skins
+- Verified database connection and data integrity
+- Verified dev server starts and runs correctly with Neon
+- Also fixed: stale logo URLs in database (16 clubs updated from 404 Cloudinary paths to valid URLs)
+- Also fixed: wrong bannerImage values cleared (ALQA had avatar URL, AVENUE had CMS background)
+- Also fixed: club-profile.tsx now uses `unifiedData?.bannerImage` as primary source
+- Also fixed: ClubData interface, leaderboard API, and TarkamClub interface now include `bannerImage`
+
+Stage Summary:
+- Gallery folder deleted ✅
+- Database migrated from SQLite to Neon PostgreSQL ✅
+- All 29 tables created on Neon ✅
+- Basic seed data populated (admin, seasons, skins, CMS settings) ✅
+- Admin credentials: superadmin / admin123
+- Application running successfully with Neon PostgreSQL ✅
+- Previous bugs also fixed (logo 404s, banner not showing in club profile modal)
