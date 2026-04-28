@@ -1531,7 +1531,7 @@ export function CmsPanel() {
                           onChange={(url) => updateSettingsForm({ hero_banner_dashboard: url })}
                           folder="cms/backgrounds"
                         />
-                        <p className="text-[9px] text-muted-foreground/60">Background gambar untuk hero banner di dashboard komunitas</p>
+                        <p className="text-[9px] text-muted-foreground/60">Background gambar untuk hero banner di dashboard komunitas. Ukuran rekomendasi: <strong>1600×639 px</strong> (rasio ~5:2)</p>
                       </div>
                     </div>
 

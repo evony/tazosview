@@ -115,7 +115,10 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
     femaleData?.activeTournament?.status === 'completed';
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-idm-gold-warm/20">
+    <div
+      className="relative overflow-hidden rounded-2xl border border-idm-gold-warm/20"
+      style={{ aspectRatio: heroBannerDashboard ? '1600 / 639' : undefined }}
+    >
       {/* ═══ Background Layers ═══ */}
       {/* Base gradient */}
       <div
@@ -125,23 +128,23 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
         }}
       />
 
-      {/* Hero banner background image (from CMS) — object-contain so text in image is fully visible */}
+      {/* Hero banner background image (from CMS) — fills container with proper aspect ratio */}
       {heroBannerDashboard && (
         <img
           src={heroBannerDashboard}
           alt=""
-          className="absolute inset-0 w-full h-full object-contain object-center opacity-40 pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-45 pointer-events-none"
           aria-hidden="true"
         />
       )}
 
-      {/* Dark scrim — ensures text readability over background image */}
+      {/* Dark scrim — radial vignette to keep center text in image visible */}
       {heroBannerDashboard && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'linear-gradient(180deg, rgba(10,10,20,0.3) 0%, rgba(10,10,20,0.55) 40%, rgba(10,10,20,0.75) 100%)',
+              'radial-gradient(ellipse at 50% 50%, rgba(10,10,20,0.25) 0%, rgba(10,10,20,0.6) 70%, rgba(10,10,20,0.8) 100%)',
           }}
         />
       )}
@@ -212,8 +215,8 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
         ))}
       </div>
 
-      {/* ═══ Content ═══ */}
-      <div className="relative z-10 p-6 sm:p-8 pb-16 sm:pb-16">
+      {/* ═══ Content — centered over banner ═══ */}
+      <div className={`relative z-10 flex flex-col items-center justify-center p-6 sm:p-8 text-center ${heroBannerDashboard ? 'absolute inset-0' : ''}`}>
         {/* Live badge */}
         {hasLive && (
           <motion.div
@@ -274,14 +277,14 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mb-6"
+          className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mx-auto mb-6"
         >
           Tempat pemain terbaik dari seluruh kota berkompetisi. Sawer untuk menambah prize pool dan dapatkan skin eksklusif!
         </motion.p>
 
         {/* Animated underline */}
         <motion.div
-          className="h-[1.5px] rounded-full mb-5"
+          className="h-[1.5px] rounded-full mb-5 mx-auto"
           style={{
             background: 'linear-gradient(90deg, transparent, #d4a853, transparent)',
           }}
@@ -295,7 +298,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}
-          className="flex flex-wrap items-center gap-3 mb-6"
+          className="flex flex-wrap items-center justify-center gap-3 mb-6"
         >
           {/* Pendaftaran button — shown when registration is open */}
           {isRegistrationOpen && (
@@ -352,7 +355,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          className="flex flex-wrap items-center gap-4 sm:gap-6"
+          className="flex flex-wrap items-center justify-center gap-4 sm:gap-6"
         >
           {/* Prize Pool — MOST PROMINENT stat */}
           {combinedPrizePool > 0 && (
