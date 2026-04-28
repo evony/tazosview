@@ -2,14 +2,14 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Trophy, TrendingUp, Award } from 'lucide-react';
+import { Shield, Trophy, TrendingUp, Award, Music, Users } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ClubLogoImage } from '../club-logo-image';
 import { useCommunityTheme } from '@/hooks/use-community-theme';
 
 /* ═══════════════════════════════════════════
-   Types
+   Types — Tarkam mode
    ═══════════════════════════════════════════ */
 interface ClubInput {
   id: string;
@@ -17,8 +17,13 @@ interface ClubInput {
   logo?: string | null;
   wins: number;
   losses: number;
-  points: number;
+  points: number; // Tarkam points (sum of member player.points)
+  malePoints: number;
+  femalePoints: number;
   gameDiff: number;
+  memberCount?: number;
+  maleMemberCount?: number;
+  femaleMemberCount?: number;
   _count?: { members?: number };
 }
 
@@ -34,11 +39,13 @@ interface RankedClub extends ClubInput {
 }
 
 /* ═══════════════════════════════════════════
-   Power Score calculation
-   points + (gameDiff * 2) + (wins * 3)
+   Power Score calculation — Tarkam mode
+   Total Tarkam Points + (Male Points × 1.1) + (Female Points × 1.1) + (Members × 5)
    ═══════════════════════════════════════════ */
 function calcPowerScore(club: ClubInput): number {
-  return club.points + (club.gameDiff * 2) + (club.wins * 3);
+  const memberCount = club.memberCount || club._count?.members || 0;
+  // Primary: total tarkam points + bonus for balanced divisions + small member bonus
+  return club.points + Math.round(Math.min(club.malePoints, club.femalePoints) * 0.2) + (memberCount * 5);
 }
 
 /* ═══════════════════════════════════════════
@@ -52,7 +59,7 @@ function getMedal(rank: number): string | null {
 }
 
 /* ═══════════════════════════════════════════
-   Main Component — Club Power Rankings
+   Main Component — Club Power Rankings (Tarkam)
    ═══════════════════════════════════════════ */
 export function ClubPowerRankings({ leagueData }: ClubPowerRankingsProps) {
   const dt = useCommunityTheme();
@@ -165,12 +172,12 @@ export function ClubPowerRankings({ leagueData }: ClubPowerRankingsProps) {
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] text-green-500 font-semibold">{club.wins}W</span>
-                  <span className="text-[10px] text-muted-foreground/40">/</span>
-                  <span className="text-[10px] text-red-400 font-semibold">{club.losses}L</span>
-                  <span className="text-[10px] text-muted-foreground/40 mx-0.5">•</span>
-                  <span className={`text-[10px] font-semibold ${club.gameDiff > 0 ? 'text-green-500' : club.gameDiff < 0 ? 'text-red-400' : 'text-muted-foreground'}`}>
-                    {club.gameDiff > 0 ? '+' : ''}{club.gameDiff}
+                  <span className="text-[10px] text-cyan-400 font-semibold flex items-center gap-0.5">
+                    <Music className="w-2.5 h-2.5" />{club.malePoints}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/40">+</span>
+                  <span className="text-[10px] text-purple-400 font-semibold flex items-center gap-0.5">
+                    <Users className="w-2.5 h-2.5" />{club.femalePoints}
                   </span>
                 </div>
               </div>
@@ -194,7 +201,7 @@ export function ClubPowerRankings({ leagueData }: ClubPowerRankingsProps) {
         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${dt.bgSubtle}`}>
           <TrendingUp className={`w-3 h-3 ${dt.neonText} shrink-0`} />
           <span className="text-[9px] text-muted-foreground/60">
-            Power Score = Points + (Selisih × 2) + (Wins × 3)
+            Power = Tarkam Pts + Balance Bonus + (Members × 5)
           </span>
         </div>
       </div>

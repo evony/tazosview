@@ -92,7 +92,7 @@ export function LandingPage() {
     gcTime: 300000,
   });
 
-  const { data: leagueData } = useQuery<{ hasData: boolean; preSeason?: boolean; reason?: string; season?: { id: string; name: string }; ligaChampion?: { id: string; name: string; logo: string | null; seasonNumber: number; members: { id: string; gamertag: string; division: string; tier: string; points: number; role: string; avatar?: string | null }[] } | null; stats?: { totalClubs: number; totalMatches: number; completedMatches: number } }>({
+  const { data: leagueData } = useQuery<{ hasData: boolean; preSeason?: boolean; reason?: string; season?: { id: string; name: string; number: number }; tarkamChampion?: { id: string; name: string; logo: string | null; seasonNumber: number; malePoints: number; femalePoints: number; totalPoints: number; members: { id: string; gamertag: string; division: string; tier: string; points: number; role: string; avatar?: string | null }[] } | null; stats?: { totalClubs: number; totalMatches: number; completedMatches: number } }>({
     queryKey: ['league-landing'],
     queryFn: async () => {
       const res = await fetch('/api/league');

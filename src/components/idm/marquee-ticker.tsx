@@ -244,8 +244,8 @@ export function MarqueeTicker({ maleData, femaleData, leagueData }: UnifiedMarqu
     const totalMatches = leagueData?.stats?.totalMatches || (maleData?.recentMatches?.length || 0) + (femaleData?.recentMatches?.length || 0);
     const totalClubs = leagueData?.stats?.totalClubs || (maleData?.clubs?.length || 0) + (femaleData?.clubs?.length || 0);
     const completedMatches = leagueData?.stats?.completedMatches || 0;
-    const seasonInfo = leagueData?.ligaChampion
-      ? `Season ${leagueData.ligaChampion.seasonNumber}`
+    const seasonInfo = leagueData?.tarkamChampion
+      ? `Season ${leagueData.tarkamChampion.seasonNumber}`
       : leagueData?.preSeason ? 'Pre-Season' : 'Season Berjalan';
 
     // Only show stat cards with meaningful values — hide zero-value stats to avoid looking empty

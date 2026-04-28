@@ -44,8 +44,9 @@ interface LeagueData {
   preSeason?: boolean;
   reason?: 'no_season' | 'no_clubs';
   season?: { id: string; name: string };
-  ligaChampion?: {
+  tarkamChampion?: {
     id: string; name: string; logo: string | null; seasonNumber: number;
+    malePoints: number; femalePoints: number; totalPoints: number;
     members: { id: string; gamertag: string; division: string; tier: string; points: number; role: string; avatar?: string | null }[];
   } | null;
   clubs: LeagueClub[];
@@ -164,7 +165,7 @@ export function LeagueView() {
         </div>
 
         {/* Season Champion Card — shown even when current season has no clubs */}
-        {d.ligaChampion && (
+        {d.tarkamChampion && (
           <div
             className="animate-fade-enter mt-4 rounded-2xl border border-idm-gold-warm/25 overflow-hidden"
             style={{ animationDelay: '0.3s', background: 'linear-gradient(135deg, #0c0a06 0%, #1a1208 40%, #0d0a06 70%, #0c0a06 100%)' }}
@@ -173,21 +174,21 @@ export function LeagueView() {
             <div className="relative p-4 sm:p-5 z-10">
               <div className="flex items-center gap-3">
                 <div className="relative shrink-0">
-                  <ClubLogoImage clubName={d.ligaChampion.name} dbLogo={d.ligaChampion.logo} alt={d.ligaChampion.name} width={48} height={48} className="w-12 h-12 rounded-xl object-cover border border-idm-gold-warm/25" />
+                  <ClubLogoImage clubName={d.tarkamChampion.name} dbLogo={d.tarkamChampion.logo} alt={d.tarkamChampion.name} width={48} height={48} className="w-12 h-12 rounded-xl object-cover border border-idm-gold-warm/25" />
                   <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-idm-gold-warm flex items-center justify-center shadow-md">
                     <Crown className="w-3 h-3 text-[#0c0a06]" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <Badge className="bg-idm-gold-warm/15 text-idm-gold-warm text-[8px] border-idm-gold-warm/20 font-bold uppercase tracking-wider">Season {d.ligaChampion.seasonNumber} Champion</Badge>
-                    <Badge className="bg-yellow-500/10 text-yellow-500 text-[8px] border-0">Liga IDM</Badge>
+                    <Badge className="bg-idm-gold-warm/15 text-idm-gold-warm text-[8px] border-idm-gold-warm/20 font-bold uppercase tracking-wider">Season {d.tarkamChampion.seasonNumber} Champion</Badge>
+                    <Badge className="bg-yellow-500/10 text-yellow-500 text-[8px] border-0">Tarkam IDM</Badge>
                   </div>
-                  <h4 className="text-base font-black text-white truncate">{d.ligaChampion.name}</h4>
-                  <p className="text-[11px] text-muted-foreground">Juara Liga IDM Season {d.ligaChampion.seasonNumber} — {d.ligaChampion.members.length} pemain (male & female)</p>
+                  <h4 className="text-base font-black text-white truncate">{d.tarkamChampion.name}</h4>
+                  <p className="text-[11px] text-muted-foreground">Juara Tarkam IDM Season {d.tarkamChampion.seasonNumber} — {d.tarkamChampion.members.length} pemain (male & female)</p>
                 </div>
                 <div className="hidden sm:flex items-center gap-1.5 shrink-0">
-                  {d.ligaChampion.members.slice(0, 5).map(m => (
+                  {d.tarkamChampion.members.slice(0, 5).map(m => (
                     <div
                       key={m.id}
                       className={`w-7 h-7 rounded-md overflow-hidden shrink-0 border ${m.division === 'male' ? 'border-cyan-500/20' : 'border-purple-500/20'}`}
@@ -203,9 +204,9 @@ export function LeagueView() {
                       />
                     </div>
                   ))}
-                  {d.ligaChampion.members.length > 5 && (
+                  {d.tarkamChampion.members.length > 5 && (
                     <div className="w-7 h-7 rounded-md flex items-center justify-center text-[8px] font-bold border border-white/10 bg-white/5 text-muted-foreground">
-                      +{d.ligaChampion.members.length - 5}
+                      +{d.tarkamChampion.members.length - 5}
                     </div>
                   )}
                 </div>
@@ -301,7 +302,7 @@ export function LeagueView() {
         </div>
 
         {/* Season 1 Champion Card */}
-        {d.ligaChampion && (
+        {d.tarkamChampion && (
           <div
             className="animate-fade-enter rounded-2xl border border-idm-gold-warm/25 overflow-hidden"
             style={{ animationDelay: '0.3s', background: 'linear-gradient(135deg, #0c0a06 0%, #1a1208 40%, #0d0a06 70%, #0c0a06 100%)' }}
@@ -311,21 +312,21 @@ export function LeagueView() {
             <div className="relative p-4 sm:p-5 z-10">
               <div className="flex items-center gap-3">
                 <div className="relative shrink-0">
-                  <ClubLogoImage clubName={d.ligaChampion.name} dbLogo={d.ligaChampion.logo} alt={d.ligaChampion.name} width={48} height={48} className="w-12 h-12 rounded-xl object-cover border border-idm-gold-warm/25" />
+                  <ClubLogoImage clubName={d.tarkamChampion.name} dbLogo={d.tarkamChampion.logo} alt={d.tarkamChampion.name} width={48} height={48} className="w-12 h-12 rounded-xl object-cover border border-idm-gold-warm/25" />
                   <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-idm-gold-warm flex items-center justify-center shadow-md">
                     <Crown className="w-3 h-3 text-[#0c0a06]" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <Badge className="bg-idm-gold-warm/15 text-idm-gold-warm text-[8px] border-idm-gold-warm/20 font-bold uppercase tracking-wider">Season {d.ligaChampion.seasonNumber} Champion</Badge>
-                    <Badge className="bg-yellow-500/10 text-yellow-500 text-[8px] border-0">Liga IDM</Badge>
+                    <Badge className="bg-idm-gold-warm/15 text-idm-gold-warm text-[8px] border-idm-gold-warm/20 font-bold uppercase tracking-wider">Season {d.tarkamChampion.seasonNumber} Champion</Badge>
+                    <Badge className="bg-yellow-500/10 text-yellow-500 text-[8px] border-0">Tarkam IDM</Badge>
                   </div>
-                  <h4 className="text-base font-black text-white truncate">{d.ligaChampion.name}</h4>
-                  <p className="text-[11px] text-muted-foreground">Juara Liga IDM Season {d.ligaChampion.seasonNumber} — {d.ligaChampion.members.length} pemain (male & female)</p>
+                  <h4 className="text-base font-black text-white truncate">{d.tarkamChampion.name}</h4>
+                  <p className="text-[11px] text-muted-foreground">Juara Tarkam IDM Season {d.tarkamChampion.seasonNumber} — {d.tarkamChampion.members.length} pemain (male & female)</p>
                 </div>
                 <div className="hidden sm:flex items-center gap-1.5 shrink-0">
-                  {d.ligaChampion.members.slice(0, 8).map(m => (
+                  {d.tarkamChampion.members.slice(0, 8).map(m => (
                     <div
                       key={m.id}
                       className="w-7 h-7 rounded-md overflow-hidden shrink-0 border border-white/10"
@@ -341,9 +342,9 @@ export function LeagueView() {
                       />
                     </div>
                   ))}
-                  {d.ligaChampion.members.length > 8 && (
+                  {d.tarkamChampion.members.length > 8 && (
                     <div className="w-7 h-7 rounded-md flex items-center justify-center text-[8px] font-bold border border-white/10 bg-white/5 text-muted-foreground">
-                      +{d.ligaChampion.members.length - 8}
+                      +{d.tarkamChampion.members.length - 8}
                     </div>
                   )}
                 </div>
@@ -554,7 +555,7 @@ export function LeagueView() {
         <TabsContent value="standings" className="mt-4">
           <div className="space-y-2">
             {clubs.map((club, idx) => {
-              const isChampion = d.ligaChampion?.id === club.id;
+              const isChampion = d.tarkamChampion?.id === club.id;
               const isTop4 = idx < 4;
               const isExpanded = expandedClub === club.id;
               const maleCount = club.members.filter(m => m.division === 'male').length;

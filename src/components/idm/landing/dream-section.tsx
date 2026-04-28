@@ -60,7 +60,7 @@ export function DreamSection({ maleData, femaleData, leagueData, nextSeason, com
   // Helper to replace template variables in CMS text
   const replaceVars = (text: string) => text
     .replace(/\{season\}/g, String(completedSeason))
-    .replace(/\{champion\}/g, leagueData?.ligaChampion?.name || 'Champion')
+    .replace(/\{champion\}/g, leagueData?.tarkamChampion?.name || 'Champion')
     .replace(/\{clubs\}/g, String(clubsCompeting))
     .replace(/\{matches\}/g, String(matchesPlayed))
     .replace(/\{participants\}/g, String(totalParticipants));
@@ -68,7 +68,7 @@ export function DreamSection({ maleData, femaleData, leagueData, nextSeason, com
   // CMS settings for Dream section text
   const dreamDescCompleted = cmsSettings?.dream_description_completed
     ? replaceVars(cmsSettings.dream_description_completed)
-    : `Season ${completedSeason} telah berlangsung dengan meriah — ${leagueData?.ligaChampion?.name || 'Champion'} tampil sebagai champion. ${clubsCompeting} club bertanding, peserta bebas mix dari Tarkam male dan female. Season ${nextSeason} menunggu dukunganmu untuk terwujud.`;
+    : `Season ${completedSeason} telah berlangsung dengan meriah — ${leagueData?.tarkamChampion?.name || 'Champion'} tampil sebagai champion. ${clubsCompeting} club bertanding, peserta bebas mix dari Tarkam male dan female. Season ${nextSeason} menunggu dukunganmu untuk terwujud.`;
 
   const dreamDescActive = cmsSettings?.dream_description_active
     ? replaceVars(cmsSettings.dream_description_active)
@@ -76,7 +76,7 @@ export function DreamSection({ maleData, femaleData, leagueData, nextSeason, com
 
   const dreamSeasonNextText = cmsSettings?.dream_season_next_text
     ? replaceVars(cmsSettings.dream_season_next_text)
-    : `Season ${leagueData?.ligaChampion?.seasonNumber || 1} sudah terbukti — champion dinobatkan, club bertanding. Season ${nextSeason} butuh dukunganmu untuk terwujud. Setiap kontribusi membawa kita lebih dekat.`;
+    : `Season ${leagueData?.tarkamChampion?.seasonNumber || 1} sudah terbukti — champion dinobatkan, club bertanding. Season ${nextSeason} butuh dukunganmu untuk terwujud. Setiap kontribusi membawa kita lebih dekat.`;
 
   return (<>
       {/* ========== TARKAM IDM — THE DREAM ========== */}
@@ -111,25 +111,25 @@ export function DreamSection({ maleData, femaleData, leagueData, nextSeason, com
             The Dream
           </h2>
           <p className="stagger-item-fast stagger-d2 text-sm text-[#a09880] mt-4 max-w-lg mx-auto leading-relaxed">
-            {leagueData?.ligaChampion && leagueData.ligaChampion.seasonNumber !== 1
+            {leagueData?.tarkamChampion && leagueData.tarkamChampion.seasonNumber !== 1
               ? dreamDescCompleted
               : dreamDescActive
             }
           </p>
 
           {/* Champion Highlight Card */}
-          {leagueData?.ligaChampion && leagueData.ligaChampion.seasonNumber !== 1 && (
+          {leagueData?.tarkamChampion && leagueData.tarkamChampion.seasonNumber !== 1 && (
             <div className="stagger-item-fast mt-6" style={{ animationDelay: '120ms' }}>
               <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border border-[#d4a853]/20 bg-[#0d0d1a]">
                 <div className="relative">
-                  <ClubLogoImage clubName={leagueData.ligaChampion.name} dbLogo={leagueData.ligaChampion.logo} alt={leagueData.ligaChampion.name} width={40} height={40} className="w-10 h-10 rounded-xl object-cover border border-[#d4a853]/30" />
+                  <ClubLogoImage clubName={leagueData.tarkamChampion.name} dbLogo={leagueData.tarkamChampion.logo} alt={leagueData.tarkamChampion.name} width={40} height={40} className="w-10 h-10 rounded-xl object-cover border border-[#d4a853]/30" />
                   <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#d4a853] flex items-center justify-center">
                     <Crown className="w-3 h-3 text-[#0a0a14]" />
                   </div>
                 </div>
                 <div className="text-left">
-                  <p className="text-xs text-[#d4a853]/60 font-semibold uppercase tracking-wider">Season {leagueData.ligaChampion.seasonNumber} Champion</p>
-                  <p className="text-lg font-black text-white">{leagueData.ligaChampion.name}</p>
+                  <p className="text-xs text-[#d4a853]/60 font-semibold uppercase tracking-wider">Season {leagueData.tarkamChampion.seasonNumber} Champion</p>
+                  <p className="text-lg font-black text-white">{leagueData.tarkamChampion.name}</p>
                 </div>
               </div>
             </div>

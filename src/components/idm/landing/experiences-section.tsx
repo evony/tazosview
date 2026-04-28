@@ -329,12 +329,12 @@ function buildVideoHighlights(
     }
   }
 
-  // 13. League Champion video
-  if (leagueData?.ligaChampion && leagueData.ligaChampion.seasonNumber > 1) {
+  // 13. Tarkam Champion video
+  if (leagueData?.tarkamChampion && leagueData.tarkamChampion.seasonNumber > 1) {
     videos.push({
-      id: `liga-champion-s${leagueData.ligaChampion.seasonNumber}`,
-      title: `Season ${leagueData.ligaChampion.seasonNumber} Champion — ${leagueData.ligaChampion.name}`,
-      seasonNumber: leagueData.ligaChampion.seasonNumber,
+      id: `tarkam-champion-s${leagueData.tarkamChampion.seasonNumber}`,
+      title: `Season ${leagueData.tarkamChampion.seasonNumber} Tarkam Champion — ${leagueData.tarkamChampion.name}`,
+      seasonNumber: leagueData.tarkamChampion.seasonNumber,
       division: 'both',
       type: 'champion',
       duration: '4:00',

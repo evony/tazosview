@@ -34,6 +34,11 @@ export async function GET() {
           },
         },
       },
+      championPlayer: {
+        select: {
+          id: true, gamertag: true, division: true, tier: true, points: true, avatar: true, totalWins: true, totalMvp: true,
+        },
+      },
     },
   }));
 
@@ -43,49 +48,10 @@ export async function GET() {
     });
   }
 
-  // Build Liga IDM champion data
-  const championSeason = seasons.find(s => s.championClubId && s.championClub);
-  const ligaChampion = championSeason?.championClub ? {
-    id: championSeason.championClub.id,
-    name: championSeason.championClub.name,
-    logo: championSeason.championClub.logo,
-    seasonNumber: championSeason.number,
-    members: (() => {
-      const rawSquad = championSeason.championSquad;
-      const squad: Array<{id: string; gamertag: string; division: string; role: string}> | null =
-        rawSquad ? (typeof rawSquad === 'string' ? JSON.parse(rawSquad) : rawSquad as unknown as Array<{id: string; gamertag: string; division: string; role: string}>) : null;
-      if (squad && Array.isArray(squad) && squad.length > 0) {
-        return squad.map(s => ({
-          id: s.id, gamertag: s.gamertag, division: s.division, role: s.role,
-          avatar: null as string | null,
-        }));
-      }
-      return championSeason.championClub.members?.map(m => ({
-        id: m.player.id, gamertag: m.player.gamertag, division: m.player.division,
-        role: m.role, avatar: m.player.avatar,
-      })) || [];
-    })()
-  } : null;
-
-  // Resolve avatars for champion squad members
-  if (ligaChampion?.members && ligaChampion.members.some(m => m.avatar === null)) {
-    const memberIds = ligaChampion.members.map(m => m.id);
-    const playersWithAvatars = await withDbRetry(() => db.player.findMany({
-      where: { id: { in: memberIds } },
-      select: { id: true, avatar: true },
-    }));
-    const avatarLookup = new Map(playersWithAvatars.map(p => [p.id, p.avatar]));
-    for (const member of ligaChampion.members) {
-      if (member.avatar === null) {
-        member.avatar = avatarLookup.get(member.id) || null;
-      }
-    }
-  }
-
   const season = seasons[0];
   const allSeasonIds = seasons.map(s => s.id);
 
-  // ── Get ClubProfiles with their season entries and members ──
+  // ── Get ClubProfiles with their members ──
   // ClubProfile is persistent — name/logo/members are always there
   const clubProfiles = await withDbRetry(() => db.clubProfile.findMany({
     orderBy: { name: 'asc' },
@@ -105,19 +71,29 @@ export async function GET() {
   if (clubProfiles.length === 0) {
     return NextResponse.json({
       hasData: false, reason: 'no_clubs',
-      season: { id: season.id, name: season.name },
-      ligaChampion,
+      season: { id: season.id, name: season.name, number: season.number },
+      tarkamChampion: null,
     }, { headers: LEAGUE_CACHE_HEADERS_SHORT });
   }
 
-  // Build deduplicated clubs from profiles + season entries
+  // ═══════════════════════════════════════════════════════════════
+  // TARKAM MODE: Club points = sum of all active member player.points
+  // This replaces the old Liga mode where points came from match results
+  // ═══════════════════════════════════════════════════════════════
   const dedupedClubs = clubProfiles.map(profile => {
-    // Sum all Liga stats from season entries
-    let totalWins = 0, totalLosses = 0, totalPoints = 0, totalGameDiff = 0;
+    const maleMembers = profile.members.filter(m => m.player.division === 'male');
+    const femaleMembers = profile.members.filter(m => m.player.division === 'female');
+
+    // Tarkam: Club points = sum of all active member player.points
+    const malePoints = maleMembers.reduce((sum, m) => sum + m.player.points, 0);
+    const femalePoints = femaleMembers.reduce((sum, m) => sum + m.player.points, 0);
+    const tarkamPoints = malePoints + femalePoints;
+
+    // Keep Liga stats for reference (from season entries) — but primary ranking is Tarkam
+    let totalWins = 0, totalLosses = 0, totalGameDiff = 0;
     for (const entry of profile.seasonEntries) {
       totalWins += entry.wins;
       totalLosses += entry.losses;
-      totalPoints += entry.points;
       totalGameDiff += entry.gameDiff;
     }
 
@@ -126,11 +102,17 @@ export async function GET() {
       name: profile.name,
       logo: profile.logo,
       bannerImage: profile.bannerImage,
+      // Tarkam fields (primary)
+      points: tarkamPoints,
+      malePoints,
+      femalePoints,
+      // Liga fields (kept for reference/display)
       wins: totalWins,
       losses: totalLosses,
-      points: totalPoints,
       gameDiff: totalGameDiff,
       memberCount: profile.members.length,
+      maleMemberCount: maleMembers.length,
+      femaleMemberCount: femaleMembers.length,
       members: profile.members.map(m => ({
         id: m.player.id,
         gamertag: m.player.gamertag,
@@ -142,9 +124,41 @@ export async function GET() {
         avatar: m.player.avatar,
       })),
     };
-  }).sort((a, b) => b.points - a.points || b.gameDiff - a.gameDiff);
+  }).sort((a, b) => b.points - a.points); // Sort by Tarkam points desc
 
-  // All league matches
+  // ═══════════════════════════════════════════════════════════════
+  // TARKAM CHAMPION: #1 club by Tarkam points (not Liga championClubId)
+  // ═══════════════════════════════════════════════════════════════
+  const tarkamChampionClub = dedupedClubs.length > 0 ? dedupedClubs[0] : null;
+
+  // Also check for Tarkam Player Champion from season data
+  // championPlayerId on Season is for the Tarkam season player champion
+  const championSeason = seasons.find(s => s.championPlayerId && s.championPlayer);
+  const tarkamPlayerChampion = championSeason?.championPlayer ? {
+    id: championSeason.championPlayer.id,
+    gamertag: championSeason.championPlayer.gamertag,
+    division: championSeason.championPlayer.division,
+    tier: championSeason.championPlayer.tier,
+    points: championSeason.championPlayer.points,
+    totalWins: championSeason.championPlayer.totalWins,
+    totalMvp: championSeason.championPlayer.totalMvp,
+    avatar: championSeason.championPlayer.avatar,
+    seasonNumber: championSeason.number,
+  } : null;
+
+  // Build tarkamChampion object (club champion)
+  const tarkamChampion = tarkamChampionClub ? {
+    id: tarkamChampionClub.id,
+    name: tarkamChampionClub.name,
+    logo: tarkamChampionClub.logo,
+    seasonNumber: season.number,
+    malePoints: tarkamChampionClub.malePoints,
+    femalePoints: tarkamChampionClub.femalePoints,
+    totalPoints: tarkamChampionClub.points,
+    members: tarkamChampionClub.members,
+  } : null;
+
+  // All league matches (still relevant for display)
   const leagueMatches = await withDbRetry(() => db.leagueMatch.findMany({
     where: { seasonId: { in: allSeasonIds } },
     orderBy: [{ week: 'asc' }],
@@ -193,8 +207,9 @@ export async function GET() {
   return NextResponse.json({
     hasData: true,
     preSeason: isPreSeason,
-    season: { id: season.id, name: season.name },
-    ligaChampion,
+    season: { id: season.id, name: season.name, number: season.number },
+    tarkamChampion,
+    tarkamPlayerChampion,
     clubs: dedupedClubs,
     leagueMatches: leagueMatches.map(m => ({
       id: m.id, week: m.week, score1: m.score1, score2: m.score2,
@@ -230,7 +245,7 @@ export async function GET() {
     console.error('[/api/league] Error:', error?.message || error);
     return NextResponse.json({
       hasData: false, reason: 'db_error', error: error?.message || 'Database connection failed',
-      ligaChampion: null,
+      tarkamChampion: null,
     }, { status: 200, headers: LEAGUE_CACHE_HEADERS_SHORT });
   }
 }

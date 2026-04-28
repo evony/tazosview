@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Users, Shield, Music, ChevronUp, ChevronDown, Crown } from 'lucide-react';
+import { Users, Shield, Music, ChevronUp, ChevronDown, Crown, Trophy } from 'lucide-react';
 import { SectionHeader } from './shared';
 import { CardSkeleton } from '../ui/skeleton';
 import { TierBadge } from '../tier-badge';
@@ -17,9 +17,13 @@ interface LeagueClub {
   bannerImage: string | null;
   wins: number;
   losses: number;
-  points: number;
+  points: number; // Tarkam points (sum of member player.points)
+  malePoints: number;
+  femalePoints: number;
   gameDiff: number;
   memberCount: number;
+  maleMemberCount: number;
+  femaleMemberCount: number;
   members: {
     id: string;
     gamertag: string;
@@ -142,8 +146,8 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                           {(showAllClubs ? sortedClubs : sortedClubs.slice(0, 10)).map((club, idx) => {
                             const isChampion = seasonChampions.some(ch => ch.name === club.name);
-                            const maleMembers = club.members?.filter(m => m.division === 'male').length || 0;
-                            const femaleMembers = club.members?.filter(m => m.division === 'female').length || 0;
+                            const maleMembers = club.maleMemberCount || club.members?.filter(m => m.division === 'male').length || 0;
+                            const femaleMembers = club.femaleMemberCount || club.members?.filter(m => m.division === 'female').length || 0;
                             const hiddenOnMobile = !showAllClubs && idx >= 6;
                             return (
                               <div
@@ -213,10 +217,16 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                                       )}
                                     </div>
 
-                                    {/* Member count */}
-                                    <div className="mt-2 flex items-center gap-1">
-                                      <Users className="w-3 h-3 text-[#a09880]/50" />
-                                      <span className="text-[10px] text-[#a09880]/60 font-medium">{club.memberCount} anggota</span>
+                                    {/* Member count & Tarkam points */}
+                                    <div className="mt-2 flex items-center justify-center gap-3">
+                                      <div className="flex items-center gap-1">
+                                        <Users className="w-3 h-3 text-[#a09880]/50" />
+                                        <span className="text-[10px] text-[#a09880]/60 font-medium">{club.memberCount} anggota</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Trophy className="w-3 h-3 text-[#d4a853]/50" />
+                                        <span className="text-[10px] text-[#d4a853]/70 font-bold">{club.points.toLocaleString('id-ID')} pts</span>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>

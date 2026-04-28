@@ -255,6 +255,18 @@ function CommunitySection({
       completedMatches: number;
       liveMatches: number;
     };
+    clubs?: Array<{
+      id: string;
+      name: string;
+      logo?: string | null;
+      wins: number;
+      losses: number;
+      points: number;
+      malePoints: number;
+      femalePoints: number;
+      gameDiff: number;
+      memberCount: number;
+    }>;
   };
 }) {
   const [activeTab, setActiveTab] = useState<CommunityTab>('achievements');
@@ -449,7 +461,7 @@ export function CommunityDashboard() {
     refetchOnWindowFocus: true,
   });
 
-  // Fetch league data
+  // Fetch league data (now returns Tarkam data)
   const { data: leagueData, isLoading: isLeagueLoading } = useQuery<{
     hasData: boolean;
     stats?: { totalClubs: number; totalMatches: number; completedMatches: number; liveMatches: number };
@@ -460,9 +472,22 @@ export function CommunityDashboard() {
       wins: number;
       losses: number;
       points: number;
+      malePoints: number;
+      femalePoints: number;
       gameDiff: number;
       memberCount: number;
+      maleMemberCount: number;
+      femaleMemberCount: number;
     }>;
+    tarkamChampion?: {
+      id: string;
+      name: string;
+      logo?: string | null;
+      seasonNumber: number;
+      malePoints: number;
+      femalePoints: number;
+      totalPoints: number;
+    } | null;
   }>({
     queryKey: ['league-community'],
     queryFn: async () => {

@@ -97,12 +97,12 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
   const { data: leagueSummary } = useQuery<{ seasonNumber: number; status: string; completedWeeks: number; totalWeeks: number; percentage: number }>({
     queryKey: ['league-summary'],
     queryFn: () => fetch('/api/league').then(r => r.json()).then(d => {
-      const sn = d.ligaChampion?.seasonNumber || d.season?.name?.match(/\d+/)?.[0] ? parseInt(d.season.name.match(/\d+/)[0]) : 1;
+      const sn = d.tarkamChampion?.seasonNumber || d.season?.number || 1;
       const tw = d.stats?.totalWeeks || 0;
       const cw = d.stats?.playedWeeks || 0;
       return {
         seasonNumber: sn,
-        status: d.ligaChampion ? 'completed' : d.preSeason ? 'pre-season' : d.hasData ? 'active' : 'upcoming',
+        status: d.tarkamChampion ? 'completed' : d.preSeason ? 'pre-season' : d.hasData ? 'active' : 'upcoming',
         completedWeeks: cw,
         totalWeeks: tw,
         percentage: tw > 0 ? Math.round((cw / tw) * 100) : 0,
