@@ -728,21 +728,20 @@ export function AppShell() {
             );
           })}
 
-          {/* Bantuan */}
-          <button
-            onClick={() => { hapticTap(); setCurrentView('bantuan'); }}
-            className={`flex flex-col items-center justify-center gap-0.5 px-2 py-2 min-h-[44px] rounded-lg transition-colors duration-200 relative ${
-              currentView === 'bantuan' ? 'text-idm-gold-warm' : 'text-muted-foreground'
-            }`}
-          >
-            <HelpCircle className="w-5 h-5" />
-            <span className="text-[10px] font-medium leading-tight">Bantuan</span>
-            {currentView === 'bantuan' && (
-              <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-idm-gold-warm" />
-            )}
-          </button>
+
         </div>
       </nav>
+
+      {/* ═══ FAB — Bantuan (mobile only) ═══ */}
+      {currentView !== 'bantuan' && currentView !== 'landing' && (
+        <button
+          onClick={() => { hapticTap(); setCurrentView('bantuan'); }}
+          className="lg:hidden fixed right-4 bottom-20 z-50 w-12 h-12 rounded-full bg-idm-gold-warm shadow-lg shadow-idm-gold-warm/30 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+          title="Bantuan"
+        >
+          <HelpCircle className="w-5 h-5 text-black" />
+        </button>
+      )}
 
       {/* Donation Popup */}
       <DonationPopup

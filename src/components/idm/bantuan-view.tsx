@@ -5,13 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, MessageCircle, ChevronDown, ChevronRight,
   UserPlus, Gamepad2, Trophy, ShoppingBag, Zap, Shield,
-  BookOpen, Heart, Phone, ExternalLink, ArrowRight, Info
+  BookOpen, Heart, Phone, ExternalLink, ArrowRight, Info,
+  ArrowLeft, Calendar, Users, Radio
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 /* ═══════════════════════════════════════════════════════
    FAQ Data — Pertanyaan yang Sering Diajukan
+   Kategori disesuaikan dengan fitur aktual aplikasi.
+   TIDAK menggunakan CMS — cukup update kode jika perlu.
    ═══════════════════════════════════════════════════════ */
 const faqData = [
   {
@@ -33,12 +36,12 @@ const faqData = [
     ]
   },
   {
-    category: 'Akun & Pendaftaran',
+    category: 'Akun & Login',
     icon: UserPlus,
     items: [
       {
-        q: 'Bagaimana cara mendaftar sebagai peserta?',
-        a: 'Klik tombol "Masuk Akun" di sidebar atau header, lalu pilih tab "Peserta". Masukkan gamertag dan password yang telah didaftarkan oleh admin. Jika belum punya akun, hubungi admin melalui Discord atau WhatsApp untuk pendaftaran.'
+        q: 'Bagaimana cara masuk ke aplikasi?',
+        a: 'Klik tombol "Masuk Akun" di header atau sidebar. Pilih tab "Peserta" dan masukkan gamertag beserta password yang telah diberikan admin. Jika belum punya akun, hubungi admin melalui Discord atau WhatsApp untuk pendaftaran.'
       },
       {
         q: 'Saya lupa password, bagaimana cara reset?',
@@ -55,20 +58,38 @@ const faqData = [
     icon: Trophy,
     items: [
       {
-        q: 'Bagaimana sistem poin bekerja?',
-        a: 'Setiap pemain mendapatkan poin berdasarkan hasil pertandingan: Menang = +3 poin, Seri = +1 poin, Kalah = +0 poin. Poin diakumulasi sepanjang season dan menentukan posisi di leaderboard.'
-      },
-      {
-        q: 'Apa itu MVP?',
-        a: 'MVP (Most Valuable Player) adalah penghargaan yang diberikan kepada pemain dengan performa terbaik di setiap pertandingan. Pemain dengan jumlah MVP terbanyak akan mendapat penghargaan khusus di akhir season.'
+        q: 'Bagaimana cara melihat jadwal pertandingan?',
+        a: 'Masuk ke menu divisi (Male/Female), lalu klik tab "Arena Live" di sub-navigasi bawah. Di sana Anda bisa melihat jadwal pertandingan per week beserta skor dan hasil match.'
       },
       {
         q: 'Berapa lama satu season berlangsung?',
-        a: 'Satu season Tarkam IDM biasanya berlangsung selama 10 minggu. Setiap minggu terdapat jadwal pertandingan yang harus diikuti oleh peserta. Di akhir season, juara akan ditentukan berdasarkan akumulasi poin.'
+        a: 'Satu season Tarkam IDM biasanya berlangsung selama beberapa minggu tergantung jumlah peserta dan jadwal yang ditentukan admin. Di akhir season, juara akan ditentukan berdasarkan hasil pertandingan.'
       },
       {
         q: 'Apa itu Arena Live?',
-        a: 'Arena Live adalah fitur untuk melihat pertandingan yang sedang berlangsung secara real-time. Anda bisa melihat skor langsung, pemain yang bertanding, dan hasil pertandingan.'
+        a: 'Arena Live adalah fitur untuk melihat jadwal dan hasil pertandingan per week. Anda bisa melihat skor, pemain yang bertanding, dan hasil pertandingan secara lengkap.'
+      },
+      {
+        q: 'Di mana saya bisa baca peraturan liga?',
+        a: 'Klik tab "Peraturan" di sub-navigasi bawah saat berada di menu divisi, atau akses melalui Quick Link "Peraturan Liga" di halaman Bantuan ini. Peraturan berisi aturan main, skor, dan ketentuan pertandingan.'
+      },
+    ]
+  },
+  {
+    category: 'Leaderboard & Komunitas',
+    icon: Users,
+    items: [
+      {
+        q: 'Bagaimana cara melihat leaderboard?',
+        a: 'Buka menu "Komunitas" di navigasi utama, atau klik Quick Link "Leaderboard" di halaman ini. Leaderboard menampilkan peringkat pemain berdasarkan performa pertandingan di setiap divisi.'
+      },
+      {
+        q: 'Apa perbedaan divisi Male dan Female?',
+        a: 'Divisi Male dan Female adalah kategori pertandingan terpisah. Setiap divisi memiliki leaderboard, jadwal pertandingan, dan juara season masing-masing. Pilih divisi sesuai kategori Anda di navigasi utama.'
+      },
+      {
+        q: 'Siapa Juara Season?',
+        a: 'Juara Season adalah pemain yang memenangkan pertandingan final di akhir season. Anda bisa melihat juara season sebelumnya di menu Komunitas atau di halaman utama divisi.'
       },
     ]
   },
@@ -78,7 +99,7 @@ const faqData = [
     items: [
       {
         q: 'Bagaimana cara menjual item di marketplace?',
-        a: 'Klik tombol "Pasang Iklan" di bagian marketplace. Isi form dengan informasi item yang ingin dijual, termasuk nama, deskripsi, harga, kategori, screenshot (maksimal 5 gambar), dan nomor WhatsApp. Iklan Anda akan ditinjau oleh admin sebelum ditampilkan.'
+        a: 'Buka menu Marketplace, lalu klik tombol "Pasang Iklan". Isi form dengan informasi item yang ingin dijual: nama, deskripsi, harga, kategori, link gambar (maksimal 5), dan nomor WhatsApp. Iklan Anda akan ditinjau admin sebelum ditampilkan.'
       },
       {
         q: 'Berapa lama proses review iklan?',
@@ -89,8 +110,8 @@ const faqData = [
         a: 'Kategori yang tersedia: Ava (avatar/skin), Item (item game), Char (karakter), Jasa (jasa GB, joki, dll), dan Dll (lain-lain).'
       },
       {
-        q: 'Apakah ada batasan jumlah iklan?',
-        a: 'Ya, setiap penjual maksimal bisa memasang 3 iklan per hari. Ini untuk menjaga kualitas dan kerapian marketplace.'
+        q: 'Bagaimana cara membeli item di marketplace?',
+        a: 'Klik pada iklan item yang Anda minati untuk melihat detail lengkap termasuk gambar, harga, dan deskripsi. Lalu klik tombol WhatsApp untuk langsung menghubungi penjual dan melakukan transaksi di luar platform.'
       },
     ]
   },
@@ -116,7 +137,8 @@ const faqData = [
 const quickLinks = [
   { icon: Gamepad2, label: 'Daftar Peserta', desc: 'Bergabung sebagai peserta Tarkam', view: 'register' as const, color: 'text-emerald-400' },
   { icon: Trophy, label: 'Peraturan Liga', desc: 'Baca peraturan lengkap liga', view: 'league' as const, color: 'text-idm-gold-warm' },
-  { icon: Zap, label: 'Leaderboard', desc: 'Lihat peringkat pemain', view: 'community' as const, color: 'text-cyan-400' },
+  { icon: Users, label: 'Leaderboard', desc: 'Lihat peringkat pemain', view: 'community' as const, color: 'text-cyan-400' },
+  { icon: Radio, label: 'Arena Live', desc: 'Jadwal & hasil pertandingan', view: 'dashboard' as const, color: 'text-rose-400' },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -157,12 +179,23 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
    BANTUAN VIEW — Help Center
    ═══════════════════════════════════════════════════════ */
 export function BantuanView() {
-  const { setCurrentView, setDivision, setInitialDashboardTab } = useAppStore();
+  const { setCurrentView, setDivision, setInitialDashboardTab, division } = useAppStore();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  const handleQuickLink = (view: string) => {
+    if (view === 'community') {
+      setDivision('male');
+      setInitialDashboardTab('rankings');
+    }
+    if (view === 'dashboard') {
+      setDivision(division || 'male');
+    }
+    setCurrentView(view as 'register' | 'league' | 'community' | 'dashboard');
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* ═══ Hero Header ═══ */}
+      {/* ═══ Back Button (Mobile) + Hero Header ═══ */}
       <div className="relative overflow-hidden rounded-2xl border border-idm-gold-warm/20 bg-gradient-to-br from-[#0a0a14] via-[#0d0d1a] to-[#0c0a06]">
         {/* Gold radial haze */}
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(212,168,83,0.08) 0%, transparent 65%)' }} />
@@ -170,6 +203,15 @@ export function BantuanView() {
         <div className="absolute inset-0 pointer-events-none opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(212,168,83,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(212,168,83,0.3) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
 
         <div className="relative z-10 p-6 sm:p-10">
+          {/* Back button for mobile FAB navigation */}
+          <button
+            onClick={() => setCurrentView('dashboard')}
+            className="lg:hidden flex items-center gap-1.5 mb-4 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors text-xs"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Kembali
+          </button>
+
           {/* Decorative accent */}
           <div className="flex items-center gap-3 mb-4">
             <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent to-idm-gold-warm/50" />
@@ -194,29 +236,22 @@ export function BantuanView() {
       </div>
 
       {/* ═══ Quick Links ═══ */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {quickLinks.map((link) => {
           const Icon = link.icon;
           return (
             <button
               key={link.label}
-              onClick={() => {
-                if (link.view === 'community') {
-                  setDivision('male');
-                  setInitialDashboardTab('rankings');
-                }
-                setCurrentView(link.view);
-              }}
-              className="group flex items-start gap-3 p-4 rounded-xl border border-border/40 bg-card/60 hover:bg-card/80 hover:border-border/70 transition-all text-left"
+              onClick={() => handleQuickLink(link.view)}
+              className="group flex flex-col items-center gap-2 p-4 rounded-xl border border-border/40 bg-card/60 hover:bg-card/80 hover:border-border/70 transition-all text-center"
             >
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${link.color.replace('text-', 'bg-').replace(/\/.*/, '/10')}`}>
                 <Icon className={`w-5 h-5 ${link.color}`} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground group-hover:text-idm-gold-warm transition-colors">{link.label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{link.desc}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-idm-gold-warm transition-colors">{link.label}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 hidden sm:block">{link.desc}</p>
               </div>
-              <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-idm-gold-warm/60 group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
             </button>
           );
         })}
@@ -301,7 +336,7 @@ export function BantuanView() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Masuk Akun</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Klik "Masuk Akun" di sidebar dan login dengan gamertag & password yang diberikan admin.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Klik "Masuk Akun" di header dan login dengan gamertag & password yang diberikan admin.</p>
               </div>
             </div>
             {/* Step 2 */}
@@ -320,8 +355,8 @@ export function BantuanView() {
                 <span className="text-xs font-bold text-idm-gold-warm">3</span>
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Ikuti Pertandingan</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Cek jadwal pertandingan di menu Arena Live. Mainkan match sesuai jadwal dan raih poin!</p>
+                <p className="text-sm font-semibold text-foreground">Cek Arena Live</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Lihat jadwal & hasil pertandingan di menu Arena Live. Ikuti match sesuai jadwal yang ditentukan!</p>
               </div>
             </div>
             {/* Step 4 */}
@@ -331,7 +366,7 @@ export function BantuanView() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Raih Juara!</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Kumpulkan poin sepanjang season. Pemain dengan poin tertinggi menjadi Juara Season!</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Menangkan pertandingan sepanjang season dan jadilah Juara Season di divisimu!</p>
               </div>
             </div>
           </div>
