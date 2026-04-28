@@ -1477,6 +1477,87 @@ export function CmsPanel() {
                   </CardContent>
                 </Card>
 
+                {/* Background Images — Global */}
+                <Card className="border border-border/50">
+                  <CardContent className="p-4 space-y-4">
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-idm-gold-warm" /> Background Images
+                      <Badge className="text-[8px] border-0 bg-emerald-500/10 text-emerald-400">Global</Badge>
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground">
+                      Kelola gambar background yang digunakan di seluruh aplikasi. Gambar ini tampil di dashboard, profil pemain, section landing page, dan lainnya.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <CloudinaryImageField
+                          label="Background Male ⚔️"
+                          value={settingsForm.bg_male}
+                          onChange={(url) => updateSettingsForm({ bg_male: url })}
+                          folder="cms/backgrounds"
+                        />
+                        <p className="text-[9px] text-muted-foreground/60">Digunakan di dashboard & profil pemain divisi Male</p>
+                      </div>
+                      <div className="space-y-2">
+                        <CloudinaryImageField
+                          label="Background Female 💜"
+                          value={settingsForm.bg_female}
+                          onChange={(url) => updateSettingsForm({ bg_female: url })}
+                          folder="cms/backgrounds"
+                        />
+                        <p className="text-[9px] text-muted-foreground/60">Digunakan di dashboard & profil pemain divisi Female</p>
+                      </div>
+                      <div className="space-y-2">
+                        <CloudinaryImageField
+                          label="Background Section 🎨"
+                          value={settingsForm.bg_section}
+                          onChange={(url) => updateSettingsForm({ bg_section: url })}
+                          folder="cms/backgrounds"
+                        />
+                        <p className="text-[9px] text-muted-foreground/60">Tekstur halus di 8 section landing page & banner club fallback</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      {(settingsForm.bg_male || settingsForm.bg_female || settingsForm.bg_section) && (
+                        <div className="col-span-2 flex gap-2">
+                          {settingsForm.bg_male && (
+                            <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
+                              <img src={settingsForm.bg_male} alt="Male BG" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          {settingsForm.bg_female && (
+                            <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
+                              <img src={settingsForm.bg_female} alt="Female BG" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          {settingsForm.bg_section && (
+                            <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
+                              <img src={settingsForm.bg_section} alt="Section BG" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex justify-end items-end">
+                        <Button
+                          size="sm"
+                          className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
+                          onClick={() => {
+                            saveSettingsBatch.mutate([
+                              { key: 'bg_male', value: settingsForm.bg_male || '/bg-male.jpg', type: 'image' },
+                              { key: 'bg_female', value: settingsForm.bg_female || '/bg-female.jpg', type: 'image' },
+                              { key: 'bg_section', value: settingsForm.bg_section || '/bg-section.jpg', type: 'image' },
+                            ]);
+                          }}
+                          disabled={saveSettingsBatch.isPending}
+                        >
+                          {saveSettingsBatch.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />} Simpan Background
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Footer Settings — Landing Section #8 */}
                 <Card className="border border-border/50">
                   <CardContent className="p-4 space-y-3">

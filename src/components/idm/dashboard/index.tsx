@@ -33,6 +33,7 @@ import { SkinBadgesRow, SkinName } from '../skin-renderer';
 import { getPrimarySkin } from '@/lib/skin-utils';
 import React, { useState, useRef, useEffect } from 'react';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
+import { useBackgroundImages } from '@/hooks/use-background-images';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatCurrency, formatCurrencyShort, clubToString } from '@/lib/utils';
 import type { StatsData } from '@/types/stats';
@@ -126,6 +127,7 @@ export function Dashboard() {
   const { division, initialDashboardTab, setInitialDashboardTab, playerAuth } = useAppStore();
   const dt = useDivisionTheme();
   const isMobile = useIsMobile();
+  const { bgMale, bgFemale } = useBackgroundImages();
 
   const [selectedPlayer, setSelectedPlayer] = useState<StatsData['topPlayers'][0] | null>(null);
   const [selectedClub, setSelectedClub] = useState<StatsData['clubs'][0] | null>(null);
@@ -618,7 +620,7 @@ export function Dashboard() {
       <div className={`stagger-item-subtle stagger-d0 relative rounded-xl sm:rounded-2xl overflow-hidden ${dt.casinoCard} min-h-[220px] sm:min-h-[260px] lg:min-h-[340px] ${!isMobile ? 'casino-shimmer' : ''}`}>
         <div className={dt.casinoBar} />
         <div className="absolute inset-0">
-          <Image src={division === 'male' ? '/bg-male.jpg' : '/bg-female.jpg'} alt="" fill sizes="100vw" className={`object-cover ${division === 'male' ? 'object-[center_25%]' : ''}`} aria-hidden="true" />
+          <Image src={division === 'male' ? bgMale : bgFemale} alt="" fill sizes="100vw" className={`object-cover ${division === 'male' ? 'object-[center_25%]' : ''}`} aria-hidden="true" />
         </div>
         <div className="casino-img-overlay" />
         <div className={`hidden lg:block absolute top-1/3 right-1/4 w-64 h-64 rounded-full blur-3xl ${dt.bg} opacity-30 lg:opacity-40`} />

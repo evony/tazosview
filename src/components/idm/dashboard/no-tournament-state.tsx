@@ -11,6 +11,7 @@ import { TierBadge } from '../tier-badge';
 import { PlayerProfile } from '../player-profile';
 import { DonationModal } from '../donation-modal';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
+import { useBackgroundImages } from '@/hooks/use-background-images';
 import { useAppStore } from '@/lib/store';
 import { useQuery } from '@tanstack/react-query';
 import { getAvatarUrl, clubToString } from '@/lib/utils';
@@ -24,6 +25,7 @@ interface NoTournamentStateProps {
 export function NoTournamentState({ data, setSelectedPlayer }: NoTournamentStateProps) {
   const { division } = useAppStore();
   const dt = useDivisionTheme();
+  const { bgMale, bgFemale } = useBackgroundImages();
 
   // Local state for selected player within this component
   const [localSelectedPlayer, setLocalSelectedPlayer] = useState<StatsData['topPlayers'][0] | null>(null);
@@ -52,7 +54,7 @@ export function NoTournamentState({ data, setSelectedPlayer }: NoTournamentState
         <div className={dt.casinoBar} />
         <div className="absolute inset-0">
           <Image
-            src={division === 'male' ? '/bg-male.jpg' : '/bg-female.jpg'}
+            src={division === 'male' ? bgMale : bgFemale}
             alt=""
             fill
             sizes="100vw"

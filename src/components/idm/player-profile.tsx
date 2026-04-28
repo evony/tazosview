@@ -14,6 +14,7 @@ import { getPrimarySkin } from '@/lib/skin-utils';
 import type { PlayerSkinInfo } from '@/types/stats';
 import { Badge } from '@/components/ui/badge';
 import { getDivisionTheme } from '@/hooks/use-division-theme';
+import { useBackgroundImages } from '@/hooks/use-background-images';
 import { useAppStore } from '@/lib/store';
 import { getAvatarUrl, hashString, clubToString } from '@/lib/utils';
 import { AchievementList } from './achievement-badge';
@@ -50,7 +51,8 @@ function PlayerBanner({ gamertag, division, tier, rank }: {
   const isMale = division === 'male';
   const primaryColor = isMale ? '#22d3ee' : '#c084fc';
   const secondaryColor = isMale ? '#06b6d4' : '#a855f7';
-  const bgImage = isMale ? '/bg-male.jpg' : '/bg-female.jpg';
+  const { bgMale, bgFemale } = useBackgroundImages();
+  const bgImage = isMale ? bgMale : bgFemale;
 
   return (
     <div className="absolute inset-0 overflow-hidden">

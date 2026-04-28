@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Users, Shield, Trophy, Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
+import { useBackgroundImages } from '@/hooks/use-background-images';
 
 interface NoSeasonStateProps {
   division: 'male' | 'female';
@@ -12,6 +13,7 @@ interface NoSeasonStateProps {
 
 export function NoSeasonState({ division }: NoSeasonStateProps) {
   const dt = useDivisionTheme();
+  const { bgMale, bgFemale } = useBackgroundImages();
 
   return (
     <div className="stagger-item-subtle">
@@ -20,7 +22,7 @@ export function NoSeasonState({ division }: NoSeasonStateProps) {
         {/* Background image */}
         <div className="absolute inset-0">
           <Image
-            src={division === 'male' ? '/bg-male.jpg' : '/bg-female.jpg'}
+            src={division === 'male' ? bgMale : bgFemale}
             alt=""
             fill
             sizes="100vw"

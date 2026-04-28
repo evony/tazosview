@@ -260,3 +260,26 @@ Stage Summary:
 - Pusher integration expanded: Real-time notifications for scoring, finalization, and season closure events across 4 channels (feed, leaderboard, tournament, league)
 - Client-side hook (usePusherRealtime) available for any component to get automatic query invalidation on real-time events
 - All env vars configured and ready for production
+---
+Task ID: 1
+Agent: Main Agent
+Task: CRUD for managing static background images (bg-male, bg-female, bg-section) with admin-only access, using Cloudinary for uploads
+
+Work Log:
+- Added 3 new CmsSetting keys to seed route: `bg_male`, `bg_female`, `bg_section` (type: "image")
+- Created `useBackgroundImages()` hook at `/src/hooks/use-background-images.ts` with React Query caching (60s staleTime)
+- Added "Background Images" admin card in CMS Panel with 3 CloudinaryImageField upload fields + preview thumbnails
+- Updated 15 component files to use dynamic background URLs instead of hardcoded paths:
+  - Dashboard: index.tsx, shared.tsx, no-season-state.tsx, no-tournament-state.tsx (bg-male/bg-female)
+  - Player profile: player-profile.tsx (bg-male/bg-female)
+  - Club profile: club-profile.tsx (bg-section as fallback)
+  - 8 Landing sections: champions, gallery, mvp, the-dream, sawer, club-peserta, cta, gallery-section (bg-section)
+- Added Cloudinary remote pattern to next.config.ts for Next.js `<Image>` component support
+- Lint passed clean with zero errors
+
+Stage Summary:
+- All 3 static background images are now manageable via admin CMS → Settings & Branding → Background Images
+- Admin can upload replacement images to Cloudinary or enter URL manually
+- Components use `useBackgroundImages()` hook with React Query caching — single network request shared across all components
+- Default fallbacks preserve original behavior (/bg-male.jpg, /bg-female.jpg, /bg-section.jpg) if settings not configured
+- Cloudinary domain whitelisted in next.config.ts for remote image optimization
