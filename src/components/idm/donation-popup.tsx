@@ -2,6 +2,7 @@
 
 // framer-motion removed — replaced with CSS animations
 import { X, Gift, Trophy, Music, Crown, Flame } from 'lucide-react';
+import { getSawerTier } from '@/lib/skin-utils';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface Notification {
@@ -29,7 +30,7 @@ const glowMap = {
 export function DonationPopup({ show, message, onClose }: { show: boolean; message: string; onClose: () => void }) {
   // Detect notification type from message
   const getType = (msg: string): Notification['type'] => {
-    if (msg.includes('Donasi') || msg.includes('donation')) return 'donation';
+    if (msg.includes('Donasi') || msg.includes('donation') || msg.includes('sawer') || msg.includes('Sawer')) return 'donation';
     if (msg.includes('MVP')) return 'mvp';
     if (msg.includes('Streak') || msg.includes('🔥')) return 'streak';
     if (msg.includes('Victory') || msg.includes('Win')) return 'victory';
@@ -38,6 +39,24 @@ export function DonationPopup({ show, message, onClose }: { show: boolean; messa
 
   const type = getType(message);
   const Icon = iconMap[type];
+
+  // Extract sawer tier emoji from message if it's a donation
+  const getSawerTierEmoji = (msg: string): string | null => {
+    // Try to extract amount from message like "X menyawer Rp 100.000"
+    const amountMatch = msg.match(/Rp\s*([\d.]+)/);
+    if (amountMatch) {
+      const amount = parseInt(amountMatch[1].replace(/\./g, ''));
+      const tier = getSawerTier(amount);
+      if (tier === 'sawer_diamond') return '💎';
+      if (tier === 'sawer_gold') return '🥇';
+      if (tier === 'sawer_silver') return '🥈';
+      if (tier === 'sawer_bronze') return '🥉';
+    }
+    return null;
+  };
+
+  const sawerEmoji = type === 'donation' ? getSawerTierEmoji(message) : null;
+
   const startTimeRef = useRef(Date.now());
   const [progress, setProgress] = useState(100);
 
@@ -74,13 +93,17 @@ export function DonationPopup({ show, message, onClose }: { show: boolean; messa
             type === 'victory' ? 'bg-green-500/10' :
             'bg-idm-amber/10'
           }`}>
-            <Icon className={`w-4 h-4 ${
-              type === 'donation' ? 'text-primary' :
-              type === 'mvp' ? 'text-yellow-500' :
-              type === 'streak' ? 'text-orange-500' :
-              type === 'victory' ? 'text-green-500' :
-              'text-idm-amber'
-            }`} />
+            {sawerEmoji ? (
+              <span className="text-base">{sawerEmoji}</span>
+            ) : (
+              <Icon className={`w-4 h-4 ${
+                type === 'donation' ? 'text-primary' :
+                type === 'mvp' ? 'text-yellow-500' :
+                type === 'streak' ? 'text-orange-500' :
+                type === 'victory' ? 'text-green-500' :
+                'text-idm-amber'
+              }`} />
+            )}
           </div>
           <span className="text-sm font-medium">{message}</span>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground shrink-0">

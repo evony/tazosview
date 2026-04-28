@@ -547,3 +547,107 @@ Stage Summary:
 - Auto-award logic triggers on donation approval, replaces lower tiers with higher ones
 - Database seeded with 4 new skins, old `sawer` skin removed
 - All existing champion, mvp, and donor skin functionality preserved
+
+## Task 1: Add Sawer Tier display to Donation Modal
+
+**Date:** 2025-03-04
+**Status:** Completed
+
+### Changes Made
+
+**File:** `src/components/idm/donation-modal.tsx`
+
+1. **Import added** — `SAWER_TIERS` and `getSawerTier` from `@/lib/skin-utils`
+
+2. **Sawer Tier Preview section added** — A compact 4-column grid showing Bronze → Diamond tiers, placed between "Pilih Nominal" and "Custom Amount" sections. Only visible when `effectiveType === 'weekly'`. The current achievable tier is highlighted with `border-idm-gold-warm/50 bg-idm-gold-warm/10 shadow-sm`, achieved tiers have a subtle `bg-muted/20` background, and unachieved tiers are dimmed with `opacity-40`.
+
+3. **Preset amount emojis updated** — Changed to reflect sawer tier thresholds:
+   - 10K: 🥉 (Bronze threshold)
+   - 50K: 🥈 (Silver threshold)
+   - 100K: 🥇 (Gold threshold)
+   - 250K: 💎 (Diamond, above 200K threshold)
+
+4. **Bottom note updated** for weekly type — Changed from `'💰 Sawer langsung menambah prize pool tournament mingguan'` to `'💰 Sawer menambah prize pool! Dapatkan skin 🥉🥈🥇💎 sesuai nominal'`
+
+### Verification
+- `bun run lint` passed with no errors
+- Dev server compiling successfully
+
+---
+
+## Task 2: Update Sawer Landing Page to Use Real Tiered System
+
+**Date:** 2025-03-04
+**File modified:** `src/components/idm/sawer.tsx`
+
+### Changes Made:
+
+1. **Replaced generic `donationTiers`** with real sawer tier data imported from `@/lib/skin-utils`:
+   - Removed hardcoded 3-tier system (Supporter, Super Fan, Sponsor)
+   - Imported `SAWER_TIERS` from `@/lib/skin-utils` and reversed it for ascending display (Bronze → Diamond)
+
+2. **Updated tier display to show 4 real tiers:**
+   - 🥉 Bronze Sawer — ≥ Rp 10K (warm bronze frame)
+   - 🥈 Silver Sawer — ≥ Rp 50K (silver shimmer effect)
+   - 🥇 Gold Sawer — ≥ Rp 100K (gold glow aura)
+   - 💎 Diamond Sawer — ≥ Rp 200K (full diamond cyan glow)
+   - Each tier shows: emoji icon, tier name, minimum amount, skin description, and "Skin 1 minggu · Badge permanen" info line
+
+3. **Removed hardcoded stats:**
+   - Removed fake "Rp 15.750.000" total, "347 Donatur", "12 Sponsors" stats section
+   - Replaced with an informational banner explaining that all tiers grant a 1-week profile skin and a permanent badge
+
+4. **Layout updates:**
+   - Changed grid from `md:grid-cols-3` to `md:grid-cols-2 lg:grid-cols-4` for 4-tier responsive layout
+   - Removed unused imports (`Gift`, `Users`, `Coffee`, `Sparkles`, `Button`)
+   - Added `Info` icon from lucide-react for the skin/badge info line
+   - Added `formatRupiah` helper and `tierDescriptions` map for tier-specific skin descriptions and gradients
+
+### Verification:
+- `bun run lint` passed with no errors
+- Dev server compiles and serves pages correctly (no errors in dev.log)
+
+---
+
+## Task 3: Add Sawer Tier badges to donor display components
+
+**Date:** 2025-03-04
+**Status:** Completed
+
+### Changes Made
+
+**File 1:** `src/components/idm/community-dashboard/community-donors.tsx`
+
+1. **Import added** — `getSawerTier` from `@/lib/skin-utils`
+
+2. **Sawer tier badge added** next to each donor's name in the donor row. The badge is rendered as a compact inline `<span>` with:
+   - A 16×16px (`w-4 h-4`) rounded-full background circle with tier-specific semi-transparent color
+   - Tier emoji icon at 9px font size
+   - `title` attribute showing full tier name (e.g. "Sawer Diamond")
+   - Background colors match the established skin-utils color scheme:
+     - Diamond: `rgba(34,211,238,0.2)` (cyan)
+     - Gold: `rgba(250,204,21,0.2)` (yellow)
+     - Silver: `rgba(156,163,175,0.2)` (gray)
+     - Bronze: `rgba(180,83,9,0.2)` (amber)
+   - No badge rendered for donations below 10K (getSawerTier returns null)
+   - Since community-donors aggregates from StatsData.topDonors (weekly donors by nature), all donors in this list are eligible for sawer tier badges
+
+3. **Implementation approach** — Used inline IIFE `(() => { ... })()` pattern to compute tier within JSX without needing a separate component or hook. This keeps the badge logic co-located with the donor row rendering.
+
+**File 2:** `src/components/idm/dashboard/top-donors-widget.tsx`
+
+1. **Import added** — `getSawerTier` from `@/lib/skin-utils`
+
+2. **Sawer tier badge added** after the `DonationTypeBadge` in each donor row. Same visual style as community-donors.
+
+3. **Weekly-only filter applied** — The sawer tier is only computed when `donor.latestType === 'weekly'`. Season donations (`donor.latestType === 'season'`) do NOT get sawer tier badges, per the task requirement:
+   ```typescript
+   const sawerTier = donor.latestType === 'weekly' ? getSawerTier(donor.totalAmount) : null;
+   ```
+
+4. **Badge placement** — The sawer tier badge appears after the DonationTypeBadge (Weekly/Season) in the flex row, making the visual hierarchy: Donor Name → Type Badge → Sawer Tier Badge.
+
+### Verification
+- `bun run lint` passed with no errors
+- Dev server compiles successfully, no errors in dev.log
+- All existing functionality preserved — badges are additive-only, no logic changed

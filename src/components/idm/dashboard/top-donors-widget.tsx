@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
 import { formatCurrency } from '@/lib/utils';
+import { getSawerTier } from '@/lib/skin-utils';
 
 /* ─── Types ─── */
 interface TopDonor {
@@ -236,6 +237,28 @@ export function TopDonorsWidget({ onDonate }: TopDonorsWidgetProps) {
                     {donor.donorName || 'Anonymous'}
                   </span>
                   <DonationTypeBadge type={donor.latestType} />
+                  {(() => {
+                    const sawerTier = donor.latestType === 'weekly' ? getSawerTier(donor.totalAmount) : null;
+                    if (!sawerTier) return null;
+                    return (
+                      <span
+                        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] shrink-0"
+                        style={{
+                          backgroundColor:
+                            sawerTier === 'sawer_diamond'
+                              ? 'rgba(34,211,238,0.2)'
+                              : sawerTier === 'sawer_gold'
+                                ? 'rgba(250,204,21,0.2)'
+                                : sawerTier === 'sawer_silver'
+                                  ? 'rgba(156,163,175,0.2)'
+                                  : 'rgba(180,83,9,0.2)',
+                        }}
+                        title={`Sawer ${sawerTier.replace('sawer_', '').charAt(0).toUpperCase() + sawerTier.replace('sawer_', '').slice(1)}`}
+                      >
+                        {sawerTier === 'sawer_diamond' ? '💎' : sawerTier === 'sawer_gold' ? '🥇' : sawerTier === 'sawer_silver' ? '🥈' : '🥉'}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   {donor.latestDate && (

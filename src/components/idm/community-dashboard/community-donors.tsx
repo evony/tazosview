@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, HandCoins, Sparkles } from 'lucide-react';
 import { useCommunityTheme } from '@/hooks/use-community-theme';
 import { formatCurrencyShort } from '@/lib/utils';
+import { getSawerTier } from '@/lib/skin-utils';
 import type { StatsData, TopDonor } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════
@@ -135,6 +136,28 @@ export function CommunityDonors({ maleData, femaleData }: CommunityDonorsProps) 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-semibold truncate">{donor.donorName}</span>
+                  {(() => {
+                    const sawerTier = getSawerTier(donor.totalAmount);
+                    if (!sawerTier) return null;
+                    return (
+                      <span
+                        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] shrink-0"
+                        style={{
+                          backgroundColor:
+                            sawerTier === 'sawer_diamond'
+                              ? 'rgba(34,211,238,0.2)'
+                              : sawerTier === 'sawer_gold'
+                                ? 'rgba(250,204,21,0.2)'
+                                : sawerTier === 'sawer_silver'
+                                  ? 'rgba(156,163,175,0.2)'
+                                  : 'rgba(180,83,9,0.2)',
+                        }}
+                        title={`Sawer ${sawerTier.replace('sawer_', '').charAt(0).toUpperCase() + sawerTier.replace('sawer_', '').slice(1)}`}
+                      >
+                        {sawerTier === 'sawer_diamond' ? '💎' : sawerTier === 'sawer_gold' ? '🥇' : sawerTier === 'sawer_silver' ? '🥈' : '🥉'}
+                      </span>
+                    );
+                  })()}
                     <span className={`text-xs font-bold ${dt.neonGradient} shrink-0 ml-2`}>
                       {formatCurrencyShort(donor.totalAmount)}
                     </span>

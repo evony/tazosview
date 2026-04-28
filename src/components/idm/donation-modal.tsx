@@ -17,6 +17,7 @@ import { useDivisionTheme } from '@/hooks/use-division-theme';
 import { useAppStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
+import { SAWER_TIERS, getSawerTier } from '@/lib/skin-utils';
 
 type DonationType = 'weekly' | 'season';
 
@@ -91,11 +92,11 @@ interface DonationModalProps {
 
 const presetAmounts: { amount: number; label: string; emoji: string }[] = [
   { amount: 5000, label: '5K', emoji: '☕' },
-  { amount: 10000, label: '10K', emoji: '🍟' },
-  { amount: 25000, label: '25K', emoji: '💎' },
-  { amount: 50000, label: '50K', emoji: '🔥' },
-  { amount: 100000, label: '100K', emoji: '👑' },
-  { amount: 250000, label: '250K', emoji: '🏆' },
+  { amount: 10000, label: '10K', emoji: '🥉' },
+  { amount: 25000, label: '25K', emoji: '🍟' },
+  { amount: 50000, label: '50K', emoji: '🥈' },
+  { amount: 100000, label: '100K', emoji: '🥇' },
+  { amount: 250000, label: '250K', emoji: '💎' },
 ];
 
 export function DonationModal({ open, onOpenChange, defaultType = 'season', defaultAmount, hideSawer = false, cmsSettings = {} }: DonationModalProps) {
@@ -483,6 +484,36 @@ export function DonationModal({ open, onOpenChange, defaultType = 'season', defa
                 </div>
               </div>
 
+              {/* Sawer Tier Preview — only show for Sawer (weekly) type */}
+              {effectiveType === 'weekly' && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Skin yang Kamu Dapat</label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {SAWER_TIERS.slice().reverse().map((tier) => {
+                      const isAchieved = finalAmount >= tier.minAmount;
+                      const currentTier = getSawerTier(finalAmount);
+                      const isCurrentTier = currentTier === tier.type;
+                      return (
+                        <div
+                          key={tier.type}
+                          className={`flex flex-col items-center gap-0.5 px-1.5 py-2 rounded-lg border text-center transition-all ${
+                            isCurrentTier
+                              ? 'border-idm-gold-warm/50 bg-idm-gold-warm/10 shadow-sm'
+                              : isAchieved
+                                ? 'border-border/30 bg-muted/20'
+                                : 'border-border/10 opacity-40'
+                          }`}
+                        >
+                          <span className="text-sm">{tier.icon}</span>
+                          <span className={`text-[9px] font-bold ${isCurrentTier ? 'text-idm-gold-warm' : ''}`}>{tier.label}</span>
+                          <span className="text-[8px] text-muted-foreground/60">≥{tier.minAmount >= 1000 ? `${tier.minAmount / 1000}K` : tier.minAmount}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Custom Amount */}
               <div>
                 <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
@@ -572,7 +603,7 @@ export function DonationModal({ open, onOpenChange, defaultType = 'season', defa
 
               <p className="text-[10px] text-center text-muted-foreground/60">
                 {effectiveType === 'weekly'
-                  ? '💰 Sawer langsung menambah prize pool tournament mingguan'
+                  ? '💰 Sawer menambah prize pool! Dapatkan skin 🥉🥈🥇💎 sesuai nominal'
                   : '✨ Donasi membantu mendanai tarkam season berikutnya'
                 }
               </p>
