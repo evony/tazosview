@@ -91,11 +91,11 @@ const skinThemeConfig: Record<string, {
     swatchBg: 'bg-slate-300',
     lucideIcon: Star,
   },
-  host: {
-    accentBg: 'bg-emerald-500/10',
-    accentText: 'text-emerald-400',
-    accentBorder: 'border-emerald-500/25',
-    swatchBg: 'bg-emerald-500',
+  sawer: {
+    accentBg: 'bg-cyan-500/10',
+    accentText: 'text-cyan-400',
+    accentBorder: 'border-cyan-500/25',
+    swatchBg: 'bg-cyan-500',
     lucideIcon: Gem,
   },
   donor: {

@@ -252,7 +252,7 @@ export function SkinShowcase({ open, onClose }: SkinShowcaseProps) {
               <SkinBadgesRow skins={[
                 MOCK_SKINS.find(s => s.type === 'champion')!,
                 MOCK_SKINS.find(s => s.type === 'mvp')!,
-                MOCK_SKINS.find(s => s.type === 'host')!,
+                MOCK_SKINS.find(s => s.type === 'sawer')!,
                 { ...MOCK_SKINS.find(s => s.type === 'donor')!, donorBadgeCount: 5 },
               ]} />
             </div>
@@ -298,9 +298,9 @@ function HowToGet({ type }: { type: string }) {
       desc: 'Otomatis diberikan saat admin memilih MVP turnamen',
       auto: true,
     },
-    host: {
-      label: '💎 Penyawer',
-      desc: 'Diberikan manual oleh admin sebagai sponsor/penyawer',
+    sawer: {
+      label: '💎 Sawer',
+      desc: 'Diberikan manual oleh admin sebagai penyawer — kontributor prize pool!',
       auto: false,
     },
     donor: {

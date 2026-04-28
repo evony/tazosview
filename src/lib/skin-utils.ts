@@ -58,11 +58,11 @@ export const SKIN_TYPES = {
     priority: 3,
     duration: 'weekly',
   },
-  host: {
-    type: 'host',
+  sawer: {
+    type: 'sawer',
     icon: '💎',
-    displayName: 'Emerald Luxury',
-    priority: 2,
+    displayName: 'Diamond Sawer',
+    priority: 5,
     duration: 'weekly',
   },
   donor: {
@@ -97,12 +97,12 @@ export const DEFAULT_SKIN_COLORS: Record<string, SkinColors> = {
     border: '#d1d5db|#9ca3af|#e5e7eb',                           // gray-300 → gray-400 → gray-200 (platinum edge)
     glow: 'rgba(209,213,219,0.4)',
   },
-  host: {
-    frame: '#34d399',                                            // emerald-400
-    name: '#6ee7b7|#2dd4bf|#4ade80',                             // emerald-300 → teal-400 → green-400
-    badge: 'rgba(16,185,129,0.2)|#6ee7b7',                       // emerald-500/20 bg | emerald-300 text
-    border: '#34d399|#2dd4bf|#86efac',                           // emerald-400 → teal-400 → green-300
-    glow: 'rgba(52,211,153,0.35)',
+  sawer: {
+    frame: '#22d3ee',                                            // cyan-400 (diamond)
+    name: '#67e8f9|#06b6d4|#a5f3fc',                             // cyan-300 → cyan-500 → cyan-200 (diamond shimmer)
+    badge: 'rgba(6,182,212,0.2)|#67e8f9',                        // cyan-500/20 bg | cyan-300 text
+    border: '#06b6d4|#22d3ee|#a5f3fc',                           // cyan-500 → cyan-400 → cyan-200 (diamond edge)
+    glow: 'rgba(34,211,238,0.4)',
   },
   donor: {
     frame: '#fb7185',                                            // rose-400

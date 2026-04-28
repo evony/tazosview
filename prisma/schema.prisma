@@ -257,12 +257,12 @@ model Account {
 
 model Skin {
   id          String   @id @default(cuid())
-  type        String   @unique  // "champion" | "mvp" | "host" | "donor"
-  displayName String   // "Gold Crown" | "Platinum Star" | "Emerald Luxury" | "Maroon Heart"
+  type        String   @unique  // "champion" | "mvp" | "sawer" | "donor"
+  displayName String   // "Gold Crown" | "Platinum Star" | "Diamond Sawer" | "Maroon Heart"
   description String   // What this skin represents
   icon        String   // Emoji: "🥇" | "⭐" | "💎" | "❤️"
   colorClass  String   // Tailwind color classes for rendering (JSON)
-  priority    Int      @default(0)  // Higher = shown first when stacking: champion=4, mvp=3, host=2, donor=1
+  priority    Int      @default(0)  // Higher = shown first when stacking: sawer=5, champion=4, mvp=3, donor=1
   duration    String   @default("permanent") // "weekly" | "permanent"
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

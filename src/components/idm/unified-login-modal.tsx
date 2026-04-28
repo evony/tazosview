@@ -549,7 +549,7 @@ export function UnifiedLoginModal({ open, onOpenChange, defaultTab = 'peserta' }
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm leading-none">💎</span>
-                          <span className="text-[10px] text-muted-foreground">Penyawer — <strong className="text-emerald-400">Emerald Luxury 💵</strong> (1 minggu)</span>
+                          <span className="text-[10px] text-muted-foreground">Sawer — <strong className="text-cyan-400">Diamond Sawer 💎</strong> (1 minggu)</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm leading-none">❤️</span>
