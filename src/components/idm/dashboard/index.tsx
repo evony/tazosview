@@ -6,9 +6,9 @@ import { useAppStore } from '@/lib/store';
 import Image from 'next/image';
 import {
   Heart, MapPin, Trophy, Flame,
-  Shield, Music, Zap, Award,
+  Shield, Music, Zap,
   Gift, BookOpen,
-  Calendar, Clock, Crown, Star, Lock,
+  Calendar, Clock, Crown, Star,
   Search, Target, Swords, Play, CheckCircle2, XCircle, Users,
   ChevronDown, ChevronUp,
 } from 'lucide-react';
@@ -663,6 +663,7 @@ export function Dashboard() {
             <div className="flex flex-col items-center gap-1.5">
               <p className="text-[10px] lg:text-xs text-white/40 uppercase tracking-[0.2em] font-semibold">Prize Pool</p>
               <p className="px-3 py-2 lg:px-5 lg:py-2.5 rounded-xl bg-black/60 text-base lg:text-2xl font-black text-idm-gold-warm drop-shadow-[0_0_16px_rgba(229,190,74,0.45)] whitespace-nowrap">{formatCurrency(t?.prizePool || data.totalPrizePool)}</p>
+              <p className="text-[8px] text-idm-gold-warm/50 font-medium">💰 dari saweran komunitas</p>
             </div>
             <button
               onClick={() => setDonationOpen(true)}
@@ -832,8 +833,14 @@ export function Dashboard() {
             </Card>
           )}
 
-          {/* ── Top Players ── */}
-          <TopPlayersSection data={data} division={division} setSelectedPlayer={handleSelectPlayer} />
+          {/* ── Top Players + Top Saweran (side by side on desktop) ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            <TopPlayersSection data={data} division={division} setSelectedPlayer={handleSelectPlayer} />
+            <TopDonorsWidget onDonate={() => setDonationOpen(true)} />
+          </div>
+
+          {/* ── Activity Feed ── */}
+          <ActivityFeed />
 
           {/* ── Recent Match Results (compact) ── */}
           {t?.matches?.filter(m => m.status === 'completed').length ? (
@@ -875,7 +882,7 @@ export function Dashboard() {
           />
         </TabsContent>
 
-        {/* ═══════════════ INFO TAB — Secondary info ═══════════════ */}
+        {/* ═══════════════ INFO TAB — Lightweight reference info ═══════════════ */}
         <TabsContent value="info" className="mt-3 sm:mt-4 lg:mt-6 space-y-3 sm:space-y-4">
 
           {/* Division Rivalry + Streak */}
@@ -884,53 +891,13 @@ export function Dashboard() {
             <StreakWidget />
           </div>
 
-          {/* Activity Feed + Top Donors */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            <ActivityFeed />
-            <TopDonorsWidget onDonate={() => setDonationOpen(true)} />
-          </div>
-
-          {/* Overview Tab Content (stats, charts) */}
+          {/* Compare Players + Season Timeline */}
           <OverviewTab
             data={data}
             division={division}
             setSelectedPlayer={handleSelectPlayer}
             setSelectedClub={setSelectedClub}
           />
-
-          {/* Pencapaian Milestones */}
-          <Card className={`${dt.casinoCard} overflow-hidden`}>
-            <div className={dt.casinoBar} />
-            <CardContent className="p-0 relative z-10">
-              <div className={`flex items-center gap-2.5 px-4 py-3 border-b ${dt.borderSubtle}`}>
-                <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
-                  <Award className={`w-3 h-3 ${dt.neonText}`} />
-                </div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider">Milestone Pencapaian</h3>
-              </div>
-              <div className="p-4 space-y-2">
-                {[
-                  { icon: Trophy, label: '10 Kemenangan', desc: 'Raih 10 kemenangan sepanjang season', color: 'text-yellow-500' },
-                  { icon: Crown, label: 'MVP Pertama', desc: 'Dipilih sebagai MVP di satu tournament', color: 'text-emerald-400' },
-                  { icon: Flame, label: 'Streak 3+', desc: 'Menang 3 pertandingan berturut-turut', color: 'text-orange-400' },
-                  { icon: Shield, label: 'Season Champion', desc: 'Jadi #1 di akhir season', color: 'text-purple-400' },
-                  { icon: Star, label: '5x MVP', desc: 'Meraih MVP sebanyak 5 kali', color: 'text-pink-400' },
-                  { icon: Zap, label: '50 Kemenangan', desc: 'Raih 50 kemenangan total career', color: 'text-cyan-400' },
-                ].map((milestone, i) => (
-                  <div key={i} className={`flex items-center gap-3 p-3 rounded-lg ${dt.bgSubtle} ${dt.borderSubtle} border`}>
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 shrink-0`}>
-                      <milestone.icon className={`w-4 h-4 ${milestone.color}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold">{milestone.label}</p>
-                      <p className="text-[9px] text-muted-foreground">{milestone.desc}</p>
-                    </div>
-                    <Lock className="w-3.5 h-3.5 text-muted-foreground/30 ml-auto shrink-0" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
       </Tabs>
