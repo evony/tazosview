@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAppStore } from '@/lib/store';
 import { useCrossTabInvalidation } from '@/lib/cross-tab-sync';
+import { usePusherRealtime } from '@/hooks/use-pusher';
 
 import Image from 'next/image';
 import { Crown, Users, Swords, Flame, ChevronRight, Zap } from 'lucide-react';
@@ -60,6 +61,7 @@ export function LandingPage() {
 
   /* Cross-tab cache sync — invalidates when admin updates logo/banner in another tab */
   useCrossTabInvalidation();
+  usePusherRealtime(); // Enable real-time Pusher updates on landing page
 
   /* Data Queries — 2min polling, CDN-cached */
   const { data: maleData, isLoading: isMaleLoading } = useQuery<StatsData>({

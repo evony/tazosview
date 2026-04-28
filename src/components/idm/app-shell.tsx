@@ -23,6 +23,7 @@ import { useDivisionTheme } from '@/hooks/use-division-theme';
 import { useShellTheme } from '@/hooks/use-shell-theme';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePWA } from '@/hooks/use-pwa';
+import { usePusherRealtime } from '@/hooks/use-pusher';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useHaptic, PullToRefresh } from '@/components/idm/ui/mobile-interactions';
@@ -499,6 +500,7 @@ export function AppShell() {
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const { canInstall: _canInstall, promptInstall } = usePWA();
+  const _pusherRealtime = usePusherRealtime(); // Enable real-time Pusher updates globally
   const [dismissed, setDismissed] = useState(() => {
     if (typeof window === 'undefined') return false;
     return !!localStorage.getItem('pwa-install-dismissed');

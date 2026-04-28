@@ -18,58 +18,38 @@ export function hashString(str: string): number {
 }
 
 /**
- * Get avatar URL - uses database avatar if available, otherwise generates a fallback
- * Returns a path like /avatars/avatar-male-1.png as fallback
+ * Get avatar URL - uses database avatar if available, otherwise generates an SVG placeholder
+ * Generates inline SVG data URI to avoid broken image refs (no more /avatars/ dependency)
  */
 export function getAvatarUrl(gamertag: string, division: 'male' | 'female', dbAvatar?: string | null): string {
-  // Priority: 1) Database avatar field, 2) Fallback
+  // Priority: 1) Database avatar field, 2) Generated SVG placeholder
   if (dbAvatar) return dbAvatar;
-  const index = (hashString(gamertag) % 3) + 1;
-  return `/avatars/avatar-${division}-${index}.png`;
+
+  const hash = hashString(gamertag);
+  const hue = division === 'male' ? 190 + (hash % 30) : 270 + (hash % 30); // cyan range / purple range
+  const initial = gamertag.charAt(0).toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:hsl(${hue},40%,15%)"/><stop offset="100%" style="stop-color:hsl(${hue},40%,15%);stop-opacity:0.7"/></linearGradient></defs><rect width="200" height="200" rx="100" fill="url(#bg)"/><text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="80" font-weight="900" fill="hsl(${hue},60%,70%)">${initial}</text></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
 /**
- * Club logo mapping — returns path to club logo image
- * Priority: 1) Database logo field (Cloudinary URL), 2) Local mapping, 3) Generated placeholder
- * Real clubs (IDM League) should have logos uploaded to Cloudinary via admin panel
+ * Club logo — generates inline SVG data URI placeholder when no database logo exists.
+ * All real clubs should have logos uploaded to Cloudinary via admin panel.
+ * Legacy CLUB_LOGO_MAP removed — local /clubs/ images no longer exist.
  */
-const CLUB_LOGO_MAP: Record<string, string> = {
-  // Legacy demo clubs (kept for backward compatibility)
-  'Neon Blaze': '/clubs/neon-blaze.png',
-  'Phantom Step': '/clubs/phantom-step.png',
-  'Rhythm Force': '/clubs/rhythm-force.png',
-  'Crystal Wave': '/clubs/crystal-wave.png',
-  'Shadow Dance': '/clubs/shadow-dance.png',
-  'Thunder Beat': '/clubs/thunder-beat.png',
-  'Velvet Groove': '/clubs/velvet-groove.png',
-  'Star Rise': '/clubs/star-rise.png',
-  'Lunar Flow': '/clubs/lunar-flow.png',
-  // Winner teams from demo data
-  'Team Rhythm': '/clubs/rhythm-force.png',
-  'Team Flow': '/clubs/lunar-flow.png',
-  'Team Grace': '/clubs/crystal-wave.png',
-  'Team Velvet': '/clubs/velvet-groove.png',
-};
-
 export function getClubLogoUrl(clubName: string, dbLogo?: string | null): string {
-  // Priority: 1) Database logo field (Cloudinary URL), 2) Mapping, 3) Generated data URI placeholder
+  // Priority: 1) Database logo field (Cloudinary URL), 2) Generated data URI placeholder
   if (dbLogo) return dbLogo;
-  const mapped = CLUB_LOGO_MAP[clubName];
-  if (mapped) return mapped;
 
-  // Generate inline SVG data URI to avoid Next.js Image optimizer 400 errors
+  // Generate inline SVG data URI
   const initials = clubName
     .split(/[\s_]+/)
     .map(w => w[0])
     .join('')
     .toUpperCase()
     .slice(0, 3);
-  let hash = 0;
-  for (let i = 0; i < clubName.length; i++) {
-    hash = ((hash << 5) - hash) + clubName.charCodeAt(i);
-    hash |= 0;
-  }
-  const hue = Math.abs(hash) % 360;
+  const hash = hashString(clubName);
+  const hue = hash % 360;
   const fontSize = initials.length <= 2 ? 72 : 56;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:hsl(${hue},45%,18%)"/><stop offset="100%" style="stop-color:hsl(${hue},45%,18%);stop-opacity:0.7"/></linearGradient></defs><rect width="200" height="200" rx="24" fill="url(#bg)"/><text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="${fontSize}" font-weight="900" fill="hsl(${hue},65%,70%)" letter-spacing="2">${initials}</text></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;

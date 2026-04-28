@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// Note: CmsPanel uses state-based tab switching instead of Radix Tabs
+// to avoid nested Radix Tabs bug when rendered inside AdminPanel's Tabs
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useState } from 'react';
@@ -571,6 +572,7 @@ export function CmsPanel() {
 
   /* ========== New Section State ========== */
   const [newSection, setNewSection] = useState({ slug: '', title: '' });
+  const [cmsTab, setCmsTab] = useState<string>('settings');
 
   const isPending = saveSection.isPending || saveCard.isPending || deleteSection.isPending || deleteCard.isPending;
 
@@ -594,14 +596,29 @@ export function CmsPanel() {
         </Button>
       </div>
 
-      <Tabs defaultValue="settings" className="w-full">
-        <TabsList className="w-full grid grid-cols-2 bg-muted/50 h-auto">
-          <TabsTrigger value="settings" className="text-xs py-2"><Settings2 className="w-3 h-3 mr-1" />Settings & Branding</TabsTrigger>
-          <TabsTrigger value="sections" className="text-xs py-2"><Layout className="w-3 h-3 mr-1" />Sections & Cards</TabsTrigger>
-        </TabsList>
+      {/* State-based tabs to avoid nested Radix Tabs bug */}
+      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/10">
+        {([
+          { val: 'settings' as const, label: 'Settings & Branding', Icon: Settings2 },
+          { val: 'sections' as const, label: 'Sections & Cards', Icon: Layout },
+        ]).map(({ val, label, Icon }) => (
+          <button
+            key={val}
+            onClick={() => setCmsTab(val)}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md transition-all ${
+              cmsTab === val
+                ? 'bg-idm-gold-warm/15 text-idm-gold-warm shadow-sm border border-idm-gold-warm/20'
+                : 'text-muted-foreground hover:text-foreground border border-transparent'
+            }`}
+          >
+            <Icon className="w-3 h-3" />{label}
+          </button>
+        ))}
+      </div>
 
-        {/* ====== SETTINGS TAB ====== */}
-        <TabsContent value="settings">
+      <div className="mt-3">
+      {/* ====== SETTINGS TAB ====== */}
+      {cmsTab === 'settings' && (
           <div className="space-y-4">
             {settingsLoading ? (
               <div className="flex items-center justify-center py-12">
@@ -1599,10 +1616,10 @@ export function CmsPanel() {
               </>
             )}
           </div>
-        </TabsContent>
+        )}
 
         {/* ====== SECTIONS TAB ====== */}
-        <TabsContent value="sections">
+        {cmsTab === 'sections' && (
           <div className="space-y-4">
             {/* Add new section */}
             <Card className="border border-dashed border-idm-gold-warm/30 bg-idm-gold-warm/5">
@@ -1677,8 +1694,8 @@ export function CmsPanel() {
               </div>
             )}
           </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   );
 }
