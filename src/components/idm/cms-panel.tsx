@@ -1509,17 +1509,17 @@ export function CmsPanel() {
                       </div>
                       <div className="space-y-2">
                         <CloudinaryImageField
-                          label="Background Section 🎨"
-                          value={settingsForm.bg_section}
-                          onChange={(url) => updateSettingsForm({ bg_section: url })}
+                          label="Hero Banner Dashboard 🖼️"
+                          value={settingsForm.hero_banner_dashboard}
+                          onChange={(url) => updateSettingsForm({ hero_banner_dashboard: url })}
                           folder="cms/backgrounds"
                         />
-                        <p className="text-[9px] text-muted-foreground/60">Tekstur halus di 8 section landing page & banner club fallback</p>
+                        <p className="text-[9px] text-muted-foreground/60">Background gambar untuk hero banner di dashboard komunitas</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 pt-1">
-                      {(settingsForm.bg_male || settingsForm.bg_female || settingsForm.bg_section) && (
+                      {(settingsForm.bg_male || settingsForm.bg_female || settingsForm.hero_banner_dashboard) && (
                         <div className="col-span-2 flex gap-2">
                           {settingsForm.bg_male && (
                             <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
@@ -1531,9 +1531,9 @@ export function CmsPanel() {
                               <img src={settingsForm.bg_female} alt="Female BG" className="w-full h-full object-cover" />
                             </div>
                           )}
-                          {settingsForm.bg_section && (
+                          {settingsForm.hero_banner_dashboard && (
                             <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
-                              <img src={settingsForm.bg_section} alt="Section BG" className="w-full h-full object-cover" />
+                              <img src={settingsForm.hero_banner_dashboard} alt="Hero Banner" className="w-full h-full object-cover" />
                             </div>
                           )}
                         </div>
@@ -1546,7 +1546,7 @@ export function CmsPanel() {
                             saveSettingsBatch.mutate([
                               { key: 'bg_male', value: settingsForm.bg_male || '/bg-male.jpg', type: 'image' },
                               { key: 'bg_female', value: settingsForm.bg_female || '/bg-female.jpg', type: 'image' },
-                              { key: 'bg_section', value: settingsForm.bg_section || '/bg-section.jpg', type: 'image' },
+                              { key: 'hero_banner_dashboard', value: settingsForm.hero_banner_dashboard || '', type: 'image' },
                             ]);
                           }}
                           disabled={saveSettingsBatch.isPending}

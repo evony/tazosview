@@ -13,7 +13,6 @@ import { TierBadge } from './tier-badge';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { getAvatarUrl, hashString } from '@/lib/utils';
-import { useBackgroundImages } from '@/hooks/use-background-images';
 import { ClubLogoImage } from '@/components/idm/club-logo-image';
 
 interface ClubProfileProps {
@@ -254,7 +253,6 @@ interface UnifiedMember {
 }
 
 export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileProps) {
-  const { bgSection } = useBackgroundImages();
   const totalMatches = club.wins + club.losses;
   const winRate = totalMatches > 0 ? Math.round((club.wins / totalMatches) * 100) : 0;
   const isUndefeated = club.losses === 0 && club.wins > 0;
@@ -321,7 +319,7 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
           {/* ── Header Banner ── */}
           <div className="relative h-[32rem]">
             {/* Unified club banner — use league/gold theme */}
-            <Image src={club.bannerImage || bgSection} alt="" fill sizes="100vw" className="absolute inset-0 object-cover" aria-hidden="true" />
+            <Image src={club.bannerImage || '/bg-section.jpg'} alt="" fill sizes="100vw" className="absolute inset-0 object-cover" aria-hidden="true" />
 
             {/* Gold gradient overlay — unified club uses league gold */}
             <div className="absolute inset-0 bg-gradient-to-br from-background/70 via-background/40 to-background/80" />

@@ -5,13 +5,13 @@ import { useQuery } from '@tanstack/react-query';
 interface BackgroundImages {
   bgMale: string;
   bgFemale: string;
-  bgSection: string;
+  heroBannerDashboard: string;
 }
 
 const DEFAULTS: BackgroundImages = {
   bgMale: '/bg-male.jpg',
   bgFemale: '/bg-female.jpg',
-  bgSection: '/bg-section.jpg',
+  heroBannerDashboard: '',
 };
 
 /**
@@ -46,7 +46,7 @@ export function useBackgroundImages(): BackgroundImages & { isLoading: boolean }
   return {
     bgMale: map.bg_male || DEFAULTS.bgMale,
     bgFemale: map.bg_female || DEFAULTS.bgFemale,
-    bgSection: map.bg_section || DEFAULTS.bgSection,
+    heroBannerDashboard: map.hero_banner_dashboard || DEFAULTS.heroBannerDashboard,
     isLoading,
   };
 }
@@ -67,7 +67,7 @@ export function useDivisionBackground(division: 'male' | 'female'): string & { i
  */
 export function getBackgroundFromSettings(
   settingsMap: Record<string, string>,
-  key: 'bg_male' | 'bg_female' | 'bg_section',
+  key: 'bg_male' | 'bg_female' | 'hero_banner_dashboard',
 ): string {
-  return settingsMap[key] || DEFAULTS[key === 'bg_male' ? 'bgMale' : key === 'bg_female' ? 'bgFemale' : 'bgSection'];
+  return settingsMap[key] || DEFAULTS[key === 'bg_male' ? 'bgMale' : key === 'bg_female' ? 'bgFemale' : 'heroBannerDashboard'];
 }

@@ -8,7 +8,6 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useBackgroundImages } from '@/hooks/use-background-images';
 
 /* ========== Gallery Data ========== */
 interface GalleryItem {
@@ -492,7 +491,6 @@ function Lightbox({ item, onClose, onPrev, onNext }: {
 
 /* ========== Main Gallery Section Component ========== */
 export function GallerySection() {
-  const { bgSection } = useBackgroundImages();
   const [activeCollection, setActiveCollection] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -541,7 +539,7 @@ export function GallerySection() {
         {/* Parallax Background - Clean warm tones */}
         <motion.div className="absolute inset-0" style={{ y: bgY }}>
           <div className="absolute inset-0 bg-gradient-to-b from-stone-50 via-white to-stone-50 dark:from-background dark:via-background dark:to-background" />
-          <img src={bgSection} alt="" className="w-full h-[115%] object-cover opacity-[0.12] dark:opacity-[0.15]" aria-hidden="true" />
+
         </motion.div>
 
         {/* Content */}

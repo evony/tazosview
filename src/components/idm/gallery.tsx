@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Camera, Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useBackgroundImages } from '@/hooks/use-background-images';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -46,7 +45,6 @@ const galleryItems = [
 ];
 
 export function Gallery() {
-  const { bgSection } = useBackgroundImages();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const openLightbox = (index: number) => {
@@ -74,11 +72,7 @@ export function Gallery() {
       {/* Background */}
       <div className="absolute inset-0">
         <div className="bg-gradient-to-b from-stone-50 via-white to-stone-50 dark:from-background dark:via-background dark:to-background" />
-        <img
-          src={bgSection}
-          alt=""
-          className="w-full h-full object-cover opacity-[0.12] dark:opacity-[0.15]"
-        />
+
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

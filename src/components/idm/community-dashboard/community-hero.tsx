@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { Users, Radio, Trophy, Zap, ArrowRight, UserPlus, Eye, Gift } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+import { useBackgroundImages } from '@/hooks/use-background-images';
 import type { StatsData } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════
@@ -90,6 +91,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
   const activeTournaments = [maleData?.activeTournament, femaleData?.activeTournament].filter(
     Boolean
   ).length;
+  const { heroBannerDashboard } = useBackgroundImages();
   const particles = useParticles(18);
 
   // Season progress — use male data as reference (both divisions share the same season)
@@ -122,6 +124,16 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           background: `linear-gradient(135deg, #0a0a14 0%, #0d0d1a 40%, #0c0a06 100%)`,
         }}
       />
+
+      {/* Hero banner background image (from CMS) */}
+      {heroBannerDashboard && (
+        <img
+          src={heroBannerDashboard}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+          aria-hidden="true"
+        />
+      )}
 
       {/* Gold radial haze */}
       <div

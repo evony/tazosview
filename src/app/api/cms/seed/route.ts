@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       // Background images — managed via admin CMS
       { key: 'bg_male', value: '/bg-male.jpg', type: 'image' },
       { key: 'bg_female', value: '/bg-female.jpg', type: 'image' },
-      { key: 'bg_section', value: '/bg-section.jpg', type: 'image' },
+      { key: 'hero_banner_dashboard', value: '', type: 'image' },
     ];
 
     for (const s of defaultSettings) {
