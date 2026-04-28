@@ -39,7 +39,7 @@ export function Sawer() {
         <img
           src="/bg-section.jpg"
           alt=""
-          className="w-full h-full object-cover opacity-[0.02] dark:opacity-[0.04]"
+          className="w-full h-full object-cover opacity-[0.12] dark:opacity-[0.15]"
         />
       </div>
 

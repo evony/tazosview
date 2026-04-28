@@ -539,7 +539,7 @@ export function GallerySection() {
         {/* Parallax Background - Clean warm tones */}
         <motion.div className="absolute inset-0" style={{ y: bgY }}>
           <div className="absolute inset-0 bg-gradient-to-b from-stone-50 via-white to-stone-50 dark:from-background dark:via-background dark:to-background" />
-          <img src="/bg-section.jpg" alt="" className="w-full h-[115%] object-cover opacity-[0.02] dark:opacity-[0.04]" aria-hidden="true" />
+          <img src="/bg-section.jpg" alt="" className="w-full h-[115%] object-cover opacity-[0.12] dark:opacity-[0.15]" aria-hidden="true" />
         </motion.div>
 
         {/* Content */}
