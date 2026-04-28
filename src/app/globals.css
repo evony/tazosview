@@ -7097,6 +7097,51 @@ html {
   100% { transform: translateY(-200%); opacity: 0; }
 }
 
+/* Swipe hint arrows — subtle oscillating animation for mobile swipe indicators */
+@keyframes swipe-hint-left {
+  0%, 100% { transform: translateX(0); opacity: 0.7; }
+  50% { transform: translateX(-3px); opacity: 1; }
+}
+@keyframes swipe-hint-right {
+  0%, 100% { transform: translateX(0); opacity: 0.7; }
+  50% { transform: translateX(3px); opacity: 1; }
+}
+
+/* Mobile swipe arrows — always visible on mobile with subtle pulse */
+.swipe-arrow-left,
+.swipe-arrow-right {
+  animation: swipe-arrow-pulse 2s ease-in-out infinite;
+}
+@keyframes swipe-arrow-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Mobile swipe hint text — auto-fade after 5 seconds */
+.swipe-hint-text {
+  animation: swipe-hint-fade 5s ease-in-out forwards;
+}
+@keyframes swipe-hint-fade {
+  0% { opacity: 0; transform: translate(-50%, 8px); }
+  10% { opacity: 1; transform: translate(-50%, 0); }
+  70% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -4px); }
+}
+
+/* Hide swipe arrows on desktop unless hovered */
+@media (min-width: 768px) {
+  .swipe-arrow-left,
+  .swipe-arrow-right {
+    animation: none;
+    opacity: 0;
+  }
+  .group\/featured:hover .swipe-arrow-left,
+  .group\/featured:hover .swipe-arrow-right {
+    opacity: 1;
+    animation: none;
+  }
+}
+
 /* ============================================
    LANDING PAGE PERFORMANCE OPTIMIZATIONS
    Premium redesign — CSS-only animations

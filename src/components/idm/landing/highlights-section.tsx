@@ -1013,6 +1013,94 @@ export function HighlightsSection({
                     </div>
                   </div>
 
+                  {/* ═══ Swipe Navigation Arrows — visible on mobile, hover on desktop ═══ */}
+                  {highlights.length > 1 && (
+                    <>
+                      {/* Left arrow — swipe to previous */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveIdx(prev => {
+                            const prevIdx = (prev - 1 + highlights.length) % highlights.length;
+                            setIsTransitioning(true);
+                            setTimeout(() => setIsTransitioning(false), 800);
+                            return prevIdx;
+                          });
+                          setAutoRotateMode('resuming');
+                        }}
+                        className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer md:opacity-0 md:group-hover/featured:opacity-100 swipe-arrow-left"
+                        style={{
+                          backgroundColor: hexToRgba(active.accentColor, 0.25),
+                          border: `1px solid ${hexToRgba(active.accentColor, 0.35)}`,
+                          backdropFilter: 'blur(8px)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = hexToRgba(active.accentColor, 0.4);
+                          e.currentTarget.style.boxShadow = `0 0 16px ${hexToRgba(active.accentColor, 0.3)}`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = hexToRgba(active.accentColor, 0.25);
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                        aria-label="Previous highlight"
+                      >
+                        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: active.accentLight }} />
+                      </button>
+
+                      {/* Right arrow — swipe to next */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveIdx(prev => {
+                            const next = (prev + 1) % highlights.length;
+                            setIsTransitioning(true);
+                            setTimeout(() => setIsTransitioning(false), 800);
+                            return next;
+                          });
+                          setAutoRotateMode('resuming');
+                        }}
+                        className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer md:opacity-0 md:group-hover/featured:opacity-100 swipe-arrow-right"
+                        style={{
+                          backgroundColor: hexToRgba(active.accentColor, 0.25),
+                          border: `1px solid ${hexToRgba(active.accentColor, 0.35)}`,
+                          backdropFilter: 'blur(8px)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = hexToRgba(active.accentColor, 0.4);
+                          e.currentTarget.style.boxShadow = `0 0 16px ${hexToRgba(active.accentColor, 0.3)}`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = hexToRgba(active.accentColor, 0.25);
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                        aria-label="Next highlight"
+                      >
+                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: active.accentLight }} />
+                      </button>
+
+                      {/* Mobile swipe hint text — only visible on mobile, fades out after a few seconds */}
+                      <div
+                        className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 md:hidden swipe-hint-text"
+                        aria-hidden="true"
+                      >
+                        <div
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+                          style={{
+                            backgroundColor: hexToRgba(active.accentColor, 0.15),
+                            border: `1px solid ${hexToRgba(active.accentColor, 0.2)}`,
+                            backdropFilter: 'blur(8px)',
+                          }}
+                        >
+                          <ChevronLeft className="w-3 h-3" style={{ color: active.accentLight, animation: 'swipe-hint-left 1.5s ease-in-out infinite' }} />
+                          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active.accentLight }}>
+                            Geser
+                          </span>
+                          <ChevronRight className="w-3 h-3" style={{ color: active.accentLight, animation: 'swipe-hint-right 1.5s ease-in-out infinite' }} />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
                   {/* Gold gradient shimmer at bottom edge */}
                   <div className="absolute bottom-0 inset-x-0 h-1 z-20" style={{ background: `linear-gradient(to right, transparent, ${active.accentColor}, transparent)` }} />
                 </div>
