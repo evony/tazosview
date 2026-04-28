@@ -194,7 +194,7 @@ export function BantuanView() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* ═══ Back Button (Mobile) + Hero Header ═══ */}
       <div className="relative overflow-hidden rounded-2xl border border-idm-gold-warm/20 bg-gradient-to-br from-[#0a0a14] via-[#0d0d1a] to-[#0c0a06]">
         {/* Gold radial haze */}

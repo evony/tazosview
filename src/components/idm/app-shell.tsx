@@ -641,7 +641,7 @@ export function AppShell() {
         {/* Main Content */}
         <main className={`flex-1 min-w-0 overflow-y-auto ${dt.bgMesh}`}>
           {(() => {
-            const contentClass = `pt-6 px-3 pb-28 sm:pt-6 sm:px-4 sm:pb-28 lg:p-8 lg:pb-8 ${currentView === 'admin' ? 'max-w-[2200px]' : currentView === 'dashboard' || currentView === 'community' || currentView === 'marketplace' ? '' : 'max-w-[1600px]'} mx-auto`;
+            const contentClass = `pt-6 px-3 pb-28 sm:pt-6 sm:px-4 sm:pb-28 lg:p-8 lg:pb-8 ${currentView === 'admin' ? 'max-w-[2200px]' : currentView === 'dashboard' || currentView === 'community' || currentView === 'marketplace' || currentView === 'bantuan' ? '' : 'max-w-[1600px]'} mx-auto`;
             const content = <div key={currentView} className={contentClass}>{renderView()}</div>;
             return isMobile
               ? <PullToRefresh onRefresh={async () => { queryClient.invalidateQueries(); }}>{content}</PullToRefresh>
