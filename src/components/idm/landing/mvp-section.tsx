@@ -46,12 +46,16 @@ function CompactMVPCard({
   if (!hasWeeklyMvp && !displayPlayer) {
     return (
       <div
-        className="reveal reveal-fade-up relative rounded-xl overflow-hidden bg-[#0d0d1a] border flex flex-col items-center justify-center p-8 min-h-[380px] transition-all duration-500 hover:border-[rgba(212,168,83,0.2)]"
+        className="mvp-card reveal reveal-fade-up relative rounded-xl overflow-hidden bg-[#0d0d1a] border flex flex-col items-center justify-center p-8 min-h-[380px] transition-colors duration-500 hover:border-[rgba(212,168,83,0.2)]"
         style={{ borderColor: hexToRgba(accent, 0.15) }}
       >
+        {/* Spotlight glow effect behind empty state */}
+        <div className="mvp-spotlight-bg absolute inset-0 pointer-events-none" aria-hidden="true" />
         <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 50% 50%, ${hexToRgba(accent, 0.06)}, transparent 60%)` }} />
         <div className="relative z-10">
-          <Crown className="w-12 h-12 mx-auto mb-3 opacity-20" style={{ color: accent }} />
+          <div className="champion-crown-float inline-block">
+            <Crown className="w-12 h-12 mx-auto mb-3 opacity-20" style={{ color: accent }} />
+          </div>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-px bg-gradient-to-r from-transparent to-[#d4a853]/40" />
             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#a09880' }}>MVP Belum Dipilih</p>
@@ -67,8 +71,8 @@ function CompactMVPCard({
   if (!hasWeeklyMvp && displayPlayer) {
     return (
       <div
-        className="reveal reveal-fade-up relative rounded-xl overflow-hidden cursor-pointer group border transition-all duration-300 min-h-[380px] aspect-[3/4] sm:aspect-auto sm:min-h-[440px]"
-        style={{ borderColor: hexToRgba(accent, 0.15), boxShadow: `0 0 40px ${hexToRgba(accent, 0.06)}` }}
+        className="mvp-card reveal reveal-fade-up relative rounded-xl overflow-hidden cursor-pointer group border transition-all duration-300 min-h-[380px] aspect-[3/4] sm:aspect-auto sm:min-h-[440px]"
+        style={{ borderColor: hexToRgba(accent, 0.15) }}
         role="button"
         tabIndex={0}
         aria-label={`View MVP profile: ${displayPlayer.gamertag}`}
@@ -77,19 +81,19 @@ function CompactMVPCard({
           if (e.key === 'Enter' || e.key === ' ') setSelectedPlayer({ ...displayPlayer, division });
         }}
       >
+        {/* Spotlight glow behind card */}
+        <div className="mvp-spotlight-bg absolute inset-0 pointer-events-none" aria-hidden="true" />
+
         {/* Gold accent line */}
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#d4a853] to-transparent z-20" />
 
         {/* Full-bleed avatar */}
-        <Image src={getAvatarUrl(displayPlayer.gamertag, division, displayPlayer.avatar)} alt={displayPlayer.gamertag} fill sizes="50vw" className="object-cover object-top group-hover:scale-105 transition-transform duration-700" />
+        <Image src={getAvatarUrl(displayPlayer.gamertag, division, displayPlayer.avatar)} alt={displayPlayer.gamertag} fill sizes="50vw" className="object-cover object-top group-hover:scale-105 transition-transform duration-700" loading="lazy" />
 
         {/* Multi-layer overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/50 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0d0d1a]/50 via-transparent to-transparent" />
         <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 80% 80%, ${hexToRgba(accent, 0.10)}, transparent 60%)` }} />
-
-        {/* Hover glow */}
-        <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ boxShadow: `0 0 50px ${hexToRgba(accent, 0.15)}, 0 0 25px ${hexToRgba(accent, 0.08)}` }} />
 
         {/* Top badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
@@ -139,38 +143,38 @@ function CompactMVPCard({
     );
   }
 
-  // Weekly MVP display
+  // Weekly MVP display — using optional chaining instead of non-null assertions
   return (
     <div
-      className="reveal reveal-fade-up relative rounded-xl overflow-hidden cursor-pointer group border transition-all duration-300 min-h-[380px] aspect-[3/4] sm:aspect-auto sm:min-h-[440px]"
-      style={{ borderColor: hexToRgba(accent, 0.15), boxShadow: `0 0 40px ${hexToRgba(accent, 0.06)}` }}
+      className="mvp-card reveal reveal-fade-up relative rounded-xl overflow-hidden cursor-pointer group border transition-all duration-300 min-h-[380px] aspect-[3/4] sm:aspect-auto sm:min-h-[440px]"
+      style={{ borderColor: hexToRgba(accent, 0.15) }}
       role="button"
       tabIndex={0}
-      aria-label={`View MVP profile: ${latestMvp!.gamertag}`}
+      aria-label={`View MVP profile: ${latestMvp?.gamertag ?? 'MVP'}`}
       onClick={() => {
-        const found = data.topPlayers?.find(p => p.gamertag === latestMvp!.gamertag);
+        const found = data.topPlayers?.find(p => p.gamertag === latestMvp?.gamertag);
         if (found) setSelectedPlayer({ ...found, division });
       }}
       onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
-          const found = data.topPlayers?.find(p => p.gamertag === latestMvp!.gamertag);
+          const found = data.topPlayers?.find(p => p.gamertag === latestMvp?.gamertag);
           if (found) setSelectedPlayer({ ...found, division });
         }
       }}
     >
+      {/* Spotlight glow behind card */}
+      <div className="mvp-spotlight-bg absolute inset-0 pointer-events-none" aria-hidden="true" />
+
       {/* Gold accent line */}
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#d4a853] to-transparent z-20" />
 
       {/* Full-bleed avatar */}
-      <Image src={getAvatarUrl(latestMvp!.gamertag, division, latestMvp!.avatar)} alt={latestMvp!.gamertag} fill sizes="50vw" className="object-cover object-top group-hover:scale-105 transition-transform duration-700" />
+      <Image src={getAvatarUrl(latestMvp?.gamertag ?? '', division, latestMvp?.avatar)} alt={latestMvp?.gamertag ?? 'MVP'} fill sizes="50vw" className="object-cover object-top group-hover:scale-105 transition-transform duration-700" loading="lazy" />
 
       {/* Multi-layer overlays */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/50 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-[#0d0d1a]/50 via-transparent to-transparent" />
       <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 80% 80%, ${hexToRgba(accent, 0.10)}, transparent 60%)` }} />
-
-      {/* Hover glow */}
-      <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ boxShadow: `0 0 50px ${hexToRgba(accent, 0.15)}, 0 0 25px ${hexToRgba(accent, 0.08)}` }} />
 
       {/* Top badges */}
       <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
@@ -184,32 +188,32 @@ function CompactMVPCard({
         </div>
       </div>
 
-      {/* Bottom info */}
+      {/* Bottom info — using optional chaining */}
       <div className="absolute bottom-0 inset-x-0 p-4 z-10">
         <div className="flex items-center gap-1.5 mb-1.5">
-          <span className="text-[10px] font-bold text-[#d4a853]">W{latestMvp!.weekNumber}</span>
-          {latestMvp!.totalMvp > 1 && <span className="text-[9px] font-bold text-[#d4a853] bg-[#d4a853]/15 px-1.5 py-0.5 rounded">{latestMvp!.totalMvp}x MVP</span>}
+          <span className="text-[10px] font-bold text-[#d4a853]">W{latestMvp?.weekNumber ?? '?'}</span>
+          {(latestMvp?.totalMvp ?? 0) > 1 && <span className="text-[9px] font-bold text-[#d4a853] bg-[#d4a853]/15 px-1.5 py-0.5 rounded">{latestMvp?.totalMvp}x MVP</span>}
         </div>
-        <p className="text-2xl sm:text-3xl font-black text-white leading-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{latestMvp!.gamertag}</p>
+        <p className="text-2xl sm:text-3xl font-black text-white leading-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{latestMvp?.gamertag ?? 'TBD'}</p>
         <div className="flex items-center gap-2 mt-1.5">
-          <TierBadge tier={latestMvp!.tier} />
+          <TierBadge tier={latestMvp?.tier ?? 'B'} />
         </div>
         {/* Stats row */}
         <div className="flex items-center gap-4 mt-3 pt-2.5 border-t border-[#d4a853]/10">
           <div>
-            <p className="text-lg font-black" style={{ color: accentLight }}>{latestMvp!.points}</p>
+            <p className="text-lg font-black" style={{ color: accentLight }}>{latestMvp?.points ?? 0}</p>
             <p className="text-[8px] uppercase font-semibold" style={{ color: '#a09880' }}>Points</p>
           </div>
           <div className="w-px h-7 bg-[#d4a853]/10" />
           <div>
-            <p className="text-lg font-black text-green-400">{latestMvp!.totalWins}</p>
+            <p className="text-lg font-black text-green-400">{latestMvp?.totalWins ?? 0}</p>
             <p className="text-[8px] text-green-400/50 uppercase font-semibold">Wins</p>
           </div>
-          {latestMvp!.streak > 0 && (
+          {(latestMvp?.streak ?? 0) > 0 && (
             <>
               <div className="w-px h-7 bg-[#d4a853]/10" />
               <div>
-                <p className="text-lg font-black text-orange-400 flex items-center gap-1"><Flame className="w-4 h-4" />{latestMvp!.streak}</p>
+                <p className="text-lg font-black text-orange-400 flex items-center gap-1"><Flame className="w-4 h-4" />{latestMvp?.streak}</p>
                 <p className="text-[8px] text-orange-400/50 uppercase font-semibold">Streak</p>
               </div>
             </>
@@ -231,7 +235,7 @@ export function MvpSection({
   const emptyData = { hasData: false, division: 'male' as const, season: { id: '', name: '', number: 1, status: 'active' }, allSeasons: [], activeTournament: null, totalPlayers: 0, totalPrizePool: 0, seasonDonationTotal: 0, topPlayers: [], skinMap: {}, recentMatches: [], upcomingMatches: [], seasonProgress: { totalWeeks: 0, completedWeeks: 0, percentage: 0 }, topDonors: [], clubs: [], weeklyChampions: [], mvpHallOfFame: [] } as StatsData;
 
   return (
-    <section id="mvp" role="region" aria-label="MVP Arena" className="py-16 sm:py-24 px-4 relative overflow-hidden bg-[#0a0a14]">
+    <section id="mvp" role="region" aria-label="MVP Arena" className="landing-section py-16 sm:py-24 px-4 relative overflow-hidden bg-[#0a0a14]">
       {/* Background */}
       <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(212,168,83,0.06) 0%, transparent 50%), radial-gradient(ellipse at 20% 70%, rgba(6,182,212,0.04) 0%, transparent 40%), radial-gradient(ellipse at 80% 70%, rgba(168,85,247,0.04) 0%, transparent 40%)' }} />
       <div className="absolute inset-0 opacity-[0.012]" style={{ backgroundImage: 'radial-gradient(circle, rgba(212,168,83,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />

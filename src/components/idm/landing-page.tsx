@@ -42,7 +42,8 @@ export function LandingPage() {
   const [selectedPlayer, setSelectedPlayer] = useState<StatsData['topPlayers'][0] & { division?: string } | null>(null);
   const [selectedClub, setSelectedClub] = useState<(StatsData['clubs'][0] & { division?: string }) | null>(null);
   const [showAllClubs, setShowAllClubs] = useState(false);
-  const [showAllPlayers, setShowAllPlayers] = useState(false);
+  const [showAllMalePlayers, setShowAllMalePlayers] = useState(false);
+  const [showAllFemalePlayers, setShowAllFemalePlayers] = useState(false);
 
   /* Registration Modal State */
   const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
@@ -398,8 +399,10 @@ export function LandingPage() {
         setSelectedPlayer={setSelectedPlayer}
         showAllClubs={showAllClubs}
         setShowAllClubs={setShowAllClubs}
-        showAllPlayers={showAllPlayers}
-        setShowAllPlayers={setShowAllPlayers}
+        showAllMalePlayers={showAllMalePlayers}
+        setShowAllMalePlayers={setShowAllMalePlayers}
+        showAllFemalePlayers={showAllFemalePlayers}
+        setShowAllFemalePlayers={setShowAllFemalePlayers}
       />
       </div>
 

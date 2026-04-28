@@ -21,6 +21,7 @@ const STATS_CACHE_HEADERS_SHORT = {
 };
 
 export async function GET(request: Request) {
+  try {
   const { searchParams } = new URL(request.url);
   const division = searchParams.get('division') || 'male';
 
@@ -464,4 +465,8 @@ export async function GET(request: Request) {
   }, {
     headers: STATS_CACHE_HEADERS,
   });
+  } catch (error) {
+    console.error('[GET /api/stats]', error);
+    return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
+  }
 }

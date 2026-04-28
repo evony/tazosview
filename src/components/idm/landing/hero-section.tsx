@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Zap, Star, UserPlus, Eye, ArrowRight } from 'lucide-react';
+import { Zap, Star, UserPlus, Eye, ArrowRight, ChevronDown } from 'lucide-react';
 import { MarqueeTicker } from '../marquee-ticker';
 import type { StatsData } from '@/types/stats';
 
@@ -10,6 +10,7 @@ import type { StatsData } from '@/types/stats';
    TARKAM IDM — TARKAM ARENA HERO
    International esports tournament aesthetic
    Inspired by Valorant Champions / LoL Worlds / BLAST Premier
+   Performance-optimized for mid-range devices
    ═══════════════════════════════════════════════════════════════ */
 
 interface HeroSectionProps {
@@ -25,7 +26,7 @@ interface HeroSectionProps {
   onVideoPlay?: (url: string, title: string) => void;
 }
 
-/* ─── Floating Particle System ─── */
+/* ─── Floating Particle System — Reduced to 12 for performance ─── */
 interface Particle {
   id: number;
   x: number;
@@ -81,8 +82,8 @@ export function HeroSection({
   const malePlayers = maleData?.totalPlayers || 0;
   const femalePlayers = femaleData?.totalPlayers || 0;
 
-  /* ─── Particles ─── */
-  const particles = useParticles(28);
+  /* ─── Particles — reduced from 28 to 12 ─── */
+  const particles = useParticles(12);
 
   return (
     <>
@@ -92,11 +93,14 @@ export function HeroSection({
         className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
         aria-label="Tarkam IDM Hero"
       >
+        {/* ── Animated gold line border at top ── */}
+        <div className="hero-top-gold-line absolute top-0 left-0 right-0 h-[2px] z-30 pointer-events-none" aria-hidden="true" />
+
         {/* ── Background Layers ── */}
 
-        {/* Base: Deep dark gradient — parallax slow layer */}
+        {/* Base: Deep dark gradient */}
         <div
-          className="absolute inset-0 parallax-hero-bg"
+          className="absolute inset-0"
           style={{
             background: `linear-gradient(180deg, #0a0a14 0%, #0d0d1a 40%, #0c0a06 100%)`,
           }}
@@ -162,37 +166,37 @@ export function HeroSection({
           ) : null
         )}
 
-        {/* Mid-depth radial gold haze — parallax mid layer */}
+        {/* Mid-depth radial gold haze */}
         {!heroBgVideo && (
           <div
-            className="absolute inset-0 pointer-events-none parallax-hero-mid"
+            className="absolute inset-0 pointer-events-none"
             style={{
               background: 'radial-gradient(ellipse at 50% 45%, rgba(212,168,83,0.07) 0%, transparent 65%)',
             }}
           />
         )}
 
-        {/* Top-left cyan glow (Male) — parallax slow layer */}
+        {/* Top-left cyan glow (Male) */}
         {!heroBgVideo && (
           <div
-            className="absolute inset-0 pointer-events-none parallax-hero-slow"
+            className="absolute inset-0 pointer-events-none"
             style={{
               background: 'radial-gradient(ellipse at 15% 30%, rgba(6,182,212,0.04) 0%, transparent 50%)',
             }}
           />
         )}
 
-        {/* Bottom-right purple glow (Female) — parallax slow layer */}
+        {/* Bottom-right purple glow (Female) */}
         {!heroBgVideo && (
           <div
-            className="absolute inset-0 pointer-events-none parallax-hero-slow"
+            className="absolute inset-0 pointer-events-none"
             style={{
               background: 'radial-gradient(ellipse at 85% 70%, rgba(168,85,247,0.04) 0%, transparent 50%)',
             }}
           />
         )}
 
-        {/* Vignette overlay — ALWAYS visible (keeps text readable over video/images) */}
+        {/* Vignette overlay — ALWAYS visible */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -216,8 +220,8 @@ export function HeroSection({
           />
         )}
 
-        {/* ── Floating Particles — parallax fastest layer ── */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden parallax-particles" aria-hidden="true">
+        {/* ── Floating Particles — reduced to 12 for performance ── */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
           {particles.map((p) => (
             <div
               key={p.id}
@@ -227,7 +231,6 @@ export function HeroSection({
                 width: p.size,
                 height: p.size,
                 background: `radial-gradient(circle, rgba(212,168,83,${p.opacity}) 0%, rgba(212,168,83,${p.opacity * 0.3}) 60%, transparent 100%)`,
-                boxShadow: `0 0 ${p.size * 3}px rgba(212,168,83,${p.opacity * 0.3})`,
                 '--duration': `${p.duration}s`,
                 '--delay': `${p.delay}s`,
                 '--p-opacity': p.opacity,
@@ -254,19 +257,16 @@ export function HeroSection({
             </div>
           </div>
 
-          {/* ── Main Title — Gold gradient ── */}
+          {/* ── Main Title — Gold gradient with dramatic letter-spacing entrance ── */}
           <div className="hero-enter-2 relative mb-3 sm:mb-4">
-            {/* Breathing glow behind title */}
+            {/* Subtle breathing gold glow behind title — CSS only, opacity-based for performance */}
             <div
-              className="absolute inset-0 -top-8 -bottom-8 pointer-events-none animate-pulse"
-              style={{
-                background: 'radial-gradient(ellipse at 50% 50%, rgba(212,168,83,0.08) 0%, transparent 70%)',
-              }}
+              className="absolute inset-0 -top-8 -bottom-8 pointer-events-none hero-title-breath"
               aria-hidden="true"
             />
 
             <h1
-              className="relative text-5xl sm:text-6xl md:text-7xl font-black tracking-tight uppercase leading-[1.05]"
+              className="hero-title-entrance relative text-5xl sm:text-6xl md:text-7xl font-black uppercase leading-[1.05]"
               style={{
                 background: 'linear-gradient(135deg, #f5e6c8 0%, #d4a853 30%, #e5be4a 50%, #f5d77a 70%, #d4a853 100%)',
                 WebkitBackgroundClip: 'text',
@@ -297,7 +297,7 @@ export function HeroSection({
             {/* Pendaftaran — Primary CTA → Registration */}
             <button
               onClick={onRegister}
-              className="btn-press group relative w-full sm:w-auto cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
+              className="btn-press hero-cta-breath group relative w-full sm:w-auto cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
             >
               {/* Glow background */}
               <div className="absolute -inset-1 rounded-2xl blur-lg opacity-0 group-hover:opacity-60 transition-opacity duration-500" style={{ background: 'rgba(16,185,129,0.25)' }} />
@@ -317,7 +317,7 @@ export function HeroSection({
             {/* Lihat Bracket — Secondary CTA → Bracket Picker */}
             <button
               onClick={() => setShowBracketPicker(true)}
-              className="btn-press group relative w-full sm:w-auto cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-idm-gold-warm/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
+              className="btn-press hero-cta-breath group relative w-full sm:w-auto cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-idm-gold-warm/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
             >
               {/* Glow on hover */}
               <div className="absolute -inset-1 rounded-2xl blur-lg opacity-0 group-hover:opacity-40 transition-opacity duration-500" style={{ background: 'rgba(212,168,83,0.15)' }} />
@@ -352,24 +352,10 @@ export function HeroSection({
                   <p className="text-xs text-idm-gold-warm/70 uppercase tracking-wider font-bold text-center mb-3">Pilih Divisi</p>
 
                   <div className="grid grid-cols-2 gap-3">
-                    {/* Male */}
+                    {/* Male — CSS transitions instead of JS style manipulation */}
                     <button
                       onClick={() => { setShowBracketPicker(false); onViewBracket('male'); }}
-                      className="btn-press group relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-300"
-                      style={{
-                        background: 'rgba(6,182,212,0.06)',
-                        borderColor: 'rgba(6,182,212,0.2)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(6,182,212,0.5)';
-                        e.currentTarget.style.background = 'rgba(6,182,212,0.12)';
-                        e.currentTarget.style.boxShadow = '0 0 20px rgba(6,182,212,0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(6,182,212,0.2)';
-                        e.currentTarget.style.background = 'rgba(6,182,212,0.06)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
+                      className="btn-press bracket-picker-male group relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-300"
                     >
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(6,182,212,0.15)' }}>
                         <Zap className="w-5 h-5 text-cyan-400" />
@@ -380,24 +366,10 @@ export function HeroSection({
                       </div>
                     </button>
 
-                    {/* Female */}
+                    {/* Female — CSS transitions instead of JS style manipulation */}
                     <button
                       onClick={() => { setShowBracketPicker(false); onViewBracket('female'); }}
-                      className="btn-press group relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-300"
-                      style={{
-                        background: 'rgba(168,85,247,0.06)',
-                        borderColor: 'rgba(168,85,247,0.2)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(168,85,247,0.5)';
-                        e.currentTarget.style.background = 'rgba(168,85,247,0.12)';
-                        e.currentTarget.style.boxShadow = '0 0 20px rgba(168,85,247,0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)';
-                        e.currentTarget.style.background = 'rgba(168,85,247,0.06)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
+                      className="btn-press bracket-picker-female group relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-300"
                     >
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.15)' }}>
                         <Star className="w-5 h-5 text-purple-400" />
@@ -415,13 +387,11 @@ export function HeroSection({
 
         </div>
 
-        {/* ── Scroll Indicator ── */}
+        {/* ── Scroll Indicator — Simple chevron bounce (replaces scroll-dot) ── */}
         <div className="absolute bottom-8 sm:bottom-10 left-1/2 -translate-x-1/2 z-10" style={{ animation: 'reveal-fade-up 0.5s 2s cubic-bezier(0.16,1,0.3,1) both' }} aria-hidden="true">
-          <div className="scroll-bounce flex flex-col items-center gap-2">
+          <div className="hero-chevron-bounce flex flex-col items-center gap-2">
             <span className="text-[10px] text-idm-gold-warm/40 uppercase tracking-[0.2em] font-semibold">Explore</span>
-            <div className="w-6 h-10 rounded-full border-2 border-idm-gold-warm/15 flex items-start justify-center p-1.5">
-              <div className="scroll-dot w-1.5 h-1.5 rounded-full bg-idm-gold-warm/50" />
-            </div>
+            <ChevronDown className="w-5 h-5 text-idm-gold-warm/40" />
           </div>
         </div>
 

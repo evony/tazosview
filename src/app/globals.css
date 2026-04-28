@@ -7096,3 +7096,227 @@ html {
   90% { opacity: 0; }
   100% { transform: translateY(-200%); opacity: 0; }
 }
+
+/* ============================================
+   LANDING PAGE PERFORMANCE OPTIMIZATIONS
+   Premium redesign — CSS-only animations
+   GPU-friendly, mid-range device optimized
+   ============================================ */
+
+/* ─── content-visibility for off-screen landing sections ─── */
+.landing-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* ─── Hero: Animated gold line border at top ─── */
+.hero-top-gold-line {
+  background: linear-gradient(90deg, transparent 0%, rgba(212,168,83,0.6) 20%, rgba(245,230,200,0.8) 50%, rgba(212,168,83,0.6) 80%, transparent 100%);
+  background-size: 200% 100%;
+  animation: hero-gold-line-shimmer 3s ease-in-out infinite;
+}
+@keyframes hero-gold-line-shimmer {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: 0% 0; }
+}
+
+/* ─── Hero: Title entrance — dramatic letter-spacing animation ─── */
+.hero-title-entrance {
+  letter-spacing: 0.5em;
+  animation: hero-title-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+@keyframes hero-title-enter {
+  from {
+    letter-spacing: 0.8em;
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    letter-spacing: -0.01em;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Hero: Breathing gold glow behind title — opacity-only for GPU ─── */
+.hero-title-breath {
+  background: radial-gradient(ellipse at 50% 50%, rgba(212,168,83,0.08) 0%, transparent 70%);
+  animation: hero-breath 4s ease-in-out infinite;
+}
+@keyframes hero-breath {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ─── Hero: CTA breathing gold glow ring — CSS only, opacity-based ─── */
+.hero-cta-breath::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 1rem;
+  border: 1px solid rgba(212,168,83,0.15);
+  animation: cta-glow-breathe 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cta-glow-breathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* ─── Hero: Chevron bounce (replaces scroll-dot) ─── */
+.hero-chevron-bounce {
+  animation: chevron-bounce 2s ease-in-out infinite;
+}
+@keyframes chevron-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+
+/* ─── Hero: Bracket picker CSS transitions (replaces JS onMouseEnter/Leave) ─── */
+.bracket-picker-male {
+  background: rgba(6,182,212,0.06);
+  border-color: rgba(6,182,212,0.2);
+}
+.bracket-picker-male:hover {
+  background: rgba(6,182,212,0.12);
+  border-color: rgba(6,182,212,0.5);
+  box-shadow: 0 0 20px rgba(6,182,212,0.15);
+}
+
+.bracket-picker-female {
+  background: rgba(168,85,247,0.06);
+  border-color: rgba(168,85,247,0.2);
+}
+.bracket-picker-female:hover {
+  background: rgba(168,85,247,0.12);
+  border-color: rgba(168,85,247,0.5);
+  box-shadow: 0 0 20px rgba(168,85,247,0.15);
+}
+
+/* ─── CTA: Gradient border animation ─── */
+.cta-gradient-border {
+  background: linear-gradient(135deg, rgba(212,168,83,0.4), rgba(6,182,212,0.2), rgba(168,85,247,0.2), rgba(212,168,83,0.4));
+  background-size: 300% 300%;
+  animation: cta-border-shimmer 4s ease-in-out infinite;
+}
+@keyframes cta-border-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ─── CTA: Gold particle trail ─── */
+.cta-gold-trail::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -30%;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,168,83,0.4), transparent);
+  animation: cta-gold-sweep 3s ease-in-out infinite;
+}
+@keyframes cta-gold-sweep {
+  0% { left: -30%; }
+  100% { left: 100%; }
+}
+
+/* ─── CTA: Pulsing glow on primary button ─── */
+.cta-btn-pulse {
+  box-shadow: 0 0 20px rgba(212,168,83,0.2);
+  animation: cta-pulse-glow 2.5s ease-in-out infinite;
+}
+@keyframes cta-pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(212,168,83,0.2); }
+  50% { box-shadow: 0 0 35px rgba(212,168,83,0.35); }
+}
+
+/* ─── Champion: Crown float animation ─── */
+.champion-crown-float {
+  animation: crown-float 3s ease-in-out infinite;
+}
+@keyframes crown-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* ─── Champion: Gold shimmer effect on card ─── */
+.champion-gold-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.champion-gold-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,168,83,0.15), transparent);
+  animation: gold-shimmer-sweep 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes gold-shimmer-sweep {
+  0%, 100% { left: -100%; }
+  50% { left: 100%; }
+}
+
+/* ─── MVP: Spotlight glow effect ─── */
+.mvp-spotlight-bg {
+  background: radial-gradient(ellipse at 50% 60%, rgba(212,168,83,0.08) 0%, transparent 60%);
+  animation: mvp-spotlight-pulse 3s ease-in-out infinite;
+}
+@keyframes mvp-spotlight-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ─── Club card: Hover effects with gold border accent ─── */
+.club-card {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+.club-card:hover {
+  border-color: rgba(212,168,83,0.25) !important;
+  box-shadow: 0 0 24px rgba(212,168,83,0.08);
+  transform: scale(1.02);
+}
+
+/* ─── Footer: Social link gold hover ─── */
+.footer-social-link:hover {
+  color: #d4a853;
+  background: rgba(212,168,83,0.08);
+}
+
+/* ─── prefers-reduced-motion: Disable all landing page infinite animations ─── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-top-gold-line,
+  .hero-title-entrance,
+  .hero-title-breath,
+  .hero-cta-breath::before,
+  .hero-chevron-bounce,
+  .cta-gradient-border,
+  .cta-gold-trail::after,
+  .cta-btn-pulse,
+  .champion-crown-float,
+  .champion-gold-shimmer::after,
+  .mvp-spotlight-bg,
+  .hero-particle {
+    animation: none !important;
+    transform: none !important;
+  }
+  .hero-title-entrance {
+    letter-spacing: -0.01em !important;
+    opacity: 1 !important;
+  }
+  .cta-btn-pulse {
+    box-shadow: 0 0 20px rgba(212,168,83,0.2) !important;
+  }
+  .champion-gold-shimmer::after {
+    display: none;
+  }
+  .cta-gold-trail::after {
+    display: none;
+  }
+  .landing-section {
+    content-visibility: visible;
+  }
+}

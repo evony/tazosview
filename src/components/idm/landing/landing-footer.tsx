@@ -5,8 +5,8 @@ import { Instagram, Youtube, ArrowUp } from 'lucide-react';
 import type { StatsData } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════════════
-   Tarkam IDM — Minimalist Footer
-   Brand + Links + Copyright — clean & focused
+   Tarkam IDM — Premium Footer
+   Brand + Links + Copyright — clean, minimal, gold-accented
    ═══════════════════════════════════════════════════════════════ */
 
 interface LandingFooterProps {
@@ -42,7 +42,7 @@ function SocialLink({ href, label, children }: { href: string; label: string; ch
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="p-2 rounded-lg text-[#a09880] hover:text-[#d4a853] transition-all duration-300 group"
+      className="footer-social-link p-2.5 rounded-lg text-[#a09880] transition-all duration-300 group"
     >
       <span className="block group-hover:scale-110 transition-transform duration-200">
         {children}
@@ -69,7 +69,7 @@ function QuickLink({ label, sectionId }: { label: string; sectionId: string }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Main Footer Component — Minimalist
+   Main Footer Component — Premium Minimal
    ═══════════════════════════════════════════════════════════════ */
 export function LandingFooter({ cmsSettings }: LandingFooterProps) {
   /* ── CMS values ── */
@@ -87,23 +87,23 @@ export function LandingFooter({ cmsSettings }: LandingFooterProps) {
   const hasSocial = discordUrl || instagramUrl || youtubeUrl || whatsappUrl;
 
   return (
-    <footer className="relative bg-[#06060c] border-t border-[rgba(212,168,83,0.1)] overflow-hidden">
+    <footer className="landing-footer relative bg-[#06060c] border-t border-[rgba(212,168,83,0.08)] overflow-hidden">
+      {/* ── Premium gold gradient line at top ── */}
+      <div className="footer-premium-line absolute top-0 left-0 right-0 h-[2px] overflow-hidden" aria-hidden="true">
+        <div
+          className="h-full w-[200%]"
+          style={{
+            background: 'linear-gradient(90deg, transparent, rgba(212,168,83,0.5), rgba(245,230,200,0.3), rgba(212,168,83,0.5), transparent, rgba(212,168,83,0.5), rgba(245,230,200,0.3), rgba(212,168,83,0.5), transparent)',
+            animation: 'footer-gradient-slide 8s linear infinite',
+          }}
+        />
+      </div>
+
       {/* ── Subtle top glow ── */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-24 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse, rgba(212,168,83,0.03) 0%, transparent 70%)' }}
       />
-
-      {/* ── Animated gradient border line ── */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] overflow-hidden">
-        <div
-          className="h-full w-[200%]"
-          style={{
-            background: 'linear-gradient(90deg, transparent, rgba(212,168,83,0.4), rgba(245,230,200,0.2), rgba(212,168,83,0.4), transparent, rgba(212,168,83,0.4), rgba(245,230,200,0.2), rgba(212,168,83,0.4), transparent)',
-            animation: 'footer-gradient-slide 8s linear infinite',
-          }}
-        />
-      </div>
 
       <div
         className="reveal reveal-fade-up relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10"
@@ -141,7 +141,7 @@ export function LandingFooter({ cmsSettings }: LandingFooterProps) {
               {tagline}
             </p>
 
-            {/* Social Icons — compact inline */}
+            {/* Social Icons — horizontal with gold hover accents */}
             {hasSocial && (
               <div className="flex items-center gap-1 mt-3 -ml-1">
                 {discordUrl && (

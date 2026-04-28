@@ -298,3 +298,123 @@ Stage Summary:
 - **0 new lib files** in tay1-extract (all identical file lists)
 - **1 new mini-service**: `mini-services/whatsapp-bot/` with index.ts (Baileys WhatsApp Web API bot using socket.io to connect to main app) — Impact: LOW (standalone service, not integrated)
 - Tournament flow impact: NONE — all schema models, store states, constants, points systems, and type definitions are byte-for-byte identical
+
+---
+Task ID: 1-b
+Agent: Bug Fix Agent
+Task: Fix 6 bugs across IDM League project
+
+Work Log:
+- Bug 1 (CRITICAL): Fixed null crash in match-day-center.tsx — changed `data.activeTournament.matches.forEach` to `data.activeTournament?.matches?.forEach` (line 376). The guard on line 373 already used optional chaining but the forEach did not.
+- Bug 2 (HIGH): Fixed `revalidateTag('league-data', 'max')` → `revalidateTag('league-data')` in 3 locations:
+  - src/app/api/clubs/route.ts line ~150
+  - src/app/api/clubs/[id]/route.ts line ~114
+  - src/app/api/clubs/[id]/route.ts line ~164
+  (revalidateTag only accepts 1 argument in Next.js)
+- Bug 3 (HIGH): Wrapped entire GET handler body in try/catch in src/app/api/stats/route.ts. Kept `export const dynamic` and cache header constants outside try/catch. Catch returns `console.error('[GET /api/stats]', error)` and `{ error: 'Failed to fetch stats' }` with status 500.
+- Bug 4 (HIGH): Wrapped GET handler body in try/catch in src/app/api/rankings/route.ts. Also fixed tierSummary crash by changing `tierSummary[p.tier as keyof typeof tierSummary]++` to safe version with `if (t in tierSummary) tierSummary[t]++`.
+- Bug 5 (HIGH): Added useEffect to clamp activeIdx when highlights length changes in src/components/idm/landing/highlights-section.tsx. Used `setTimeout(() => setActiveIdx(...), 0)` wrapper to avoid react-hooks/set-state-in-effect lint error (consistent with project convention).
+- Bug 6 (MEDIUM): Fixed null checks for club names in src/components/idm/landing/experiences-section.tsx — changed `match.club1.name` to `match.club1?.name || 'TBD'` and `match.club2.name` to `match.club2?.name || 'TBD'` (lines ~239 and ~255).
+- Ran `bun run lint` — 0 errors, 0 warnings
+
+Stage Summary:
+- All 6 bugs fixed successfully
+- No new lint errors introduced
+- All fixes use safe patterns consistent with project conventions (optional chaining, try/catch error handling, setTimeout wrapper for setState in effects)
+
+---
+Task ID: 2
+Agent: frontend-styling-expert
+Task: Redesign IDM League landing page to be PREMIUM looking but LIGHTWEIGHT for mid-range devices
+
+Work Log:
+- Read worklog.md to understand previous work (Task 1: initial project, Task 2: tay1.tar update, Task 1-b: bug fixes)
+- Read all 7 target files: hero-section.tsx, cta-section.tsx, landing-footer.tsx, champions-section.tsx, mvp-section.tsx, clubs-section.tsx, globals.css
+- Read landing-page.tsx to understand state management and prop passing
+
+1. **hero-section.tsx** — Redesigned for premium + lightweight:
+   - Reduced particles from 28 to 12 (performance optimization)
+   - Added animated gold line border at top of hero (`.hero-top-gold-line`)
+   - Added dramatic title entrance with letter-spacing animation (`.hero-title-entrance`)
+   - Added subtle breathing gold glow behind title using opacity-only animation (`.hero-title-breath`)
+   - Added CSS-only breathing gold glow ring behind CTA buttons (`.hero-cta-breath`)
+   - Replaced scroll-dot animation with simple chevron bounce (`.hero-chevron-bounce`)
+   - Replaced inline `onMouseEnter`/`onMouseLeave` JS style manipulation on bracket picker buttons with CSS classes (`.bracket-picker-male`, `.bracket-picker-female`)
+   - Removed parallax classes from background layers (unnecessary DOM class overhead)
+   - Used ChevronDown icon from lucide-react instead of custom scroll-dot
+
+2. **cta-section.tsx** — Made more impactful:
+   - Wrapped CTA content in a dramatic gradient border card (`.cta-card-wrapper`, `.cta-gradient-border`)
+   - Added gold particle trail via CSS pseudo-element (`.cta-gold-trail::after`)
+   - Added pulsing glow on primary CTA button (`.cta-btn-pulse`)
+   - Ensured mobile layout is clean and stacked
+   - Removed redundant background patterns for lighter DOM
+
+3. **landing-footer.tsx** — Premium minimal redesign:
+   - Added premium gold gradient line at top (`.footer-premium-line`)
+   - Improved social links with gold hover accent (`.footer-social-link`)
+   - Clean, minimal design with gold accents throughout
+   - Kept footer-gradient-slide animation via style jsx
+
+4. **champions-section.tsx** — Enhanced with safety + visuals:
+   - Replaced all non-null assertions (`latest!.winnerTeam!.name`, `latest!.weekNumber`) with optional chaining (`latest?.winnerTeam?.name ?? 'TBD'`, `latest?.weekNumber ?? '?'`)
+   - Added CSS-only crown float animation (`.champion-crown-float`)
+   - Added gold shimmer effect on champion card (`.champion-gold-shimmer`)
+   - Added `loading="lazy"` on player images
+   - Improved empty state with crown float animation
+   - Removed inline `onMouseEnter`/`onMouseLeave` JS border color manipulation — now uses CSS transition via `.champion-card:hover`
+   - Added `landing-section` class for content-visibility optimization
+
+5. **mvp-section.tsx** — Enhanced with safety + visuals:
+   - Replaced all non-null assertions (`latestMvp!.gamertag`, `latestMvp!.weekNumber`, etc.) with optional chaining (`latestMvp?.gamertag ?? ''`, `latestMvp?.weekNumber ?? '?'`)
+   - Added spotlight/glow effect behind MVP player card (`.mvp-spotlight-bg`)
+   - Better empty state with crown float animation
+   - Added `loading="lazy"` on MVP player images
+   - Removed expensive hover box-shadow inline style (replaced with CSS `.mvp-card:hover`)
+   - Added `landing-section` class for content-visibility optimization
+
+6. **clubs-section.tsx** — Fixed shared state bug + improved design:
+   - **CRITICAL FIX**: Split `showAllPlayers` into `showAllMalePlayers` and `showAllFemalePlayers` to fix the bug where expanding one tab's players also expanded the other
+   - Updated interface `ClubsSectionProps` to use `showAllMalePlayers`, `setShowAllMalePlayers`, `showAllFemalePlayers`, `setShowAllFemalePlayers`
+   - Updated Male tab to use `showAllMalePlayers`/`setShowAllMalePlayers`
+   - Updated Female tab to use `showAllFemalePlayers`/`setShowAllFemalePlayers`
+   - Added CSS-only hover effects on club cards (`.club-card` with gold border accent)
+   - Removed inline `group-hover/club:scale-[1.02]` shadow manipulation — now uses CSS `.club-card:hover`
+   - Added `landing-section` class for content-visibility optimization
+   - Added `loading="lazy"` on player images
+
+7. **landing-page.tsx** — Updated to pass new split state props:
+   - Changed `showAllPlayers`/`setShowAllPlayers` to `showAllMalePlayers`/`setShowAllMalePlayers` and `showAllFemalePlayers`/`setShowAllFemalePlayers`
+   - Updated ClubsSection props accordingly
+
+8. **globals.css** — Added "LANDING PAGE PERFORMANCE OPTIMIZATIONS" section:
+   - `content-visibility: auto` on `.landing-section` with `contain-intrinsic-size: auto 600px`
+   - Hero gold line shimmer animation (`.hero-top-gold-line`)
+   - Hero title entrance animation (`.hero-title-entrance`)
+   - Hero breathing glow — opacity-only for GPU (`.hero-title-breath`)
+   - CTA breathing glow ring — opacity-only (`.hero-cta-breath::before`)
+   - Chevron bounce animation (`.hero-chevron-bounce`)
+   - Bracket picker CSS hover transitions (`.bracket-picker-male`, `.bracket-picker-female`)
+   - CTA gradient border animation (`.cta-gradient-border`)
+   - CTA gold particle trail (`.cta-gold-trail::after`)
+   - CTA pulsing glow on button (`.cta-btn-pulse`)
+   - Champion crown float (`.champion-crown-float`)
+   - Champion gold shimmer (`.champion-gold-shimmer::after`)
+   - MVP spotlight pulse (`.mvp-spotlight-bg`)
+   - Club card hover effects (`.club-card:hover`)
+   - Footer social link gold hover (`.footer-social-link:hover`)
+   - All new animations respect `prefers-reduced-motion` (disabled with `animation: none !important`)
+   - `content-visibility: visible` override for reduced-motion users
+
+- Ran `bun run lint` — 0 errors, 0 warnings
+
+Stage Summary:
+- All 7 files modified + landing-page.tsx state update
+- Premium esports aesthetic achieved while maintaining lightweight performance
+- Particle count reduced from 28→12, all animations CSS-only
+- Non-null assertions replaced with optional chaining in champions + MVP sections
+- Shared state bug fixed in clubs section (showAllPlayers split into male/female)
+- content-visibility: auto on all landing sections for rendering performance
+- Max 1 backdrop-blur on page (none added), all infinite animations are opacity/transform-based
+- prefers-reduced-motion respected for all new animations
+- Tournament engine flow completely untouched

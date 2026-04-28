@@ -47,7 +47,7 @@ function CompactChampionCard({
   if (!hasWeeklyChampion && topPlayers.length === 0) {
     return (
       <div
-        className="reveal reveal-fade-up rounded-xl overflow-hidden bg-[#0d0d1a] border transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,168,83,0.12)]"
+        className="champion-card reveal reveal-fade-up rounded-xl overflow-hidden bg-[#0d0d1a] border transition-colors duration-500 hover:border-[rgba(212,168,83,0.2)]"
         style={{ borderColor: hexToRgba(accent, 0.15) }}
       >
         <div className="h-0.5 bg-gradient-to-r from-transparent via-[#d4a853] to-transparent" />
@@ -61,7 +61,10 @@ function CompactChampionCard({
           </div>
         </div>
         <div className="p-6 text-center space-y-3">
-          <Crown className="w-10 h-10 mx-auto opacity-20" style={{ color: accent }} />
+          {/* Crown with subtle CSS float animation */}
+          <div className="champion-crown-float inline-block">
+            <Crown className="w-10 h-10 opacity-20" style={{ color: accent }} />
+          </div>
           <p className="text-sm font-bold text-[#f5f0e8]/70">Musim Baru Dimulai</p>
           <p className="text-xs" style={{ color: '#a09880' }}>Jadilah champion pertama!</p>
         </div>
@@ -71,13 +74,11 @@ function CompactChampionCard({
 
   return (
     <div
-      className="reveal reveal-fade-up group rounded-xl overflow-hidden bg-[#0d0d1a] border transition-all duration-500 hover:shadow-[0_0_40px_rgba(212,168,83,0.18)]"
+      className="champion-card reveal reveal-fade-up group rounded-xl overflow-hidden bg-[#0d0d1a] border transition-colors duration-500 hover:border-[rgba(212,168,83,0.2)]"
       style={{ borderColor: hexToRgba(accent, 0.10) }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.30); }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.10); }}
     >
-      {/* Gold accent line */}
-      <div className="h-0.5 bg-gradient-to-r from-transparent via-[#d4a853] to-transparent" />
+      {/* Gold accent line with shimmer */}
+      <div className="champion-gold-shimmer h-0.5 bg-gradient-to-r from-transparent via-[#d4a853] to-transparent" />
 
       {/* Header */}
       <div className="relative h-14 overflow-hidden">
@@ -92,7 +93,7 @@ function CompactChampionCard({
           </div>
           {hasWeeklyChampion ? (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border" style={{ color: accentLight, backgroundColor: hexToRgba(accent, 0.18), borderColor: hexToRgba(accent, 0.35) }}>
-              <Crown className="w-2.5 h-2.5 inline mr-1" />W{latest!.weekNumber}
+              <Crown className="w-2.5 h-2.5 inline mr-1" />W{latest?.weekNumber ?? '?'}
             </span>
           ) : (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border" style={{ color: '#d4a853', backgroundColor: 'rgba(212,168,83,0.12)', borderColor: 'rgba(212,168,83,0.25)' }}>
@@ -102,16 +103,16 @@ function CompactChampionCard({
         </div>
       </div>
 
-      {/* Team name + prize (only for weekly champion) */}
+      {/* Team name + prize (only for weekly champion) — using optional chaining */}
       {hasWeeklyChampion && (
         <div className="px-4 pt-3 pb-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <Trophy className="w-4 h-4 shrink-0" style={{ color: accentLight }} />
-            <span className="text-base sm:text-lg font-black text-[#f5f0e8] truncate">{latest!.winnerTeam!.name}</span>
+            <span className="text-base sm:text-lg font-black text-[#f5f0e8] truncate">{latest?.winnerTeam?.name ?? 'TBD'}</span>
           </div>
-          {latest!.prizePool > 0 && (
+          {(latest?.prizePool ?? 0) > 0 && (
             <span className="text-[10px] font-bold text-[#d4a853] bg-gradient-to-r from-[rgba(212,168,83,0.12)] to-[rgba(212,168,83,0.04)] px-2 py-1 rounded-lg flex items-center gap-1 border border-[rgba(212,168,83,0.18)] shrink-0">
-              <Wallet className="w-3 h-3" />{latest!.prizePool.toLocaleString()}
+              <Wallet className="w-3 h-3" />{(latest?.prizePool ?? 0).toLocaleString()}
             </span>
           )}
         </div>
@@ -127,10 +128,10 @@ function CompactChampionCard({
       {/* Gold divider */}
       <div className="h-px mx-4 bg-gradient-to-r from-transparent via-[rgba(212,168,83,0.20)] to-transparent" />
 
-      {/* Player Avatars — from weekly champion OR top 3 players */}
+      {/* Player Avatars — from weekly champion OR top 3 players — using optional chaining */}
       {(() => {
         const players = hasWeeklyChampion
-          ? (latest!.winnerTeam!.players || [])
+          ? (latest?.winnerTeam?.players || [])
           : topPlayers.map(p => ({ id: p.id, gamertag: p.gamertag, tier: p.tier, points: p.points, totalWins: p.totalWins, streak: p.streak, avatar: p.avatar }));
 
         if (players.length === 0) {
@@ -143,8 +144,8 @@ function CompactChampionCard({
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" aria-hidden="true">
               <span className="text-2xl font-black uppercase tracking-widest select-none" style={{ color: 'rgba(212,168,83,0.03)', WebkitTextStroke: '1px rgba(212,168,83,0.05)' }}>CHAMPION</span>
             </div>
-            {/* Crown badge */}
-            <div className="absolute top-2 right-2 z-20 w-5 h-5 rounded-full bg-[#d4a853] flex items-center justify-center">
+            {/* Crown badge with CSS float animation */}
+            <div className="champion-crown-float absolute top-2 right-2 z-20 w-5 h-5 rounded-full bg-[#d4a853] flex items-center justify-center">
               <Crown className="w-2.5 h-2.5 text-[#0d0d1a]" />
             </div>
 
@@ -165,7 +166,7 @@ function CompactChampionCard({
                   }
                 }}
               >
-                <Image src={getAvatarUrl(player.gamertag, division, player.avatar)} alt={player.gamertag} fill sizes="33vw" className="object-cover object-top transition-transform duration-500 group-hover/avatar:scale-110" />
+                <Image src={getAvatarUrl(player.gamertag, division, player.avatar)} alt={player.gamertag} fill sizes="33vw" className="object-cover object-top transition-transform duration-500 group-hover/avatar:scale-110" loading="lazy" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/5 to-transparent" />
                 {pIdx < Math.min(players.length, 3) - 1 && <div className="absolute right-0 top-0 bottom-0 w-px z-20" style={{ backgroundColor: hexToRgba(accent, 0.15) }} />}
                 <div className="absolute bottom-0 inset-x-0 px-2 pb-2 pt-5 z-10" style={{ background: 'linear-gradient(to top, rgba(13,13,26,0.90) 0%, transparent 100%)' }}>
@@ -197,7 +198,7 @@ export function ChampionsSection({
   const emptyData = { hasData: false, division: 'male' as const, season: { id: '', name: '', number: 1, status: 'active' }, allSeasons: [], activeTournament: null, totalPlayers: 0, totalPrizePool: 0, seasonDonationTotal: 0, topPlayers: [], skinMap: {}, recentMatches: [], upcomingMatches: [], seasonProgress: { totalWeeks: 0, completedWeeks: 0, percentage: 0 }, topDonors: [], clubs: [], weeklyChampions: [], mvpHallOfFame: [] } as StatsData;
 
   return (
-    <section id="champions" role="region" aria-label="Season Champions" className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <section id="champions" role="region" aria-label="Season Champions" className="landing-section relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-[#0a0a14]" />
       <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: 'linear-gradient(rgba(212,168,83,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(212,168,83,0.3) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />

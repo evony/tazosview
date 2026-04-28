@@ -236,7 +236,7 @@ function buildVideoHighlights(
       const match = maleData.recentMatches[i];
       videos.push({
         id: `match-male-${match.id}`,
-        title: `${match.club1.name} vs ${match.club2.name}`,
+        title: `${match.club1?.name || 'TBD'} vs ${match.club2?.name || 'TBD'}`,
         weekNumber: match.week,
         seasonNumber: maleData.season?.number,
         division: 'male',
@@ -252,7 +252,7 @@ function buildVideoHighlights(
       const match = femaleData.recentMatches[i];
       videos.push({
         id: `match-female-${match.id}`,
-        title: `${match.club1.name} vs ${match.club2.name}`,
+        title: `${match.club1?.name || 'TBD'} vs ${match.club2?.name || 'TBD'}`,
         weekNumber: match.week,
         seasonNumber: femaleData.season?.number,
         division: 'female',

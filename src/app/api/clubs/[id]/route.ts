@@ -111,7 +111,7 @@ export async function PUT(
   // Invalidate ALL Next.js/Vercel cache layers
   revalidatePath('/');
   revalidatePath('/api/league');
-  revalidateTag('league-data', 'max');
+  revalidateTag('league-data');
   revalidatePath('/api/stats');
 
   return NextResponse.json({
@@ -161,7 +161,7 @@ export async function DELETE(
   // Invalidate cache
   revalidatePath('/');
   revalidatePath('/api/league');
-  revalidateTag('league-data', 'max');
+  revalidateTag('league-data');
   revalidatePath('/api/stats');
 
   return NextResponse.json({ success: true, message: `Club "${club.profile.name}" berhasil dihapus dari season ini. Profil club dan anggota tetap tersimpan.` });

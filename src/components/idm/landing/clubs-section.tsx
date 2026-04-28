@@ -47,11 +47,13 @@ interface ClubsSectionProps {
   setSelectedPlayer: (player: StatsData['topPlayers'][0] & { division?: string } | null) => void;
   showAllClubs: boolean;
   setShowAllClubs: (show: boolean) => void;
-  showAllPlayers: boolean;
-  setShowAllPlayers: (show: boolean) => void;
+  showAllMalePlayers: boolean;
+  setShowAllMalePlayers: (show: boolean) => void;
+  showAllFemalePlayers: boolean;
+  setShowAllFemalePlayers: (show: boolean) => void;
 }
 
-export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections, leagueData, setSelectedClub, selectedClub, setSelectedPlayer, showAllClubs, setShowAllClubs, showAllPlayers, setShowAllPlayers }: ClubsSectionProps) {
+export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections, leagueData, setSelectedClub, selectedClub, setSelectedPlayer, showAllClubs, setShowAllClubs, showAllMalePlayers, setShowAllMalePlayers, showAllFemalePlayers, setShowAllFemalePlayers }: ClubsSectionProps) {
   // Get Tarkam season champions from allSeasons data (not from Liga)
   const seasonChampions = [
     ...(maleData?.allSeasons || []),
@@ -61,10 +63,10 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
     .map(s => ({ ...s.championClub!, seasonNumber: s.number, division: s.name.toLowerCase().includes('female') ? 'female' as const : 'male' as const }));
   return (<>
       {/* ========== CLUB TARKAM — Card-based Layout ========== */}
-      <section id="clubs" className="relative py-16 sm:py-24 px-4 overflow-hidden bg-[#0a0a14]">
-        {/* Background — living atmosphere, matching Champions/MVP sections */}
-        <div className="absolute inset-0 opacity-[0.025] parallax-section-bg" style={{ backgroundImage: 'radial-gradient(circle, rgba(212,168,83,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-        <div className="absolute inset-0 parallax-section-bg" style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(212,168,83,0.06) 0%, transparent 50%), radial-gradient(ellipse at 15% 50%, rgba(6,182,212,0.04) 0%, transparent 45%), radial-gradient(ellipse at 85% 50%, rgba(168,85,247,0.04) 0%, transparent 45%)' }} />
+      <section id="clubs" className="landing-section relative py-16 sm:py-24 px-4 overflow-hidden bg-[#0a0a14]">
+        {/* Background */}
+        <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: 'radial-gradient(circle, rgba(212,168,83,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(212,168,83,0.06) 0%, transparent 50%), radial-gradient(ellipse at 15% 50%, rgba(6,182,212,0.04) 0%, transparent 45%), radial-gradient(ellipse at 85% 50%, rgba(168,85,247,0.04) 0%, transparent 45%)' }} />
         {/* Top & bottom edge glow lines */}
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(212,168,83,0.25)] to-transparent" aria-hidden="true" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[rgba(212,168,83,0.12)] to-transparent" aria-hidden="true" />
@@ -73,7 +75,7 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
           <div className="stagger-item">
             <SectionHeader icon={Users} label={cmsSections.clubs?.subtitle || "Kompetisi"} title={cmsSections.clubs?.title || "Club Tarkam"} subtitle={cmsSections.clubs?.description || "Club-club terbaik yang bertarung di arena Tarkam IDM"} />
 
-            {/* Tarkam Season Champion callout — from allSeasons data */}
+            {/* Tarkam Season Champion callout */}
             {seasonChampions.length > 0 && (
               <div className="stagger-item-fast mb-8" style={{ animationDelay: '60ms' }}>
                 <div className="flex items-center justify-center">
@@ -136,13 +138,12 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                   <TabsContent value="clubs" className="mt-0">
                     {sortedClubs.length === 0 ? null : (
                       <>
-                        {/* Club Grid — show 6 on mobile, 10 on desktop; rest behind CTA */}
+                        {/* Club Grid */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                           {(showAllClubs ? sortedClubs : sortedClubs.slice(0, 10)).map((club, idx) => {
                             const isChampion = seasonChampions.some(ch => ch.name === club.name);
                             const maleMembers = club.members?.filter(m => m.division === 'male').length || 0;
                             const femaleMembers = club.members?.filter(m => m.division === 'female').length || 0;
-                            // Hide clubs 7-10 on mobile when not expanded
                             const hiddenOnMobile = !showAllClubs && idx >= 6;
                             return (
                               <div
@@ -168,8 +169,8 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                                   })),
                                 })}
                               >
-                                <div className={`relative rounded-xl bg-[#0d0d1a] border text-center transition-all duration-300 overflow-hidden group-hover/club:border-[rgba(212,168,83,0.25)] group-hover/club:shadow-[0_0_30px_rgba(212,168,83,0.08)] group-hover/club:scale-[1.02] ${
-                                  isChampion ? 'border-[rgba(212,168,83,0.25)] shadow-[0_0_20px_rgba(212,168,83,0.08)]' : 'border-[rgba(212,168,83,0.1)]'
+                                <div className={`club-card relative rounded-xl bg-[#0d0d1a] border text-center transition-all duration-300 overflow-hidden ${
+                                  isChampion ? 'border-[rgba(212,168,83,0.25)]' : 'border-[rgba(212,168,83,0.1)]'
                                 }`}>
                                   {/* Gold accent line at top */}
                                   <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#d4a853] to-transparent opacity-50 z-20" />
@@ -179,18 +180,16 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                                     <ClubLogoImage clubName={club.name} dbLogo={club.logo} alt="" width={200} height={200} className="w-[80%] h-auto aspect-square object-contain" />
                                   </div>
 
-                                  {/* Champion badge removed — champion info shown in callout above */}
-
                                   {/* Card content */}
                                   <div className="relative z-10 flex flex-col items-center px-4 pt-8 pb-5">
                                     {/* Large centered logo with glow ring */}
                                     <div className="relative mb-4">
                                       {/* Outer glow ring */}
-                                      <div className={`absolute -inset-1.5 rounded-2xl transition-all duration-500 group-hover/club:shadow-[0_0_20px_rgba(212,168,83,0.35)] ${
+                                      <div className={`absolute -inset-1.5 rounded-2xl transition-all duration-500 ${
                                         isChampion ? 'shadow-[0_0_16px_rgba(212,168,83,0.3)]' : 'shadow-[0_0_10px_rgba(212,168,83,0.12)]'
                                       }`} style={{ background: isChampion ? 'linear-gradient(135deg, rgba(212,168,83,0.25), rgba(212,168,83,0.08))' : 'linear-gradient(135deg, rgba(212,168,83,0.15), rgba(212,168,83,0.04))' }} />
-                                      {/* Logo container */}
-                                      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-[#0d0d1a] border-2 border-[#d4a853]/20 flex items-center justify-center group-hover/club:scale-105 group-hover/club:border-[#d4a853]/35 transition-all duration-500">
+                                      {/* Logo container with gold border accent on hover */}
+                                      <div className="club-logo-container relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-[#0d0d1a] border-2 border-[#d4a853]/20 flex items-center justify-center group-hover/club:scale-105 group-hover/club:border-[#d4a853]/35 transition-all duration-500">
                                         <ClubLogoImage clubName={club.name} dbLogo={club.logo} alt={club.name} fill sizes="96px" className="object-cover" />
                                       </div>
                                     </div>
@@ -199,8 +198,6 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                                     <p className={`text-sm font-black truncate max-w-full transition-colors duration-200 ${
                                       isChampion ? 'text-[#d4a853]' : 'text-white group-hover/club:text-[#d4a853]'
                                     }`}>{club.name}</p>
-
-                                    {/* Champion label removed — shown in callout above */}
 
                                     {/* Division badges */}
                                     <div className="flex items-center justify-center gap-1.5 mt-2.5">
@@ -233,7 +230,7 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                           <div className="flex justify-center mt-6">
                             <button
                               onClick={() => setShowAllClubs(!showAllClubs)}
-                              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#d4a853]/20 bg-[#d4a853]/5 text-[#d4a853] text-xs font-semibold transition-all duration-300 hover:bg-[#d4a853]/10 hover:border-[#d4a853]/30 hover:shadow-[0_0_20px_rgba(212,168,83,0.12)] cursor-pointer"
+                              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#d4a853]/20 bg-[#d4a853]/5 text-[#d4a853] text-xs font-semibold transition-all duration-300 hover:bg-[#d4a853]/10 hover:border-[#d4a853]/30 cursor-pointer"
                             >
                               {showAllClubs ? (
                                 <>
@@ -264,7 +261,7 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                       <>
                         {/* Player Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {(showAllPlayers ? malePlayers : malePlayers.slice(0, 6)).map((player, idx) => {
+                          {(showAllMalePlayers ? malePlayers : malePlayers.slice(0, 6)).map((player, idx) => {
                             return (
                               <div
                                 key={player.id}
@@ -272,10 +269,10 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                                 style={{ animationDelay: `${idx * 30}ms` }}
                                 onClick={() => setSelectedPlayer({ ...player, division: 'male' })}
                               >
-                                <div className="relative rounded-xl bg-[#0d0d1a] border border-[rgba(212,168,83,0.08)] text-center transition-all duration-300 overflow-hidden group-hover/player:border-[#06b6d4]/25 group-hover/player:shadow-[0_0_24px_rgba(6,182,212,0.08)]">
+                                <div className="club-card relative rounded-xl bg-[#0d0d1a] border border-[rgba(212,168,83,0.08)] text-center transition-all duration-300 overflow-hidden group-hover/player:border-[#06b6d4]/25 group-hover/player:shadow-[0_0_24px_rgba(6,182,212,0.08)]">
                                   <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#06b6d4] to-transparent z-20" />
                                   <div className="relative h-32 sm:h-36 overflow-hidden group-hover/player:scale-105 transition-transform duration-500">
-                                    <Image src={getAvatarUrl(player.gamertag, 'male', player.avatar)} alt={player.gamertag} fill sizes="200px" className="object-cover object-top" />
+                                    <Image src={getAvatarUrl(player.gamertag, 'male', player.avatar)} alt={player.gamertag} fill sizes="200px" className="object-cover object-top" loading="lazy" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/30 to-transparent" />
                                   </div>
                                   <div className="relative px-3 pb-3 pt-1">
@@ -296,10 +293,10 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                         {malePlayers.length > 6 && (
                           <div className="flex justify-center mt-6">
                             <button
-                              onClick={() => setShowAllPlayers(!showAllPlayers)}
+                              onClick={() => setShowAllMalePlayers(!showAllMalePlayers)}
                               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#06b6d4]/20 bg-[#06b6d4]/5 text-[#22d3ee] text-xs font-semibold transition-all duration-300 hover:bg-[#06b6d4]/10 hover:border-[#06b6d4]/30 cursor-pointer"
                             >
-                              {showAllPlayers ? (
+                              {showAllMalePlayers ? (
                                 <>
                                   <ChevronUp className="w-4 h-4" />
                                   Tampilkan Lebih Sedikit
@@ -328,7 +325,7 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                       <>
                         {/* Player Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {(showAllPlayers ? femalePlayers : femalePlayers.slice(0, 6)).map((player, idx) => {
+                          {(showAllFemalePlayers ? femalePlayers : femalePlayers.slice(0, 6)).map((player, idx) => {
                             return (
                               <div
                                 key={player.id}
@@ -336,10 +333,10 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                                 style={{ animationDelay: `${idx * 30}ms` }}
                                 onClick={() => setSelectedPlayer({ ...player, division: 'female' })}
                               >
-                                <div className="relative rounded-xl bg-[#0d0d1a] border border-[rgba(212,168,83,0.08)] text-center transition-all duration-300 overflow-hidden group-hover/player:border-[#a855f7]/25 group-hover/player:shadow-[0_0_24px_rgba(168,85,247,0.08)]">
+                                <div className="club-card relative rounded-xl bg-[#0d0d1a] border border-[rgba(212,168,83,0.08)] text-center transition-all duration-300 overflow-hidden group-hover/player:border-[#a855f7]/25 group-hover/player:shadow-[0_0_24px_rgba(168,85,247,0.08)]">
                                   <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#a855f7] to-transparent z-20" />
                                   <div className="relative h-32 sm:h-36 overflow-hidden group-hover/player:scale-105 transition-transform duration-500">
-                                    <Image src={getAvatarUrl(player.gamertag, 'female', player.avatar)} alt={player.gamertag} fill sizes="200px" className="object-cover object-top" />
+                                    <Image src={getAvatarUrl(player.gamertag, 'female', player.avatar)} alt={player.gamertag} fill sizes="200px" className="object-cover object-top" loading="lazy" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/30 to-transparent" />
                                   </div>
                                   <div className="relative px-3 pb-3 pt-1">
@@ -360,10 +357,10 @@ export function ClubsSection({ maleData, femaleData, isDataLoading, cmsSections,
                         {femalePlayers.length > 6 && (
                           <div className="flex justify-center mt-6">
                             <button
-                              onClick={() => setShowAllPlayers(!showAllPlayers)}
+                              onClick={() => setShowAllFemalePlayers(!showAllFemalePlayers)}
                               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#a855f7]/20 bg-[#a855f7]/5 text-[#c084fc] text-xs font-semibold transition-all duration-300 hover:bg-[#a855f7]/10 hover:border-[#a855f7]/30 cursor-pointer"
                             >
-                              {showAllPlayers ? (
+                              {showAllFemalePlayers ? (
                                 <>
                                   <ChevronUp className="w-4 h-4" />
                                   Tampilkan Lebih Sedikit

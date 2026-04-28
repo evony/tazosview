@@ -147,7 +147,7 @@ export async function POST(request: Request) {
   // Invalidate cache
   revalidatePath('/');
   revalidatePath('/api/league');
-  revalidateTag('league-data', 'max');
+  revalidateTag('league-data');
 
   const primaryClub = createdClubs[0];
   return NextResponse.json(primaryClub, { status: 201 });

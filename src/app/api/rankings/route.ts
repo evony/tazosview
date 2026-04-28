@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server';
  *   detail: "full" — include point breakdown per player
  */
 export async function GET(request: Request) {
+  try {
   const { searchParams } = new URL(request.url);
   const division = searchParams.get('division');
   const detail = searchParams.get('detail');
@@ -66,13 +67,18 @@ export async function GET(request: Request) {
   // Tier distribution summary
   const tierSummary = { S: 0, A: 0, B: 0 };
   for (const p of rankings) {
-    tierSummary[p.tier as keyof typeof tierSummary]++;
+    const t = p.tier as keyof typeof tierSummary;
+    if (t in tierSummary) tierSummary[t]++;
   }
 
   return NextResponse.json({
     rankings,
     tierSummary,
   });
+  } catch (error) {
+    console.error('[GET /api/rankings]', error);
+    return NextResponse.json({ error: 'Failed to fetch rankings' }, { status: 500 });
+  }
 }
 
 /**

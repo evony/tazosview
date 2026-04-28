@@ -630,6 +630,13 @@ export function HighlightsSection({
   const active = highlights[activeIdx];
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Clamp activeIdx when highlights array changes
+  useEffect(() => {
+    if (highlights.length > 0 && activeIdx >= highlights.length) {
+      setTimeout(() => setActiveIdx(highlights.length - 1), 0);
+    }
+  }, [highlights.length, activeIdx]);
+
   /* ─── Handle thumbnail click with transition ─── */
   const handleThumbClick = useCallback((idx: number) => {
     if (idx === activeIdx) return;

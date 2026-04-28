@@ -373,7 +373,7 @@ export function MatchDayCenter() {
     if (!data?.activeTournament?.matches) return;
     const newMap = new Map(predictions);
     let changed = false;
-    data.activeTournament.matches.forEach(m => {
+    data.activeTournament?.matches?.forEach(m => {
       if (!newMap.has(m.id)) {
         newMap.set(m.id, {
           matchId: m.id,

@@ -24,6 +24,7 @@ function TrustBadge({ icon: Icon, value, label }: { icon: React.ComponentType<{ 
 
 /* ═══════════════════════════════════════════════════════════════
    CTA Section — Call to Action before footer
+   Premium redesign with gradient border, pulsing glow, gold trail
    ═══════════════════════════════════════════════════════════════ */
 export function CTASection({
   onEnterCommunity,
@@ -48,57 +49,66 @@ export function CTASection({
   }));
 
   return (
-    <section id="cta" aria-label="Call to Action" className="relative py-16 sm:py-28 px-4 overflow-hidden bg-[#0a0a14]">
+    <section id="cta" aria-label="Call to Action" className="cta-section relative py-16 sm:py-28 px-4 overflow-hidden bg-[#0a0a14]">
       {/* Top gold border glow line */}
       <div className="absolute top-0 left-0 right-0 h-px" aria-hidden="true">
         <div className="w-full h-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,168,83,0.4), rgba(245,230,200,0.2), rgba(212,168,83,0.4), transparent)' }} />
       </div>
 
-      {/* Radial gold glow — enhanced */}
+      {/* Radial gold glow */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(212,168,83,0.08) 0%, transparent 50%)' }} />
 
-      {/* Bilateral cyan+purple atmosphere — living color depth */}
+      {/* Bilateral cyan+purple atmosphere */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 15% 50%, rgba(6,182,212,0.04) 0%, transparent 45%), radial-gradient(ellipse at 85% 50%, rgba(168,85,247,0.04) 0%, transparent 45%)' }} />
-
-      {/* Subtle dot pattern */}
-      <div className="absolute inset-0 opacity-[0.012]" style={{ backgroundImage: 'radial-gradient(circle, rgba(212,168,83,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }} aria-hidden="true" />
 
       {/* Bottom edge glow */}
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[rgba(212,168,83,0.12)] to-transparent" aria-hidden="true" />
 
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto text-center">
-        {/* Heading */}
-        <h2 className="reveal reveal-fade-up text-3xl sm:text-5xl font-black text-gradient-champion mb-4">
-          {title}
-        </h2>
+        {/* ── CTA Card with dramatic gradient border ── */}
+        <div className="cta-card-wrapper relative rounded-3xl p-[1.5px] mx-auto max-w-2xl">
+          {/* Gradient border — animated shimmer */}
+          <div className="cta-gradient-border absolute inset-0 rounded-3xl" aria-hidden="true" />
 
-        {/* Subtitle */}
-        <p className="reveal reveal-fade-up reveal-delay-1 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed mb-10">
-          {description}
-        </p>
+          {/* Card content */}
+          <div className="relative rounded-3xl bg-[#0d0d1a]/95 px-6 sm:px-10 py-10 sm:py-14">
+            {/* Gold particle trail — CSS pseudo-element */}
+            <div className="cta-gold-trail absolute top-0 left-0 right-0 h-1 rounded-t-3xl overflow-hidden" aria-hidden="true" />
 
-        {/* Action Buttons */}
-        <div className="reveal reveal-fade-up reveal-delay-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-          {/* Masuk Arena — Primary Gold Button */}
-          <button
-            onClick={onEnterCommunity}
-            className="btn-press group relative px-8 py-4 rounded-2xl bg-gradient-to-r from-[#d4a853] to-[#e8d5a3] text-[#0d0d1a] font-bold text-sm tracking-wider shadow-[0_0_30px_rgba(212,168,83,0.2)] hover:shadow-[0_0_60px_rgba(212,168,83,0.4)] transition-shadow cursor-pointer overflow-hidden"
-          >
-            {/* Shimmer sweep on hover */}
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-            <Flame className="w-4 h-4 inline mr-2 relative z-10" />
-            <span className="relative z-10">{primaryButtonText}</span>
-          </button>
+            {/* Heading */}
+            <h2 className="reveal reveal-fade-up text-3xl sm:text-5xl font-black text-gradient-champion mb-4">
+              {title}
+            </h2>
 
-          {/* Daftar Sekarang — Outline Button */}
-          <button
-            onClick={onRegister}
-            className="btn-press group relative px-8 py-4 rounded-2xl border-2 border-[rgba(212,168,83,0.3)] text-[#d4a853] font-bold text-sm tracking-wider bg-transparent hover:bg-[rgba(212,168,83,0.05)] hover:border-[rgba(212,168,83,0.5)] hover:shadow-[0_0_30px_rgba(212,168,83,0.1)] transition-all cursor-pointer"
-          >
-            <UserPlus className="w-4 h-4 inline mr-2" />
-            <span>{secondaryButtonText}</span>
-          </button>
+            {/* Subtitle */}
+            <p className="reveal reveal-fade-up reveal-delay-1 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed mb-10">
+              {description}
+            </p>
+
+            {/* Action Buttons */}
+            <div className="reveal reveal-fade-up reveal-delay-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+              {/* Masuk Arena — Primary Gold Button with pulsing glow */}
+              <button
+                onClick={onEnterCommunity}
+                className="btn-press cta-btn-pulse group relative px-8 py-4 rounded-2xl bg-gradient-to-r from-[#d4a853] to-[#e8d5a3] text-[#0d0d1a] font-bold text-sm tracking-wider cursor-pointer overflow-hidden"
+              >
+                {/* Shimmer sweep on hover */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                <Flame className="w-4 h-4 inline mr-2 relative z-10" />
+                <span className="relative z-10">{primaryButtonText}</span>
+              </button>
+
+              {/* Daftar Sekarang — Outline Button */}
+              <button
+                onClick={onRegister}
+                className="btn-press group relative px-8 py-4 rounded-2xl border-2 border-[rgba(212,168,83,0.3)] text-[#d4a853] font-bold text-sm tracking-wider bg-transparent hover:bg-[rgba(212,168,83,0.05)] hover:border-[rgba(212,168,83,0.5)] transition-all cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4 inline mr-2" />
+                <span>{secondaryButtonText}</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Trust Badges */}
