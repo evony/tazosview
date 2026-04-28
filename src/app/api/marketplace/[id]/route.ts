@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/api-auth';
 
-const VALID_CATEGORIES = ['avatar', 'accessory', 'jasa_joki', 'baju', 'item', 'lainnya'];
+const VALID_CATEGORIES = ['ava', 'item', 'char', 'jasa', 'dll'];
 
 // DELETE /api/marketplace/[id] — Soft delete a marketplace item (admin only)
 export async function DELETE(
@@ -60,7 +60,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { sellerName, sellerAvatar, sellerWhatsapp, title, description, price, category, imageUrl, isPremium, isActive, status } = body;
+    const { sellerName, sellerAvatar, sellerWhatsapp, title, description, price, category, imageUrl, images, isPremium, isActive, status } = body;
 
     // Validate category if provided
     if (category !== undefined && !VALID_CATEGORIES.includes(category)) {
@@ -86,6 +86,17 @@ export async function PATCH(
       );
     }
 
+    // Validate images array if provided (max 5)
+    let imagesJson: string | null | undefined = undefined;
+    if (images !== undefined) {
+      if (Array.isArray(images)) {
+        const validImages = images.filter((url: string) => typeof url === 'string' && url.trim()).slice(0, 5);
+        imagesJson = validImages.length > 0 ? JSON.stringify(validImages) : null;
+      } else {
+        imagesJson = null;
+      }
+    }
+
     const updated = await db.marketplaceItem.update({
       where: { id },
       data: {
@@ -97,6 +108,7 @@ export async function PATCH(
         ...(price !== undefined && { price }),
         ...(category !== undefined && { category }),
         ...(imageUrl !== undefined && { imageUrl }),
+        ...(imagesJson !== undefined && { images: imagesJson }),
         ...(isPremium !== undefined && { isPremium }),
         ...(isActive !== undefined && { isActive }),
         ...(status !== undefined && { status }),

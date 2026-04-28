@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, ShoppingBag, Upload, CheckCircle, AlertCircle,
   UserCheck, Sparkles, Gamepad2, Wand2, Shirt, Package, Tag,
-  Loader2, LogIn, ShieldCheck,
+  Loader2, LogIn, ShieldCheck, Plus, Trash2, Image as ImageIcon
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
@@ -18,20 +18,20 @@ interface SubmitMarketplaceModalProps {
   onSuccess: () => void;
 }
 
-type CategoryOption = 'avatar' | 'accessory' | 'jasa_gb' | 'jasa_joki' | 'baju' | 'item' | 'lainnya';
+type CategoryOption = 'ava' | 'item' | 'char' | 'jasa' | 'dll';
 
 /* ═══════════════════════════════════════════════════════
-   CATEGORY CONFIG
+   CATEGORY CONFIG — Simplified
    ═══════════════════════════════════════════════════════ */
 const CATEGORIES: { id: CategoryOption; label: string; icon: React.ReactNode; desc: string }[] = [
-  { id: 'avatar', label: 'Avatar', icon: <UserCheck className="w-4 h-4" />, desc: 'Avatar, skin karakter' },
-  { id: 'accessory', label: 'Aksesoris', icon: <Sparkles className="w-4 h-4" />, desc: 'Wings, effect, aksesoris' },
-  { id: 'jasa_gb', label: 'Jasa GB', icon: <Gamepad2 className="w-4 h-4" />, desc: 'Jasa GB rank, dll' },
-  { id: 'jasa_joki', label: 'Jasa Joki', icon: <Wand2 className="w-4 h-4" />, desc: 'Joki turnamen, ranking' },
-  { id: 'baju', label: 'Baju', icon: <Shirt className="w-4 h-4" />, desc: 'Outfit, set baju couple' },
-  { id: 'item', label: 'Item', icon: <Package className="w-4 h-4" />, desc: 'Item game, skin, dll' },
-  { id: 'lainnya', label: 'Lainnya', icon: <Tag className="w-4 h-4" />, desc: 'Lain-lain' },
+  { id: 'ava', label: 'Ava', icon: <UserCheck className="w-4 h-4" />, desc: 'Avatar, skin' },
+  { id: 'item', label: 'Item', icon: <Package className="w-4 h-4" />, desc: 'Item game' },
+  { id: 'char', label: 'Char', icon: <Sparkles className="w-4 h-4" />, desc: 'Karakter' },
+  { id: 'jasa', label: 'Jasa', icon: <Gamepad2 className="w-4 h-4" />, desc: 'GB, Joki, dll' },
+  { id: 'dll', label: 'Dll', icon: <Tag className="w-4 h-4" />, desc: 'Lain-lain' },
 ];
+
+const MAX_IMAGES = 5;
 
 /* ═══════════════════════════════════════════════════════
    SUBMIT MARKETPLACE MODAL — Orange theme
@@ -46,7 +46,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
     description: '',
     price: '' as string | number,
     category: 'item' as CategoryOption,
-    imageUrl: '',
+    imageUrls: [''] as string[], // Up to 5 image URLs
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,6 +67,26 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
     onClose();
   }
 
+  function addImageField() {
+    if (form.imageUrls.length < MAX_IMAGES) {
+      setForm(p => ({ ...p, imageUrls: [...p.imageUrls, ''] }));
+    }
+  }
+
+  function removeImageField(index: number) {
+    setForm(p => ({
+      ...p,
+      imageUrls: p.imageUrls.filter((_, i) => i !== index),
+    }));
+  }
+
+  function updateImageUrl(index: number, url: string) {
+    setForm(p => ({
+      ...p,
+      imageUrls: p.imageUrls.map((u, i) => i === index ? url : u),
+    }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (isSubmitting) return;
@@ -78,15 +98,23 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
     try {
       const priceNum = typeof form.price === 'string' ? parseInt(form.price) || 0 : form.price;
 
+      // Collect valid image URLs
+      const validImages = form.imageUrls
+        .map(url => url.trim())
+        .filter(url => url.length > 0);
+
       const res = await fetch('/api/marketplace/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          ...form,
-          price: priceNum,
-          imageUrl: form.imageUrl || undefined,
           sellerWhatsapp: form.sellerWhatsapp || undefined,
+          title: form.title,
+          description: form.description,
+          price: priceNum,
+          category: form.category,
+          imageUrl: validImages[0] || undefined,
+          images: validImages.length > 0 ? validImages : undefined,
         }),
       });
 
@@ -108,7 +136,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
           description: '',
           price: '',
           category: 'item',
-          imageUrl: '',
+          imageUrls: [''],
         });
         setSubmitResult('idle');
       }, 2000);
@@ -223,10 +251,10 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                   </div>
                 </div>
 
-                {/* Category Selection — Orange active */}
+                {/* Category Selection — Simplified */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Kategori</label>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                     {CATEGORIES.map((cat) => (
                       <button
                         key={cat.id}
@@ -271,6 +299,49 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                   </div>
                 </div>
 
+                {/* Image URLs — Up to 5 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Screenshot ({form.imageUrls.filter(u => u.trim()).length}/{MAX_IMAGES})</label>
+                    {form.imageUrls.length < MAX_IMAGES && (
+                      <button
+                        type="button"
+                        onClick={addImageField}
+                        className="flex items-center gap-0.5 px-2 py-1 rounded-lg bg-orange-500/10 border border-orange-500/15 text-[9px] font-bold text-orange-400 hover:bg-orange-500/20 transition-colors cursor-pointer"
+                      >
+                        <Plus className="w-2.5 h-2.5" />
+                        Tambah
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    {form.imageUrls.map((url, i) => (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <div className="w-5 h-5 rounded bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                          <ImageIcon className="w-2.5 h-2.5 text-orange-400/60" />
+                        </div>
+                        <input
+                          type="url"
+                          placeholder={`URL gambar ${i + 1}${i === 0 ? ' (utama)' : ''}`}
+                          value={url}
+                          onChange={(e) => updateImageUrl(i, e.target.value)}
+                          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-border/30 text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
+                        />
+                        {form.imageUrls.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeImageField(i)}
+                            className="w-6 h-6 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400/60 hover:text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer flex-shrink-0"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-muted-foreground/30">Maksimal {MAX_IMAGES} screenshot. Gambar pertama akan jadi thumbnail.</p>
+                </div>
+
                 {/* Price — Orange */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Harga (IDR)</label>
@@ -297,18 +368,6 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                     placeholder="08xxx — untuk dihubungi pembeli"
                     value={form.sellerWhatsapp}
                     onChange={(e) => setForm(p => ({ ...p, sellerWhatsapp: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
-                  />
-                </div>
-
-                {/* Image URL */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Gambar (opsional)</label>
-                  <input
-                    type="url"
-                    placeholder="URL gambar item kamu..."
-                    value={form.imageUrl}
-                    onChange={(e) => setForm(p => ({ ...p, imageUrl: e.target.value }))}
                     className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
                   />
                 </div>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requirePlayer } from '@/lib/api-auth';
 
-const VALID_CATEGORIES = ['avatar', 'accessory', 'jasa_gb', 'jasa_joki', 'baju', 'item', 'lainnya'];
+const VALID_CATEGORIES = ['ava', 'item', 'char', 'jasa', 'dll'];
 
 // POST /api/marketplace/submit — User submission (REQUIRES player login)
 // Items are created with status "pending" and need admin approval
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     if (playerAuth instanceof NextResponse) return playerAuth;
 
     const body = await request.json();
-    const { sellerWhatsapp, title, description, price, category, imageUrl } = body;
+    const { sellerWhatsapp, title, description, price, category, imageUrl, images } = body;
 
     // Validate required fields
     if (!title || !description || price === undefined || !category) {
@@ -64,6 +64,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate images array (max 5)
+    let imagesJson: string | null = null;
+    if (images && Array.isArray(images)) {
+      const validImages = images.filter((url: string) => typeof url === 'string' && url.trim()).slice(0, 5);
+      if (validImages.length > 0) imagesJson = JSON.stringify(validImages);
+    }
+
     // Auto-fill seller info from player account
     const player = playerAuth.player;
 
@@ -77,7 +84,8 @@ export async function POST(request: NextRequest) {
         description,
         price,
         category,
-        imageUrl: imageUrl || null,
+        imageUrl: imageUrl || (imagesJson ? JSON.parse(imagesJson)[0] : null),
+        images: imagesJson,
         isPremium: false, // User submissions cannot be premium
         status: 'pending', // Requires admin approval
       },

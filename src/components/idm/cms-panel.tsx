@@ -515,13 +515,11 @@ function MarketplaceManager() {
   });
 
   const CATEGORIES = [
-    { value: 'avatar', label: 'Avatar' },
-    { value: 'accessory', label: 'Aksesoris' },
-    { value: 'jasa_gb', label: 'Jasa GB' },
-    { value: 'jasa_joki', label: 'Jasa Joki' },
-    { value: 'baju', label: 'Baju' },
+    { value: 'ava', label: 'Ava' },
     { value: 'item', label: 'Item' },
-    { value: 'lainnya', label: 'Lainnya' },
+    { value: 'char', label: 'Char' },
+    { value: 'jasa', label: 'Jasa' },
+    { value: 'dll', label: 'Dll' },
   ];
 
   const STATUS_BADGE: Record<string, { label: string; class: string }> = {

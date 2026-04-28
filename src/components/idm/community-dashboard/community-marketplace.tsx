@@ -5,9 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, Search, MessageCircle, Crown, Sparkles,
   Shirt, Gamepad2, UserCheck, Wand2, Package, ChevronRight,
-  Flame, Tag, Plus, ShieldCheck
+  Flame, Tag, Plus, ShieldCheck, User, Box, Briefcase, Ellipsis
 } from 'lucide-react';
 import { SubmitMarketplaceModal } from './submit-marketplace-modal';
+import { MarketplaceDetailModal } from './marketplace-detail-modal';
 
 /* ═══════════════════════════════════════════════════════
    TYPES
@@ -23,44 +24,39 @@ interface MarketplaceItem {
   price: number;
   category: string;
   imageUrl?: string;
+  images?: string; // JSON array string
   isPremium: boolean;
   createdAt: string;
 }
 
-type CategoryFilter = 'all' | 'avatar' | 'accessory' | 'jasa_gb' | 'jasa_joki' | 'baju' | 'item' | 'lainnya';
+type CategoryFilter = 'all' | 'ava' | 'item' | 'char' | 'jasa' | 'dll';
 
 /* ═══════════════════════════════════════════════════════
-   CATEGORY CONFIG — Orange theme
+   CATEGORY CONFIG — Simplified
    ═══════════════════════════════════════════════════════ */
 const CATEGORIES: { id: CategoryFilter; label: string; icon: React.ReactNode; color: string }[] = [
   { id: 'all', label: 'Semua', icon: <ShoppingBag className="w-3.5 h-3.5" />, color: 'text-orange-400' },
-  { id: 'avatar', label: 'Avatar', icon: <UserCheck className="w-3.5 h-3.5" />, color: 'text-cyan-400' },
-  { id: 'accessory', label: 'Aksesoris', icon: <Sparkles className="w-3.5 h-3.5" />, color: 'text-purple-400' },
-  { id: 'jasa_gb', label: 'Jasa GB', icon: <Gamepad2 className="w-3.5 h-3.5" />, color: 'text-emerald-400' },
-  { id: 'jasa_joki', label: 'Jasa Joki', icon: <Wand2 className="w-3.5 h-3.5" />, color: 'text-orange-400' },
-  { id: 'baju', label: 'Baju', icon: <Shirt className="w-3.5 h-3.5" />, color: 'text-pink-400' },
-  { id: 'item', label: 'Item', icon: <Package className="w-3.5 h-3.5" />, color: 'text-blue-400' },
-  { id: 'lainnya', label: 'Lainnya', icon: <Tag className="w-3.5 h-3.5" />, color: 'text-muted-foreground' },
+  { id: 'ava', label: 'Ava', icon: <UserCheck className="w-3.5 h-3.5" />, color: 'text-cyan-400' },
+  { id: 'item', label: 'Item', icon: <Package className="w-3.5 h-3.5" />, color: 'text-orange-400' },
+  { id: 'char', label: 'Char', icon: <Sparkles className="w-3.5 h-3.5" />, color: 'text-purple-400' },
+  { id: 'jasa', label: 'Jasa', icon: <Gamepad2 className="w-3.5 h-3.5" />, color: 'text-emerald-400' },
+  { id: 'dll', label: 'Dll', icon: <Tag className="w-3.5 h-3.5" />, color: 'text-muted-foreground' },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  avatar: 'from-cyan-500/20 to-cyan-900/10 border-cyan-500/20',
-  accessory: 'from-purple-500/20 to-purple-900/10 border-purple-500/20',
-  jasa_gb: 'from-emerald-500/20 to-emerald-900/10 border-emerald-500/20',
-  jasa_joki: 'from-orange-500/20 to-orange-900/10 border-orange-500/20',
-  baju: 'from-pink-500/20 to-pink-900/10 border-pink-500/20',
-  item: 'from-blue-500/20 to-blue-900/10 border-blue-500/20',
-  lainnya: 'from-gray-500/20 to-gray-900/10 border-gray-500/20',
+  ava: 'from-cyan-500/20 to-cyan-900/10 border-cyan-500/20',
+  item: 'from-orange-500/20 to-orange-900/10 border-orange-500/20',
+  char: 'from-purple-500/20 to-purple-900/10 border-purple-500/20',
+  jasa: 'from-emerald-500/20 to-emerald-900/10 border-emerald-500/20',
+  dll: 'from-gray-500/20 to-gray-900/10 border-gray-500/20',
 };
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  avatar: <UserCheck className="w-4 h-4" />,
-  accessory: <Sparkles className="w-4 h-4" />,
-  jasa_gb: <Gamepad2 className="w-4 h-4" />,
-  jasa_joki: <Wand2 className="w-4 h-4" />,
-  baju: <Shirt className="w-4 h-4" />,
+  ava: <UserCheck className="w-4 h-4" />,
   item: <Package className="w-4 h-4" />,
-  lainnya: <Tag className="w-4 h-4" />,
+  char: <Sparkles className="w-4 h-4" />,
+  jasa: <Gamepad2 className="w-4 h-4" />,
+  dll: <Tag className="w-4 h-4" />,
 };
 
 /* ═══════════════════════════════════════════════════════
@@ -86,6 +82,17 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 }
 
+function parseImages(item: MarketplaceItem): string[] {
+  if (item.images) {
+    try {
+      const parsed = JSON.parse(item.images);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch { /* fall through */ }
+  }
+  if (item.imageUrl) return [item.imageUrl];
+  return [];
+}
+
 /* ═══════════════════════════════════════════════════════
    MARKETPLACE SECTION — Orange theme
    ═══════════════════════════════════════════════════════ */
@@ -95,6 +102,7 @@ export function CommunityMarketplace() {
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [detailItem, setDetailItem] = useState<MarketplaceItem | null>(null);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -189,7 +197,7 @@ export function CommunityMarketplace() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {premiumItems.map((item) => (
-              <MarketplaceCard key={item.id} item={item} isPremium />
+              <MarketplaceCard key={item.id} item={item} isPremium onClick={() => setDetailItem(item)} />
             ))}
           </div>
         </div>
@@ -205,7 +213,7 @@ export function CommunityMarketplace() {
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {regularItems.map((item) => (
-            <MarketplaceCard key={item.id} item={item} />
+            <MarketplaceCard key={item.id} item={item} onClick={() => setDetailItem(item)} />
           ))}
         </div>
       </div>
@@ -249,23 +257,32 @@ export function CommunityMarketplace() {
         onClose={() => setSubmitOpen(false)}
         onSuccess={fetchItems}
       />
+
+      {/* ── Detail Modal ── */}
+      <MarketplaceDetailModal
+        open={!!detailItem}
+        onClose={() => setDetailItem(null)}
+        item={detailItem}
+      />
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════
-   MARKETPLACE CARD — Orange theme
+   MARKETPLACE CARD — Orange theme, clickable
    ═══════════════════════════════════════════════════════ */
-function MarketplaceCard({ item, isPremium = false }: { item: MarketplaceItem; isPremium?: boolean }) {
-  const [showWhatsApp, setShowWhatsApp] = useState(false);
-  const catColor = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.lainnya;
+function MarketplaceCard({ item, isPremium = false, onClick }: { item: MarketplaceItem; isPremium?: boolean; onClick: () => void }) {
+  const catColor = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.dll;
   const catIcon = CATEGORY_ICONS[item.category] || <Tag className="w-4 h-4" />;
+  const images = parseImages(item);
+  const firstImage = images[0];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`relative rounded-xl border overflow-hidden transition-all duration-200 hover:scale-[1.01] ${
+      onClick={onClick}
+      className={`relative rounded-xl border overflow-hidden transition-all duration-200 hover:scale-[1.01] cursor-pointer ${
         isPremium
           ? 'bg-gradient-to-br from-orange-500/10 via-transparent to-orange-500/5 border-orange-500/25 shadow-[0_0_20px_rgba(249,115,22,0.06)]'
           : 'bg-white/[0.02] border-border/15 hover:border-orange-500/15'
@@ -279,101 +296,57 @@ function MarketplaceCard({ item, isPremium = false }: { item: MarketplaceItem; i
         </div>
       )}
 
-      <div className="flex gap-3 p-3">
-        {/* Image / Icon placeholder */}
-        <div className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gradient-to-br ${catColor} border flex items-center justify-center`}>
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="text-muted-foreground/40">
-              {catIcon}
+      {/* Image preview area */}
+      {firstImage ? (
+        <div className="w-full h-28 sm:h-32 overflow-hidden">
+          <img src={firstImage} alt={item.title} className="w-full h-full object-cover" />
+          {images.length > 1 && (
+            <div className="absolute bottom-12 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
+              <Package className="w-2.5 h-2.5 text-white/80" />
+              <span className="text-[8px] font-bold text-white/80">{images.length}</span>
             </div>
           )}
         </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Category tag */}
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className={`text-[8px] font-bold uppercase tracking-wider ${
-              CATEGORIES.find(c => c.id === item.category)?.color || 'text-muted-foreground'
-            }`}>
-              {getCategoryLabel(item.category)}
-            </span>
-            <span className="text-muted-foreground/20">•</span>
-            <span className="text-[8px] text-muted-foreground/40">{timeAgo(item.createdAt)}</span>
+      ) : (
+        <div className={`w-full h-28 sm:h-32 bg-gradient-to-br ${catColor} flex items-center justify-center`}>
+          <div className="text-muted-foreground/20">
+            {catIcon}
           </div>
+        </div>
+      )}
 
-          {/* Title */}
-          <h4 className="text-xs sm:text-sm font-bold text-foreground truncate mb-0.5 pr-12">
-            {item.title}
-          </h4>
+      <div className="p-3">
+        {/* Category tag */}
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className={`text-[8px] font-bold uppercase tracking-wider ${
+            CATEGORIES.find(c => c.id === item.category)?.color || 'text-muted-foreground'
+          }`}>
+            {getCategoryLabel(item.category)}
+          </span>
+          <span className="text-muted-foreground/20">•</span>
+          <span className="text-[8px] text-muted-foreground/40">{timeAgo(item.createdAt)}</span>
+        </div>
 
-          {/* Description */}
-          <p className="text-[10px] sm:text-xs text-muted-foreground/60 line-clamp-2 mb-2 leading-relaxed">
-            {item.description}
-          </p>
+        {/* Title */}
+        <h4 className="text-xs sm:text-sm font-bold text-foreground truncate mb-0.5 pr-12">
+          {item.title}
+        </h4>
 
-          {/* Bottom row: price + CTA */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              {/* Price — Orange */}
-              <span className={`text-xs sm:text-sm font-black ${
-                item.price === 0 ? 'text-emerald-400' : 'text-orange-400'
-              }`}>
-                {formatPrice(item.price)}
-              </span>
-            </div>
+        {/* Description */}
+        <p className="text-[10px] sm:text-xs text-muted-foreground/60 line-clamp-2 mb-2 leading-relaxed">
+          {item.description}
+        </p>
 
-            {/* CTA — Orange theme */}
-            <AnimatePresence mode="wait">
-              {!showWhatsApp ? (
-                <motion.button
-                  key="cta"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  onClick={() => setShowWhatsApp(true)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-[10px] font-bold text-orange-400 hover:bg-orange-500/20 transition-colors cursor-pointer"
-                >
-                  <MessageCircle className="w-3 h-3" />
-                  <span className="hidden sm:inline">Hubungi</span>
-                  <ChevronRight className="w-2.5 h-2.5" />
-                </motion.button>
-              ) : (
-                <motion.div
-                  key="wa"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex items-center gap-1.5"
-                >
-                  {item.sellerWhatsapp ? (
-                    <a
-                      href={`https://wa.me/${item.sellerWhatsapp.replace(/[^0-9]/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/25 text-[10px] font-bold text-emerald-400 hover:bg-emerald-500/25 transition-colors"
-                    >
-                      <MessageCircle className="w-3 h-3" />
-                      WhatsApp
-                    </a>
-                  ) : (
-                    <span className="text-[9px] text-muted-foreground/40">Tidak ada kontak</span>
-                  )}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowWhatsApp(false); }}
-                    className="text-muted-foreground/30 hover:text-muted-foreground/60 text-[10px] cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        {/* Price + Seller row */}
+        <div className="flex items-center justify-between gap-2">
+          <span className={`text-xs sm:text-sm font-black ${
+            item.price === 0 ? 'text-emerald-400' : 'text-orange-400'
+          }`}>
+            {formatPrice(item.price)}
+          </span>
 
-          {/* Seller */}
-          <div className="flex items-center gap-1.5 mt-1.5">
+          {/* Seller mini */}
+          <div className="flex items-center gap-1">
             {item.sellerAvatar ? (
               <img src={item.sellerAvatar} alt="" className="w-4 h-4 rounded-full" />
             ) : (
@@ -381,9 +354,9 @@ function MarketplaceCard({ item, isPremium = false }: { item: MarketplaceItem; i
                 <span className="text-[7px] font-bold text-orange-400/60">{item.sellerName.charAt(0)}</span>
               </div>
             )}
-            <span className="text-[9px] text-muted-foreground/50 font-medium truncate">{item.sellerName}</span>
+            <span className="text-[9px] text-muted-foreground/50 font-medium truncate max-w-[60px]">{item.sellerName}</span>
             {item.playerId && (
-              <ShieldCheck className="w-3 h-3 text-emerald-400 flex-shrink-0" title="Penjual terverifikasi" />
+              <ShieldCheck className="w-3 h-3 text-emerald-400 flex-shrink-0" />
             )}
           </div>
         </div>

@@ -651,8 +651,9 @@ model MarketplaceItem {
   title         String   // Judul item: "Avatar VIP Gold", "Jasa GB Rank S"
   description   String   // Deskripsi detail
   price         Int      // Harga dalam IDR
-  category      String   // "avatar" | "accessory" | "jasa_gb" | "jasa_joki" | "baju" | "item" | "lainnya"
-  imageUrl      String?  // Gambar item
+  category      String   // "ava" | "item" | "char" | "jasa" | "dll"
+  imageUrl      String?  // Gambar item (legacy — first image)
+  images        String?  // JSON array of image URLs (up to 5 screenshots)
   isPremium     Boolean  @default(false) // Featured / iklan premium
   status        String   @default("pending") // "pending" | "approved" | "rejected" — user submissions start as pending, admin-created = approved
   isActive      Boolean  @default(true)

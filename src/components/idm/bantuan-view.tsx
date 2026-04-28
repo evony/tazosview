@@ -78,7 +78,7 @@ const faqData = [
     items: [
       {
         q: 'Bagaimana cara menjual item di marketplace?',
-        a: 'Klik tombol "Pasang Iklan" di bagian marketplace pada halaman Komunitas. Isi form dengan informasi item yang ingin dijual, termasuk nama, deskripsi, harga, kategori, dan nomor WhatsApp. Iklan Anda akan ditinjau oleh admin sebelum ditampilkan.'
+        a: 'Klik tombol "Pasang Iklan" di bagian marketplace. Isi form dengan informasi item yang ingin dijual, termasuk nama, deskripsi, harga, kategori, screenshot (maksimal 5 gambar), dan nomor WhatsApp. Iklan Anda akan ditinjau oleh admin sebelum ditampilkan.'
       },
       {
         q: 'Berapa lama proses review iklan?',
@@ -86,7 +86,7 @@ const faqData = [
       },
       {
         q: 'Apa saja kategori yang tersedia di marketplace?',
-        a: 'Kategori yang tersedia: Avatar (skin karakter), Aksesoris (item tambahan), Jasa GB (jasa level up), Jasa Joki (jasa mainkan akun), dan Pakaian (item kostum).'
+        a: 'Kategori yang tersedia: Ava (avatar/skin), Item (item game), Char (karakter), Jasa (jasa GB, joki, dll), dan Dll (lain-lain).'
       },
       {
         q: 'Apakah ada batasan jumlah iklan?',

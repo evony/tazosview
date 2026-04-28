@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/api-auth';
 
-const VALID_CATEGORIES = ['avatar', 'accessory', 'jasa_gb', 'jasa_joki', 'baju', 'item', 'lainnya'];
+const VALID_CATEGORIES = ['ava', 'item', 'char', 'jasa', 'dll'];
 
 // GET /api/marketplace — List marketplace items (public: approved only, admin: all)
 export async function GET(request: NextRequest) {
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     if (authResult instanceof NextResponse) return authResult;
 
     const body = await request.json();
-    const { sellerName, sellerAvatar, sellerWhatsapp, title, description, price, category, imageUrl, isPremium } = body;
+    const { sellerName, sellerAvatar, sellerWhatsapp, title, description, price, category, imageUrl, images, isPremium } = body;
 
     // Validate required fields
     if (!sellerName || !title || !description || price === undefined || !category) {
@@ -98,6 +98,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate images array (max 5)
+    let imagesJson: string | null = null;
+    if (images && Array.isArray(images)) {
+      const validImages = images.filter((url: string) => typeof url === 'string' && url.trim()).slice(0, 5);
+      if (validImages.length > 0) imagesJson = JSON.stringify(validImages);
+    }
+
     const item = await db.marketplaceItem.create({
       data: {
         sellerName,
@@ -107,7 +114,8 @@ export async function POST(request: NextRequest) {
         description,
         price,
         category,
-        imageUrl: imageUrl || null,
+        imageUrl: imageUrl || (imagesJson ? JSON.parse(imagesJson)[0] : null),
+        images: imagesJson,
         isPremium: isPremium ?? false,
         status: 'approved', // Admin-created items are auto-approved
       },
