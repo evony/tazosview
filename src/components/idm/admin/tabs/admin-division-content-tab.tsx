@@ -1,0 +1,532 @@
+'use client';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  Trophy, Swords, Scale, Calendar, Shield, HelpCircle,
+  Save, Loader2, BookOpen, Plus, Trash2, GripVertical,
+} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { useState } from 'react';
+import { toast } from 'sonner';
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN — KONTEN DIVISI TAB
+   CMS inputs for Peraturan / Rules page in Division Dashboard
+   Uses CMS settings key-value pairs (prefix: peraturan_)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Rule Item editor (one row: label + value + highlight toggle) ─── */
+function RuleItemEditor({
+  item,
+  index,
+  onChange,
+  onRemove,
+}: {
+  item: { label: string; value: string; highlight: boolean };
+  index: number;
+  onChange: (index: number, item: { label: string; value: string; highlight: boolean }) => void;
+  onRemove: (index: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 group">
+      <GripVertical className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
+      <Input
+        value={item.label}
+        onChange={(e) => onChange(index, { ...item, label: e.target.value })}
+        className="text-xs h-8 flex-1"
+        placeholder="Label (contoh: Menang Pertandingan)"
+      />
+      <Input
+        value={item.value}
+        onChange={(e) => onChange(index, { ...item, value: e.target.value })}
+        className="text-xs h-8 flex-1"
+        placeholder="Value (contoh: +3 Poin)"
+      />
+      <Button
+        size="sm"
+        variant={item.highlight ? 'default' : 'outline'}
+        className={`text-[9px] h-8 px-2 shrink-0 ${item.highlight ? 'bg-idm-gold-warm/80 hover:bg-idm-gold-warm/60 text-black' : ''}`}
+        onClick={() => onChange(index, { ...item, highlight: !item.highlight })}
+      >
+        {item.highlight ? '★' : '☆'}
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        className="h-8 w-8 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/10 shrink-0"
+        onClick={() => onRemove(index)}
+      >
+        <Trash2 className="w-3 h-3" />
+      </Button>
+    </div>
+  );
+}
+
+/* ─── Rule Section editor (a card with title + list of items) ─── */
+function RuleSectionEditor({
+  title,
+  sectionKey,
+  icon: Icon,
+  items,
+  onItemsChange,
+  onTitleChange,
+}: {
+  title: string;
+  sectionKey: string;
+  icon: React.ComponentType<{ className?: string }>;
+  items: { label: string; value: string; highlight: boolean }[];
+  onItemsChange: (items: { label: string; value: string; highlight: boolean }[]) => void;
+  onTitleChange: (title: string) => void;
+}) {
+  const handleItemChange = (index: number, item: { label: string; value: string; highlight: boolean }) => {
+    const updated = [...items];
+    updated[index] = item;
+    onItemsChange(updated);
+  };
+
+  const handleRemove = (index: number) => {
+    onItemsChange(items.filter((_, i) => i !== index));
+  };
+
+  const handleAdd = () => {
+    onItemsChange([...items, { label: '', value: '', highlight: false }]);
+  };
+
+  return (
+    <Card className="border border-border/50">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-idm-gold-warm/10 flex items-center justify-center shrink-0">
+            <Icon className="w-4 h-4 text-idm-gold-warm" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <Input
+              value={title}
+              onChange={(e) => onTitleChange(e.target.value)}
+              className="text-sm font-semibold h-8"
+              placeholder="Judul Section"
+            />
+          </div>
+          <Badge className="text-[8px] border-0 bg-idm-gold-warm/10 text-idm-gold-warm shrink-0">{items.length} item</Badge>
+        </div>
+
+        <div className="space-y-2">
+          {items.map((item, i) => (
+            <RuleItemEditor
+              key={i}
+              item={item}
+              index={i}
+              onChange={handleItemChange}
+              onRemove={handleRemove}
+            />
+          ))}
+        </div>
+
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-[10px] h-7 w-full"
+          onClick={handleAdd}
+        >
+          <Plus className="w-3 h-3 mr-1" /> Tambah Baris
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ─── FAQ Item editor ─── */
+function FaqItemEditor({
+  item,
+  index,
+  onChange,
+  onRemove,
+}: {
+  item: { question: string; answer: string };
+  index: number;
+  onChange: (index: number, item: { question: string; answer: string }) => void;
+  onRemove: (index: number) => void;
+}) {
+  return (
+    <div className="p-3 rounded-xl border border-border/30 bg-muted/10 space-y-2 group relative">
+      <Button
+        size="sm"
+        variant="ghost"
+        className="absolute top-2 right-2 h-6 w-6 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={() => onRemove(index)}
+      >
+        <Trash2 className="w-3 h-3" />
+      </Button>
+      <div>
+        <Label className="text-[10px] font-semibold text-muted-foreground">Pertanyaan</Label>
+        <Input
+          value={item.question}
+          onChange={(e) => onChange(index, { ...item, question: e.target.value })}
+          className="text-xs h-8"
+          placeholder="Contoh: Bagaimana cara mendaftar?"
+        />
+      </div>
+      <div>
+        <Label className="text-[10px] font-semibold text-muted-foreground">Jawaban</Label>
+        <Textarea
+          value={item.answer}
+          onChange={(e) => onChange(index, { ...item, answer: e.target.value })}
+          className="text-xs min-h-[50px]"
+          placeholder="Jawaban pertanyaan..."
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Parse JSON items from CMS setting string ─── */
+function parseItems(value: string | undefined, fallback: { label: string; value: string; highlight: boolean }[]): { label: string; value: string; highlight: boolean }[] {
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed;
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function parseFaqs(value: string | undefined, fallback: { question: string; answer: string }[]): { question: string; answer: string }[] {
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed;
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/* ═══ Main Component ═══ */
+export function AdminDivisionContentTab() {
+  const qc = useQueryClient();
+
+  /* ── Fetch CMS settings ── */
+  const { data: settingsData, isLoading } = useQuery({
+    queryKey: ['cms-settings'],
+    queryFn: async () => {
+      const res = await fetch('/api/cms/settings', { credentials: 'include' });
+      return res.json() as Promise<{ map: Record<string, string> }>;
+    },
+  });
+
+  const settingsMap = settingsData?.map || {};
+
+  /* ── Local form state (initialized from CMS) ── */
+  const [formState, setFormState] = useState<Record<string, string> | null>(null);
+  const form = formState ?? settingsMap;
+  const updateForm = (updates: Partial<Record<string, string>>) => {
+    setFormState(prev => ({ ...settingsMap, ...prev, ...updates }) as Record<string, string>);
+  };
+
+  /* ── Default fallback data (matches current hardcoded LeagueView) ── */
+  const defaults = {
+    peraturan_subtitle: 'Panduan lengkap format turnamen, sistem poin, dan peraturan pertandingan Tarkam IDM.',
+    peraturan_poin_title: 'Sistem Poin Tarkam',
+    peraturan_poin_items: JSON.stringify([
+      { label: 'Menang Pertandingan', value: '+3 Poin', highlight: true },
+      { label: 'Kalah Pertandingan', value: '+1 Poin', highlight: false },
+      { label: 'Tidak Hadir / Walkout', value: '0 Poin', highlight: false },
+      { label: 'MVP Pekan', value: '+2 Bonus Poin', highlight: true },
+      { label: 'Streak 3+ Menang', value: '+1 Bonus Poin', highlight: true },
+    ]),
+    peraturan_format_title: 'Format Turnamen',
+    peraturan_format_items: JSON.stringify([
+      { label: 'Jadwal', value: 'Setiap Minggu', highlight: true },
+      { label: 'Durasi', value: '2-4 Jam', highlight: false },
+      { label: 'Format', value: 'Single Elimination', highlight: true },
+      { label: 'Peserta per Match', value: '1 vs 1', highlight: false },
+      { label: 'Match Bisa Paralel', value: 'Ya (Efisiensi)', highlight: false },
+      { label: 'Divisi', value: 'Male & Female', highlight: true },
+    ]),
+    peraturan_match_title: 'Peraturan Pertandingan',
+    peraturan_match_items: JSON.stringify([
+      { label: 'Peserta wajib hadir', value: 'Tepat Waktu', highlight: true },
+      { label: 'Terlambat / Tidak Hadir', value: 'Walkout (0 poin)', highlight: false },
+      { label: 'Penilaian', value: 'Oleh Juri', highlight: false },
+      { label: 'Keputusan Juri', value: 'Final & Binding', highlight: true },
+      { label: 'MVP Dipilih', value: 'Oleh Organizer', highlight: false },
+      { label: 'Hasil Diumumkan', value: 'Real-time', highlight: true },
+    ]),
+    peraturan_season_title: 'Peraturan Season',
+    peraturan_season_items: JSON.stringify([
+      { label: 'Season Baru', value: 'Setelah Tournament Selesai', highlight: false },
+      { label: 'Poin Reset', value: 'Setiap Season Baru', highlight: true },
+      { label: 'Season Champion', value: '#1 di Akhir Season', highlight: true },
+      { label: 'MVP Hall of Fame', value: 'Tercatat Selamanya', highlight: false },
+      { label: 'Streak', value: 'Reset Setiap Season', highlight: false },
+    ]),
+    peraturan_division_male_day: 'Sabtu',
+    peraturan_division_female_day: 'Minggu',
+    peraturan_faqs: JSON.stringify([
+      { question: 'Bagaimana cara mendaftar turnamen?', answer: 'Klik tombol \'Daftar\' di halaman Home atau kunjungi halaman pendaftaran. Pilih divisi (Male/Female), isi formulir, dan lakukan pembayaran sesuai instruksi. Setelah disetujui oleh admin, Anda akan masuk ke bracket turnamen.' },
+      { question: 'Apa itu sistem poin Tarkam?', answer: 'Tarkam menggunakan sistem poin akumulatif. Setiap kemenangan bernilai +3 poin, kekalahan +1 poin, dan tidak hadir 0 poin. Bonus poin diberikan untuk MVP pekan (+2) dan streak kemenangan (+1). Poin direset setiap season baru.' },
+      { question: 'Kapan pertandingan dimulai?', answer: 'Turnamen diadakan setiap minggu. Divisi Male biasanya pada hari Sabtu dan Female pada hari Minggu. Cek halaman Komunitas untuk jadwal terbaru dan countdown timer.' },
+      { question: 'Berapa lama satu turnamen berlangsung?', answer: 'Satu putaran turnamen biasanya berlangsung 2-4 jam. Match berjalan back-to-back, bahkan bisa paralel demi efisiensi waktu. Pastikan Anda standby dan siap ketika nama Anda dipanggil.' },
+      { question: 'Bagaimana cara menjadi MVP?', answer: 'MVP dipilih oleh organizer berdasarkan performa terbaik di setiap tournament. Faktor penilaian termasuk skill, konsistensi, dan sportivitas. MVP mendapat bonus +2 poin dan tercatat di MVP Hall of Fame.' },
+      { question: 'Apa itu Season Champion?', answer: 'Season Champion adalah pemain yang berada di peringkat #1 saat season ditutup. Season berakhir ketika organizer menutup season tersebut. Champion mendapat penghargaan khusus dan tercatat di halaman Season Champion.' },
+      { question: 'Apakah poin direset setiap season?', answer: 'Ya, semua poin dan streak direset setiap season baru dimulai. Namun, pencapaian seperti MVP Hall of Fame dan Season Champion tetap tercatat secara permanen.' },
+      { question: 'Bagaimana jika saya terlambat atau tidak hadir?', answer: 'Jika Anda tidak hadir atau terlambat saat nama dipanggil, akan dianggap walkout dan mendapat 0 poin. Pastikan Anda hadir tepat waktu sesuai jadwal yang diumumkan.' },
+    ]),
+  };
+
+  /* ── Parsed items from form/CMS ── */
+  const poinItems = parseItems(form.peraturan_poin_items, parseItems(defaults.peraturan_poin_items, []));
+  const formatItems = parseItems(form.peraturan_format_items, parseItems(defaults.peraturan_format_items, []));
+  const matchItems = parseItems(form.peraturan_match_items, parseItems(defaults.peraturan_match_items, []));
+  const seasonItems = parseItems(form.peraturan_season_items, parseItems(defaults.peraturan_season_items, []));
+  const faqItems = parseFaqs(form.peraturan_faqs, parseFaqs(defaults.peraturan_faqs, []));
+
+  /* ── Batch save mutation ── */
+  const saveMutation = useMutation({
+    mutationFn: async (items: { key: string; value: string; type?: string }[]) => {
+      const res = await fetch('/api/cms/settings', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      return res.json();
+    },
+    onSuccess: () => {
+      setFormState(null);
+      qc.invalidateQueries({ queryKey: ['cms-settings'] });
+      qc.invalidateQueries({ queryKey: ['cms-content'] });
+      toast.success('Konten Divisi berhasil disimpan!');
+    },
+    onError: (e: Error) => { toast.error(e.message); },
+  });
+
+  /* ── Save handler ── */
+  const handleSave = () => {
+    saveMutation.mutate([
+      { key: 'peraturan_subtitle', value: form.peraturan_subtitle || defaults.peraturan_subtitle, type: 'text' },
+      { key: 'peraturan_poin_title', value: form.peraturan_poin_title || defaults.peraturan_poin_title, type: 'text' },
+      { key: 'peraturan_poin_items', value: form.peraturan_poin_items || defaults.peraturan_poin_items, type: 'json' },
+      { key: 'peraturan_format_title', value: form.peraturan_format_title || defaults.peraturan_format_title, type: 'text' },
+      { key: 'peraturan_format_items', value: form.peraturan_format_items || defaults.peraturan_format_items, type: 'json' },
+      { key: 'peraturan_match_title', value: form.peraturan_match_title || defaults.peraturan_match_title, type: 'text' },
+      { key: 'peraturan_match_items', value: form.peraturan_match_items || defaults.peraturan_match_items, type: 'json' },
+      { key: 'peraturan_season_title', value: form.peraturan_season_title || defaults.peraturan_season_title, type: 'text' },
+      { key: 'peraturan_season_items', value: form.peraturan_season_items || defaults.peraturan_season_items, type: 'json' },
+      { key: 'peraturan_division_male_day', value: form.peraturan_division_male_day || defaults.peraturan_division_male_day, type: 'text' },
+      { key: 'peraturan_division_female_day', value: form.peraturan_division_female_day || defaults.peraturan_division_female_day, type: 'text' },
+      { key: 'peraturan_faqs', value: form.peraturan_faqs || defaults.peraturan_faqs, type: 'json' },
+    ]);
+  };
+
+  /* ── Reset to defaults ── */
+  const handleReset = () => {
+    setFormState({ ...defaults });
+    toast.info('Form direset ke default. Klik Simpan untuk menyimpan.');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-idm-gold-warm" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-5 h-5 text-idm-gold-warm" />
+          <h2 className="text-lg font-bold text-gradient-fury">Konten Divisi</h2>
+          <Badge className="bg-idm-gold-warm/10 text-idm-gold-warm text-[10px] border-0">PERATURAN</Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-[10px] h-8"
+            onClick={handleReset}
+          >
+            Reset Default
+          </Button>
+          <Button
+            size="sm"
+            className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
+            onClick={handleSave}
+            disabled={saveMutation.isPending}
+          >
+            {saveMutation.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
+            Simpan Semua
+          </Button>
+        </div>
+      </div>
+
+      <p className="text-[10px] text-muted-foreground">
+        Kelola konten halaman Peraturan di Division Dashboard. Perubahan langsung terlihat setelah simpan. Klik "Reset Default" untuk mengembalikan ke nilai bawaan.
+      </p>
+
+      {/* ── Subtitle / Deskripsi ── */}
+      <Card className="border border-border/50">
+        <CardContent className="p-4 space-y-3">
+          <h3 className="text-sm font-bold flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-idm-gold-warm" /> Deskripsi Halaman
+          </h3>
+          <div>
+            <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Subtitle Peraturan</Label>
+            <Textarea
+              value={form.peraturan_subtitle || ''}
+              onChange={(e) => updateForm({ peraturan_subtitle: e.target.value })}
+              className="text-sm min-h-[50px]"
+              placeholder={defaults.peraturan_subtitle}
+            />
+            <p className="text-[9px] text-muted-foreground/60 mt-0.5">Teks deskripsi di bawah judul "Peraturan & Format"</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Sistem Poin ── */}
+      <RuleSectionEditor
+        title={form.peraturan_poin_title || defaults.peraturan_poin_title}
+        sectionKey="poin"
+        icon={Trophy}
+        items={poinItems}
+        onTitleChange={(title) => updateForm({ peraturan_poin_title: title })}
+        onItemsChange={(items) => updateForm({ peraturan_poin_items: JSON.stringify(items) })}
+      />
+
+      {/* ── Format Turnamen ── */}
+      <RuleSectionEditor
+        title={form.peraturan_format_title || defaults.peraturan_format_title}
+        sectionKey="format"
+        icon={Swords}
+        items={formatItems}
+        onTitleChange={(title) => updateForm({ peraturan_format_title: title })}
+        onItemsChange={(items) => updateForm({ peraturan_format_items: JSON.stringify(items) })}
+      />
+
+      {/* ── Peraturan Pertandingan ── */}
+      <RuleSectionEditor
+        title={form.peraturan_match_title || defaults.peraturan_match_title}
+        sectionKey="match"
+        icon={Scale}
+        items={matchItems}
+        onTitleChange={(title) => updateForm({ peraturan_match_title: title })}
+        onItemsChange={(items) => updateForm({ peraturan_match_items: JSON.stringify(items) })}
+      />
+
+      {/* ── Peraturan Season ── */}
+      <RuleSectionEditor
+        title={form.peraturan_season_title || defaults.peraturan_season_title}
+        sectionKey="season"
+        icon={Calendar}
+        items={seasonItems}
+        onTitleChange={(title) => updateForm({ peraturan_season_title: title })}
+        onItemsChange={(items) => updateForm({ peraturan_season_items: JSON.stringify(items) })}
+      />
+
+      {/* ── Division Info ── */}
+      <Card className="border border-border/50">
+        <CardContent className="p-4 space-y-3">
+          <h3 className="text-sm font-bold flex items-center gap-2">
+            <Shield className="w-4 h-4 text-idm-gold-warm" /> Info Divisi
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Hari Pertandingan Male</Label>
+              <Input
+                value={form.peraturan_division_male_day || ''}
+                onChange={(e) => updateForm({ peraturan_division_male_day: e.target.value })}
+                className="text-sm"
+                placeholder="Sabtu"
+              />
+            </div>
+            <div>
+              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Hari Pertandingan Female</Label>
+              <Input
+                value={form.peraturan_division_female_day || ''}
+                onChange={(e) => updateForm({ peraturan_division_female_day: e.target.value })}
+                className="text-sm"
+                placeholder="Minggu"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── FAQ ── */}
+      <Card className="border border-border/50">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-idm-gold-warm" /> Pertanyaan Umum (FAQ)
+              <Badge className="text-[8px] border-0 bg-idm-gold-warm/10 text-idm-gold-warm">{faqItems.length} item</Badge>
+            </h3>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-[10px] h-7"
+              onClick={() => {
+                const updated = [...faqItems, { question: '', answer: '' }];
+                updateForm({ peraturan_faqs: JSON.stringify(updated) });
+              }}
+            >
+              <Plus className="w-3 h-3 mr-1" /> Tambah FAQ
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {faqItems.map((item, i) => (
+              <FaqItemEditor
+                key={i}
+                item={item}
+                index={i}
+                onChange={(index, updated) => {
+                  const items = [...faqItems];
+                  items[index] = updated;
+                  updateForm({ peraturan_faqs: JSON.stringify(items) });
+                }}
+                onRemove={(index) => {
+                  const items = faqItems.filter((_, i) => i !== index);
+                  updateForm({ peraturan_faqs: JSON.stringify(items) });
+                }}
+              />
+            ))}
+          </div>
+
+          {faqItems.length === 0 && (
+            <div className="py-6 text-center border border-dashed border-border/30 rounded-xl">
+              <HelpCircle className="w-6 h-6 text-muted-foreground/20 mx-auto mb-2" />
+              <p className="text-[10px] text-muted-foreground">Belum ada FAQ. Klik "Tambah FAQ" untuk menambahkan.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Bottom Save Bar ── */}
+      <div className="sticky bottom-0 bg-background/95 border-t border-border/50 p-3 -mx-4 -mb-4 rounded-b-xl flex items-center justify-between z-20">
+        <p className="text-[10px] text-muted-foreground">
+          {Object.keys(form).filter(k => k.startsWith('peraturan_')).length} pengaturan divisi
+        </p>
+        <Button
+          size="sm"
+          className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
+          onClick={handleSave}
+          disabled={saveMutation.isPending}
+        >
+          {saveMutation.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
+          Simpan Semua
+        </Button>
+      </div>
+    </div>
+  );
+}
