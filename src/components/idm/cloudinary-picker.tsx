@@ -76,7 +76,7 @@ export function CloudinaryPicker({ open, onClose, onSelect, currentImage, upload
       if (currentFolder) {
         params.append('prefix', currentFolder);
       }
-      const res = await fetch(`/api/cloudinary/images?${params.toString()}`);
+      const res = await fetch(`/api/cloudinary/images?${params.toString()}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch images');
       return res.json();
     },
@@ -89,6 +89,7 @@ export function CloudinaryPicker({ open, onClose, onSelect, currentImage, upload
       fetch('/api/cloudinary/images', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ action: 'get_folders' }),
       })
         .then(res => res.json())

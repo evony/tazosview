@@ -128,50 +128,39 @@ export async function POST(request: Request) {
       }
     }
 
-    // Seed default cards for about section (3 milestones)
-    const aboutSection = await db.cmsSection.findUnique({ where: { slug: 'about' } });
-    if (aboutSection) {
-      const existingCards = await db.cmsCard.count({ where: { sectionId: aboutSection.id } });
-      if (existingCards === 0) {
-        await db.cmsCard.createMany({
-          data: [
-            { sectionId: aboutSection.id, title: 'Komunitas', subtitle: 'Community', description: 'Pemain Idol Meta berkumpul, saling mengenal, dan membentuk ikatan', tag: 'milestone', tagColor: '#06b6d4', order: 1 },
-            { sectionId: aboutSection.id, title: 'Turnamen', subtitle: 'Tournament', description: 'Weekly tournament sebagai ajang berlatih dan bersaing secara individu', tag: 'milestone', tagColor: '#d4a853', order: 2 },
-            { sectionId: aboutSection.id, title: 'Tarkam IDM', subtitle: 'Tarkam', description: 'Season 1 sukses digelar — club bertanding, champion dinobatkan', tag: 'milestone', tagColor: '#a855f7', order: 3 },
-          ],
+    // Helper: idempotent card seed — skip if cards already exist for section
+    async function seedCardsForSection(sectionSlug: string, cards: { title: string; subtitle?: string; description?: string; imageUrl?: string; linkUrl?: string; tag?: string; tagColor?: string; order: number }[]) {
+      const section = await db.cmsSection.findUnique({ where: { slug: sectionSlug } });
+      if (!section) return;
+      const existingCards = await db.cmsCard.count({ where: { sectionId: section.id } });
+      if (existingCards > 0) return; // Already seeded — skip
+      for (const card of cards) {
+        await db.cmsCard.create({
+          data: { sectionId: section.id, ...card },
         });
       }
     }
+
+    // Seed default cards for about section (3 milestones)
+    await seedCardsForSection('about', [
+      { title: 'Komunitas', subtitle: 'Community', description: 'Pemain Idol Meta berkumpul, saling mengenal, dan membentuk ikatan', tag: 'milestone', tagColor: '#06b6d4', order: 1 },
+      { title: 'Turnamen', subtitle: 'Tournament', description: 'Weekly tournament sebagai ajang berlatih dan bersaing secara individu', tag: 'milestone', tagColor: '#d4a853', order: 2 },
+      { title: 'Tarkam IDM', subtitle: 'Tarkam', description: 'Season 1 sukses digelar — club bertanding, champion dinobatkan', tag: 'milestone', tagColor: '#a855f7', order: 3 },
+    ]);
 
     // Seed default cards for hero section (hero badges)
-    const heroSection = await db.cmsSection.findUnique({ where: { slug: 'hero' } });
-    if (heroSection) {
-      const existingCards = await db.cmsCard.count({ where: { sectionId: heroSection.id } });
-      if (existingCards === 0) {
-        await db.cmsCard.createMany({
-          data: [
-            { sectionId: heroSection.id, title: 'Season 1', tag: 'badge', tagColor: '#d4a853', order: 1 },
-            { sectionId: heroSection.id, title: 'Dance Tournament', tag: 'badge', tagColor: '#d4a853', order: 2 },
-            { sectionId: heroSection.id, title: 'Pro League', tag: 'badge', tagColor: '#d4a853', order: 3 },
-          ],
-        });
-      }
-    }
+    await seedCardsForSection('hero', [
+      { title: 'Season 1', tag: 'badge', tagColor: '#d4a853', order: 1 },
+      { title: 'Dance Tournament', tag: 'badge', tagColor: '#d4a853', order: 2 },
+      { title: 'Pro League', tag: 'badge', tagColor: '#d4a853', order: 3 },
+    ]);
 
     // Seed default cards for CTA section
-    const ctaSection = await db.cmsSection.findUnique({ where: { slug: 'cta' } });
-    if (ctaSection) {
-      const existingCards = await db.cmsCard.count({ where: { sectionId: ctaSection.id } });
-      if (existingCards === 0) {
-        await db.cmsCard.createMany({
-          data: [
-            { sectionId: ctaSection.id, title: 'WhatsApp Group', description: 'Bergabung dengan komunitas IDM League di WhatsApp', imageUrl: '', linkUrl: '#', tag: 'Community', tagColor: '#25D366', order: 1 },
-            { sectionId: ctaSection.id, title: 'Discord Server', description: 'Chat dan diskusi di server Discord kami', imageUrl: '', linkUrl: '#', tag: 'Chat', tagColor: '#5865F2', order: 2 },
-            { sectionId: ctaSection.id, title: 'Instagram', description: 'Follow Instagram untuk update terbaru', imageUrl: '', linkUrl: '#', tag: 'Social', tagColor: '#E4405F', order: 3 },
-          ],
-        });
-      }
-    }
+    await seedCardsForSection('cta', [
+      { title: 'WhatsApp Group', description: 'Bergabung dengan komunitas IDM League di WhatsApp', imageUrl: '', linkUrl: '#', tag: 'Community', tagColor: '#25D366', order: 1 },
+      { title: 'Discord Server', description: 'Chat dan diskusi di server Discord kami', imageUrl: '', linkUrl: '#', tag: 'Chat', tagColor: '#5865F2', order: 2 },
+      { title: 'Instagram', description: 'Follow Instagram untuk update terbaru', imageUrl: '', linkUrl: '#', tag: 'Social', tagColor: '#E4405F', order: 3 },
+    ]);
 
     return NextResponse.json({ success: true, message: 'CMS content seeded successfully' });
   } catch (error) {

@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   });
 }
 
-// POST create or update a card
+// POST create or update a card (uses upsert for idempotency)
 export async function POST(request: Request) {
   const admin = await requireAdmin(request);
   if (!(admin instanceof Object)) return admin;
@@ -30,14 +30,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'sectionId is required' }, { status: 400 });
   }
 
-  const card = id
-    ? await db.cmsCard.update({
+  const cardData = { sectionId, title, subtitle, description, imageUrl, videoUrl, linkUrl, tag, tagColor, isActive, order };
+
+  let card;
+  if (id) {
+    // Try update first, fall back to create if not found
+    try {
+      card = await db.cmsCard.update({
         where: { id },
-        data: { sectionId, title, subtitle, description, imageUrl, videoUrl, linkUrl, tag, tagColor, isActive, order },
-      })
-    : await db.cmsCard.create({
-        data: { sectionId, title, subtitle, description, imageUrl, videoUrl, linkUrl, tag, tagColor, isActive, order },
+        data: cardData,
       });
+    } catch (e: any) {
+      if (e.code === 'P2025') {
+        // Record not found — create instead
+        card = await db.cmsCard.create({ data: cardData });
+      } else {
+        throw e;
+      }
+    }
+  } else {
+    card = await db.cmsCard.create({ data: cardData });
+  }
 
   return NextResponse.json(card);
 }
