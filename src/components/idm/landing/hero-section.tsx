@@ -293,15 +293,15 @@ export function HeroSection({
           </p>
 
           {/* ═══════════════ CTA BUTTONS ═══════════════ */}
-          <div className="hero-enter-5 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-lg mx-auto mb-8 sm:mb-10">
+          <div className="hero-enter-5 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mx-auto mb-8 sm:mb-10">
             {/* Pendaftaran — Primary CTA → Registration */}
             <button
               onClick={onRegister}
-              className="btn-press hero-cta-breath group relative w-full sm:w-auto cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
+              className="btn-press hero-cta-breath group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
             >
               {/* Glow background */}
               <div className="absolute -inset-1 rounded-2xl blur-lg opacity-0 group-hover:opacity-60 transition-opacity duration-500" style={{ background: 'rgba(16,185,129,0.25)' }} />
-              <div className="relative flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl font-bold text-sm tracking-wide uppercase transition-all duration-300"
+              <div className="relative flex items-center justify-center gap-2.5 px-7 py-3 rounded-2xl font-bold text-sm tracking-wide uppercase transition-all duration-300"
                 style={{
                   background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #10b981 100%)',
                   color: '#ffffff',
@@ -317,11 +317,11 @@ export function HeroSection({
             {/* Lihat Bracket — Secondary CTA → Bracket Picker */}
             <button
               onClick={() => setShowBracketPicker(true)}
-              className="btn-press hero-cta-breath group relative w-full sm:w-auto cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-idm-gold-warm/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
+              className="btn-press hero-cta-breath group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-idm-gold-warm/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
             >
               {/* Glow on hover */}
               <div className="absolute -inset-1 rounded-2xl blur-lg opacity-0 group-hover:opacity-40 transition-opacity duration-500" style={{ background: 'rgba(212,168,83,0.15)' }} />
-              <div className="relative flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl font-bold text-sm tracking-wide uppercase border transition-all duration-300"
+              <div className="relative flex items-center justify-center gap-2.5 px-7 py-3 rounded-2xl font-bold text-sm tracking-wide uppercase border transition-all duration-300"
                 style={{
                   background: 'rgba(212,168,83,0.08)',
                   borderColor: 'rgba(212,168,83,0.3)',
