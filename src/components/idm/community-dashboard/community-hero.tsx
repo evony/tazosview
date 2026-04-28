@@ -117,8 +117,14 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
   return (
     <div
       className="relative overflow-hidden rounded-2xl border border-idm-gold-warm/20"
-      style={{ aspectRatio: heroBannerDashboard ? '21 / 6' : undefined }}
     >
+      {/* Aspect ratio spacer — taller on mobile, wider on desktop */}
+      {heroBannerDashboard && (
+        <div className="sm:hidden" style={{ aspectRatio: '16 / 9' }} />
+      )}
+      {heroBannerDashboard && (
+        <div className="hidden sm:block" style={{ aspectRatio: '21 / 6' }} />
+      )}
       {/* ═══ Background Layers ═══ */}
       {/* Base gradient */}
       <div
@@ -216,35 +222,35 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
       </div>
 
       {/* ═══ Content ═══ */}
-      <div className="relative z-10 p-6 sm:p-8 pb-8">
+      <div className="absolute inset-0 z-10 p-4 sm:p-8 flex flex-col justify-center">
         {/* Live badge */}
         {hasLive && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/15 border border-red-500/30 mb-5"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/15 border border-red-500/30 mb-3 sm:mb-5"
           >
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
             </span>
-            <span className="text-xs font-black text-red-400 uppercase tracking-[0.2em]">
+            <span className="text-[10px] sm:text-xs font-black text-red-400 uppercase tracking-[0.2em]">
               LIVE NOW
             </span>
-            <Radio className="w-3.5 h-3.5 text-red-400" />
+            <Radio className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-400" />
           </motion.div>
         )}
 
         {/* Decorative top accent */}
-        <div className="flex items-center gap-3 mb-5">
-          <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent to-idm-gold-warm/50" />
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-idm-gold-warm/20 bg-idm-gold-warm/[0.06]">
-            <Zap className="w-3 h-3 text-idm-gold-warm/80" />
-            <span className="text-[10px] text-idm-gold-warm font-bold tracking-[0.15em] uppercase">
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
+          <div className="h-px w-6 sm:w-16 bg-gradient-to-r from-transparent to-idm-gold-warm/50" />
+          <div className="flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-idm-gold-warm/20 bg-idm-gold-warm/[0.06]">
+            <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-idm-gold-warm/80" />
+            <span className="text-[8px] sm:text-[10px] text-idm-gold-warm font-bold tracking-[0.15em] uppercase">
               IDM TARKAM
             </span>
           </div>
-          <div className="h-px w-8 sm:w-16 bg-gradient-to-l from-transparent to-idm-gold-warm/50" />
+          <div className="h-px w-6 sm:w-16 bg-gradient-to-l from-transparent to-idm-gold-warm/50" />
         </div>
 
         {/* Title */}
@@ -252,7 +258,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="text-3xl sm:text-5xl font-black tracking-tight mb-2"
+          className="text-2xl sm:text-5xl font-black tracking-tight mb-1 sm:mb-2"
           style={{
             background:
               'linear-gradient(135deg, #f5e6c8 0%, #d4a853 30%, #e5be4a 50%, #f5d77a 70%, #d4a853 100%)',
@@ -268,7 +274,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, letterSpacing: '0.3em' }}
           animate={{ opacity: 1, letterSpacing: '0.12em' }}
           transition={{ delay: 0.4, duration: 0.6 }}
-          className="text-sm sm:text-base text-idm-gold-warm/85 uppercase tracking-widest mb-1"
+          className="text-[10px] sm:text-base text-idm-gold-warm/85 uppercase tracking-widest mb-0.5 sm:mb-1"
         >
           Komunitas Idol Meta
         </motion.p>
@@ -277,14 +283,14 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mb-6"
+          className="text-[10px] sm:text-sm text-muted-foreground/80 max-w-xs sm:max-w-md mb-3 sm:mb-6"
         >
           Tempat pemain terbaik dari seluruh kota berkompetisi. Sawer untuk menambah prize pool dan dapatkan skin eksklusif!
         </motion.p>
 
         {/* Animated underline */}
         <motion.div
-          className="h-[1.5px] rounded-full mb-5"
+          className="h-px sm:h-[1.5px] rounded-full mb-3 sm:mb-5"
           style={{
             background: 'linear-gradient(90deg, transparent, #d4a853, transparent)',
           }}
@@ -298,18 +304,18 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}
-          className="flex flex-wrap items-center gap-3 mb-6"
+          className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-6"
         >
           {/* Pendaftaran button — shown when registration is open */}
           {isRegistrationOpen && (
             <button
               onClick={() => setCurrentView('register')}
-              className="group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-emerald-500 to-green-400 text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="group flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-emerald-500 to-green-400 text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              <UserPlus className="w-4 h-4" />
+              <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Pendaftaran</span>
               <span className="relative flex items-center justify-center ml-0.5">
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </span>
             </button>
           )}
@@ -322,11 +328,11 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
                 setInitialDashboardTab('matches');
                 setCurrentView('dashboard');
               }}
-              className="group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="group flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Lihat Bracket</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           )}
 
@@ -334,17 +340,17 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           {onSawer && (
             <button
               onClick={onSawer}
-              className="group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="group flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              <Gift className="w-4 h-4" />
+              <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Sawer</span>
             </button>
           )}
 
           {/* If neither is available, show a subtle info */}
           {!isRegistrationOpen && !hasBrackets && (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-muted-foreground">
-              <Trophy className="w-3.5 h-3.5 text-idm-gold-warm/50" />
+            <div className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 text-[10px] sm:text-xs text-muted-foreground">
+              <Trophy className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-idm-gold-warm/50" />
               <span>Turnamen segera dimulai</span>
             </div>
           )}
@@ -355,85 +361,85 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          className="flex flex-wrap items-center gap-4 sm:gap-6"
+          className="flex flex-wrap items-center gap-2.5 sm:gap-6"
         >
           {/* Prize Pool — MOST PROMINENT stat */}
           {combinedPrizePool > 0 && (
             <>
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-idm-gold-warm/15 flex items-center justify-center">
-                  <Trophy className="w-5 h-5 text-idm-gold-warm" />
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-md sm:rounded-lg bg-idm-gold-warm/15 flex items-center justify-center">
+                  <Trophy className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-idm-gold-warm" />
                 </div>
                 <div>
                   <p
-                    className="text-xl sm:text-2xl font-black text-idm-gold-warm"
+                    className="text-base sm:text-2xl font-black text-idm-gold-warm"
                     style={{
                       textShadow: '0 0 20px rgba(212,168,83,0.4), 0 0 40px rgba(212,168,83,0.15)',
                     }}
                   >
                     <AnimatedNumber value={combinedPrizePool} duration={1800} />
                   </p>
-                  <p className="text-[9px] text-idm-gold-warm/70 uppercase tracking-wider font-semibold">
+                  <p className="text-[8px] sm:text-[9px] text-idm-gold-warm/70 uppercase tracking-wider font-semibold">
                     Prize Pool
                   </p>
                 </div>
               </div>
-              <div className="w-px h-8 bg-border/30" />
+              <div className="w-px h-6 sm:h-8 bg-border/30" />
             </>
           )}
 
           {/* Male Players */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-              <Users className="w-4 h-4 text-cyan-400" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-cyan-500/10 flex items-center justify-center">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
             </div>
             <div>
-              <p className="text-lg sm:text-xl font-black text-cyan-400">
+              <p className="text-sm sm:text-xl font-black text-cyan-400">
                 <AnimatedNumber value={malePlayers} />
               </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">
                 Male
               </p>
             </div>
           </div>
 
-          <div className="w-px h-8 bg-border/30" />
+          <div className="w-px h-6 sm:h-8 bg-border/30" />
 
           {/* Female Players */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
-              <Users className="w-4 h-4 text-purple-400" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-400" />
             </div>
             <div>
-              <p className="text-lg sm:text-xl font-black text-purple-400">
+              <p className="text-sm sm:text-xl font-black text-purple-400">
                 <AnimatedNumber value={femalePlayers} />
               </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">
                 Female
               </p>
             </div>
           </div>
 
-          <div className="w-px h-8 bg-border/30" />
+          <div className="w-px h-6 sm:h-8 bg-border/30" />
 
           {/* Season Progress — current week / total weeks */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-emerald-500" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
             </div>
             <div>
-              <p className="text-lg sm:text-xl font-black">
+              <p className="text-sm sm:text-xl font-black">
                 <span className="text-emerald-400"><AnimatedNumber value={currentWeek} /></span>
                 <span className="text-muted-foreground/40">/</span>
                 <span className="text-muted-foreground/70">{totalWeeks}</span>
               </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">
                 Season Week
               </p>
             </div>
           </div>
 
-          <div className="w-px h-8 bg-border/30 hidden sm:block" />
+          <div className="w-px h-6 sm:h-8 bg-border/30 hidden sm:block" />
 
           {/* Turnamen Aktif */}
           <div className="hidden sm:flex items-center gap-2">
