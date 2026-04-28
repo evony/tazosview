@@ -15,7 +15,7 @@ import { HighlightsSection } from './landing/highlights-section';
 import { ExperiencesSection } from './landing/experiences-section';
 import { TournamentHub } from './landing/tournament-hub';
 import { ClubsSection } from './landing/clubs-section';
-import { HallOfFameSection } from './landing/hall-of-fame-section';
+import { SeasonChampionSection } from './landing/season-champion-section';
 import { HowItWorksSection } from './landing/how-it-works-section';
 import { CTASection } from './landing/cta-section';
 import { LandingFooter } from './landing/landing-footer';
@@ -147,7 +147,7 @@ export function LandingPage() {
   }, []);
 
   useEffect(() => {
-    const sectionIds = ['kompetisi', 'highlights', 'experiences', 'hall-of-fame', 'clubs', 'how-it-works'];
+    const sectionIds = ['kompetisi', 'highlights', 'experiences', 'season-champion', 'clubs', 'how-it-works'];
     const observer = new IntersectionObserver(
       (entries) => { entries.forEach((entry) => { if (entry.isIntersecting) setActiveSection(entry.target.id); }); },
       { rootMargin: '-40% 0px -55% 0px' }
@@ -216,7 +216,7 @@ export function LandingPage() {
             {[
               { id: 'kompetisi', label: 'Kompetisi', mdLabel: 'Kompetisi' },
               { id: 'highlights', label: 'Highlights', mdLabel: 'Highlight' },
-              { id: 'hall-of-fame', label: 'Hall of Fame', mdLabel: 'HOF' },
+              { id: 'season-champion', label: 'Champion', mdLabel: 'Champion' },
               { id: 'clubs', label: 'Club', mdLabel: 'Club' },
               { id: 'how-it-works', label: 'Cara Main', mdLabel: 'Cara Main' },
             ].map(item => (
@@ -262,7 +262,7 @@ export function LandingPage() {
         <div className="flex items-center justify-around h-16 px-2">
           {[
             { id: 'kompetisi', label: 'Kompetisi', icon: Swords, special: false },
-            { id: 'hall-of-fame', label: 'HOF', icon: Crown, special: true },
+            { id: 'season-champion', label: 'Champion', icon: Crown, special: true },
             { id: 'clubs', label: 'Club', icon: Users, special: false },
             { id: 'how-it-works', label: 'Cara Main', icon: Zap, special: false },
           ].map(item => {
@@ -342,13 +342,12 @@ export function LandingPage() {
 
       <SectionDivider />
 
-      {/* Hall of Fame — merged Champions + MVP (before video section for professional flow) */}
+      {/* Season Champion — completed season champions only (NOT weekly) */}
       <div className="section-reveal">
-      <HallOfFameSection
+      <SeasonChampionSection
         maleData={maleData}
         femaleData={femaleData}
         isDataLoading={isDataLoading}
-        cmsSections={cmsSections}
         setSelectedPlayer={setSelectedPlayer}
       />
       </div>

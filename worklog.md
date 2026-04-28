@@ -172,3 +172,46 @@ Stage Summary:
 - All display-facing "League/Liga" text replaced with "Tarkam" across gallery, experiences, match-day-center
 - Liga navigation menu in app-shell.tsx kept as-is (per user requirement)
 - Admin components kept as-is (need Liga references for admin purposes)
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Restructure landing page from 3 sections (Highlights + HallOfFame + MVP) to 2 sections (Puncak Prestasi with MVP + Season Champion dedicated section)
+
+Work Log:
+- Modified `highlights-section.tsx` (Puncak Prestasi):
+  - Removed all season champion items (juara-season-male, juara-season-female, juara-empty) from `buildHighlights()`
+  - Added MVP items (mvp-male, mvp-female) using `mvpHallOfFame` data from StatsData
+  - Updated `HighlightItem` type to replace juara types with MVP types, added `mvpWeek` and `mvpCount` fields
+  - Updated helper functions: `getBadgeIcon()` now shows Award icon for MVP, `getWatermarkText()` returns 'MVP' for MVP types
+  - Updated `ThumbnailCard` to render Award icon for MVP types instead of Crown/Trophy for juara types
+  - Updated featured card overlays: replaced juara trophy overlay with MVP Award overlay
+  - Updated subtitle: "Peringkat #1 tarkam, streak terpanjang, dan MVP terbaru di Tarkam IDM"
+  - Added `Award` import from lucide-react
+  - MVP accent colors: Male = green (#22c55e), Female = pink (#ec4899)
+- Created new `season-champion-section.tsx` component:
+  - Dedicated section showing ONLY completed season champions (NOT weekly champions)
+  - Uses `allSeasons.filter(s => s.status === 'completed' && s.championPlayer)` to get season champions
+  - Male/Female champion cards side-by-side with gold accent styling
+  - Most recent season champion shown as full-bleed avatar card
+  - Previous season champions shown as compact list items below
+  - Section only renders if there are completed seasons with champion data
+  - Section ID: `season-champion`, label: "Season Champion", subtitle: "Juara season Tarkam IDM — pemain peringkat #1 saat season ditutup"
+  - Clickable cards open player profile via `setSelectedPlayer`
+- Updated `landing-page.tsx`:
+  - Replaced `HallOfFameSection` import with `SeasonChampionSection` import
+  - Replaced HallOfFameSection usage with SeasonChampionSection (removed cmsSections prop, not needed)
+  - Updated section observer IDs: replaced 'hall-of-fame' with 'season-champion'
+  - Updated desktop nav: replaced 'Hall of Fame' with 'Champion'
+  - Updated mobile bottom nav: replaced 'HOF' with 'Champion' (still Crown icon, still special:true)
+- ESLint passes with no errors
+- Dev server compiles and runs successfully
+
+Stage Summary:
+- Landing page now has exactly 2 focused sections instead of 3 redundant ones:
+  1. Puncak Prestasi — #1 players, #1 club, streak leaders, MVP terbaru (male + female)
+  2. Season Champion — only completed season champions (male + female), only shows when data exists
+- MVP data comes from mvpHallOfFame (weekly MVP data), showing latest per division
+- Season Champion data comes from allSeasons with championPlayer (set during season auto-close)
+- Weekly champions NO LONGER shown on landing page (were shown in old HallOfFame Champion tab)
+- Navigation updated across desktop and mobile navs

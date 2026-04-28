@@ -5,7 +5,7 @@ import Image from 'next/image';
 import {
   Trophy, Crown, Calendar, Play, Eye, Swords,
   Star, ChevronRight, ChevronLeft, Zap, Users, Flame, TrendingUp, BarChart3,
-  Medal, Gem,
+  Medal, Gem, Award,
 } from 'lucide-react';
 import { SectionHeader, AnimatedSection } from './shared';
 import { ClubLogoImage } from '@/components/idm/club-logo-image';
@@ -21,7 +21,9 @@ import type { StatsData, TopPlayer, SeasonInfo } from '@/types/stats';
    - #1 Tarkam Male / Female (current ranking leaders)
    - #1 Club Tarkam (combined member tarkam points)
    - Streak Male / Female (longest win streak)
-   - Juara Season X Tarkam Male / Female (#1 ranked player when season closed)
+   - MVP Terbaru Male / Female (latest weekly MVP per division)
+
+   NOTE: Season Champions are shown in a dedicated SeasonChampionSection.
    ═══════════════════════════════════════════════════════════════ */
 
 interface HighlightsSectionProps {
@@ -37,7 +39,7 @@ interface HighlightsSectionProps {
 /* ─── Highlight Item Type ─── */
 interface HighlightItem {
   id: string;
-  type: 'rank1-male' | 'rank1-female' | 'rank1-club' | 'streak-male' | 'streak-female' | 'juara-season-male' | 'juara-season-female' | 'juara-empty';
+  type: 'rank1-male' | 'rank1-female' | 'rank1-club' | 'streak-male' | 'streak-female' | 'mvp-male' | 'mvp-female';
   title: string;
   subtitle: string;
   description: string;
@@ -52,10 +54,14 @@ interface HighlightItem {
   player?: TopPlayer & { division?: string };
   clubName?: string;
   clubLogo?: string | null;
-  /** Season number for juara-season types */
+  /** Season number for season-related types */
   seasonNumber?: number;
   /** Whether this is an empty/placeholder item */
   isEmpty?: boolean;
+  /** MVP week number for MVP types */
+  mvpWeek?: number;
+  /** Total MVP count for MVP types */
+  mvpCount?: number;
 }
 
 /* ─── 3D Tilt Card Hook ─── */
@@ -100,8 +106,8 @@ function buildHighlights(
      3. #1 Club Tarkam — top club by combined member tarkam points
      4. Streak Male — male player with longest win streak
      5. Streak Female — female player with longest win streak
-     6. Juara Season X Tarkam Male — #1 ranked male when season closed
-     7. Juara Season X Tarkam Female — #1 ranked female when season closed
+     6. MVP Terbaru Male — latest weekly MVP in male division
+     7. MVP Terbaru Female — latest weekly MVP in female division
      ═══════════════════════════════════════════════════════════ */
 
   // ─── 1. #1 Tarkam Male — current #1 ranked male player ───
@@ -245,150 +251,61 @@ function buildHighlights(
     });
   }
 
-  // ─── 6 & 7. Juara Season X Tarkam Male / Female ───
-  // For each completed season, the #1 ranked PLAYER when the season closed is the "Juara Season X Tarkam"
-  const completedSeasonsMale = maleData?.allSeasons?.filter(s => s.status === 'completed') || [];
-  const completedSeasonsFemale = femaleData?.allSeasons?.filter(s => s.status === 'completed') || [];
-
-  // Get unique completed season numbers
-  const allCompletedSeasons = [...completedSeasonsMale, ...completedSeasonsFemale];
-  const uniqueSeasonNumbers = [...new Set(allCompletedSeasons.map(s => s.number))].sort((a, b) => a - b);
-
-  let hasAnySeasonChampion = false;
-
-  for (const seasonNum of uniqueSeasonNumbers) {
-    // ─── Male Season Champion ───
-    const maleSeason = completedSeasonsMale.find(s => s.number === seasonNum);
-    if (maleSeason) {
-      const championPlayer = maleSeason.championPlayer;
-      if (championPlayer) {
-        hasAnySeasonChampion = true;
-        items.push({
-          id: `juara-season-male-${seasonNum}`,
-          type: 'juara-season-male',
-          title: championPlayer.gamertag,
-          subtitle: `Juara S${seasonNum} ♂`,
-          description: `Pemain peringkat #1 tarkam divisi male saat Season ${seasonNum} ditutup. ${championPlayer.gamertag} berhasil mempertahankan posisi puncak klasemen dengan ${championPlayer.points} poin dan ${championPlayer.totalWins} kemenangan sepanjang musim.`,
-          badge: `JUARA S${seasonNum} ♂`,
-          thumbLabel: `Juara S${seasonNum} ♂`,
-          imageUrl: getAvatarUrl(championPlayer.gamertag, 'male', championPlayer.avatar),
-          accentColor: '#06b6d4',
-          accentLight: '#22d3ee',
-          division: 'male',
-          seasonNumber: seasonNum,
-          metadata: [
-            { icon: Crown, label: 'Season', value: `${seasonNum}` },
-            { icon: Medal, label: 'Tier', value: championPlayer.tier || '—' },
-            { icon: Trophy, label: 'Points', value: `${championPlayer.points}` },
-            { icon: Eye, label: 'Wins', value: `${championPlayer.totalWins}` },
-          ],
-          player: { ...championPlayer, division: 'male' } as TopPlayer & { division?: string },
-        });
-      } else {
-        // Try to find from weeklyChampions data — last week's champion could be the season champion
-        const maleWeeklyChamps = maleData?.weeklyChampions?.filter(wc => wc.seasonNumber === seasonNum) || [];
-        const lastWeekChamp = maleWeeklyChamps[maleWeeklyChamps.length - 1];
-        const lastWeekMvp = lastWeekChamp?.mvp;
-        if (lastWeekMvp) {
-          hasAnySeasonChampion = true;
-          items.push({
-            id: `juara-season-male-${seasonNum}`,
-            type: 'juara-season-male',
-            title: lastWeekMvp.gamertag,
-            subtitle: `Juara S${seasonNum} ♂`,
-            description: `Pemain peringkat #1 tarkam divisi male saat Season ${seasonNum} ditutup. ${lastWeekMvp.gamertag} menunjukkan performa terbaik di pekan terakhir musim dengan ${lastWeekMvp.points} poin.`,
-            badge: `JUARA S${seasonNum} ♂`,
-            thumbLabel: `Juara S${seasonNum} ♂`,
-            imageUrl: getAvatarUrl(lastWeekMvp.gamertag, 'male', lastWeekMvp.avatar),
-            accentColor: '#06b6d4',
-            accentLight: '#22d3ee',
-            division: 'male',
-            seasonNumber: seasonNum,
-            metadata: [
-              { icon: Crown, label: 'Season', value: `${seasonNum}` },
-              { icon: Trophy, label: 'Points', value: `${lastWeekMvp.points}` },
-              { icon: Medal, label: 'MVPs', value: `${lastWeekMvp.totalMvp}x` },
-            ],
-          });
-        }
-      }
-    }
-
-    // ─── Female Season Champion ───
-    const femaleSeason = completedSeasonsFemale.find(s => s.number === seasonNum);
-    if (femaleSeason) {
-      const championPlayer = femaleSeason.championPlayer;
-      if (championPlayer) {
-        hasAnySeasonChampion = true;
-        items.push({
-          id: `juara-season-female-${seasonNum}`,
-          type: 'juara-season-female',
-          title: championPlayer.gamertag,
-          subtitle: `Juara S${seasonNum} ♀`,
-          description: `Pemain peringkat #1 tarkam divisi female saat Season ${seasonNum} ditutup. ${championPlayer.gamertag} berhasil mempertahankan posisi puncak klasemen dengan ${championPlayer.points} poin dan ${championPlayer.totalWins} kemenangan sepanjang musim.`,
-          badge: `JUARA S${seasonNum} ♀`,
-          thumbLabel: `Juara S${seasonNum} ♀`,
-          imageUrl: getAvatarUrl(championPlayer.gamertag, 'female', championPlayer.avatar),
-          accentColor: '#a855f7',
-          accentLight: '#c084fc',
-          division: 'female',
-          seasonNumber: seasonNum,
-          metadata: [
-            { icon: Crown, label: 'Season', value: `${seasonNum}` },
-            { icon: Medal, label: 'Tier', value: championPlayer.tier || '—' },
-            { icon: Trophy, label: 'Points', value: `${championPlayer.points}` },
-            { icon: Eye, label: 'Wins', value: `${championPlayer.totalWins}` },
-          ],
-          player: { ...championPlayer, division: 'female' } as TopPlayer & { division?: string },
-        });
-      } else {
-        // Try to find from weeklyChampions data
-        const femaleWeeklyChamps = femaleData?.weeklyChampions?.filter(wc => wc.seasonNumber === seasonNum) || [];
-        const lastWeekChamp = femaleWeeklyChamps[femaleWeeklyChamps.length - 1];
-        const lastWeekMvp = lastWeekChamp?.mvp;
-        if (lastWeekMvp) {
-          hasAnySeasonChampion = true;
-          items.push({
-            id: `juara-season-female-${seasonNum}`,
-            type: 'juara-season-female',
-            title: lastWeekMvp.gamertag,
-            subtitle: `Juara S${seasonNum} ♀`,
-            description: `Pemain peringkat #1 tarkam divisi female saat Season ${seasonNum} ditutup. ${lastWeekMvp.gamertag} menunjukkan performa terbaik di pekan terakhir musim dengan ${lastWeekMvp.points} poin.`,
-            badge: `JUARA S${seasonNum} ♀`,
-            thumbLabel: `Juara S${seasonNum} ♀`,
-            imageUrl: getAvatarUrl(lastWeekMvp.gamertag, 'female', lastWeekMvp.avatar),
-            accentColor: '#a855f7',
-            accentLight: '#c084fc',
-            division: 'female',
-            seasonNumber: seasonNum,
-            metadata: [
-              { icon: Crown, label: 'Season', value: `${seasonNum}` },
-              { icon: Trophy, label: 'Points', value: `${lastWeekMvp.points}` },
-              { icon: Medal, label: 'MVPs', value: `${lastWeekMvp.totalMvp}x` },
-            ],
-          });
-        }
-      }
-    }
+  // ─── 6. MVP Terbaru Male — latest weekly MVP in male division ───
+  const maleMvpList = maleData?.mvpHallOfFame || [];
+  const latestMaleMvp = maleMvpList.length > 0 ? maleMvpList[maleMvpList.length - 1] : null;
+  if (latestMaleMvp) {
+    const mvpPlayer = maleData?.topPlayers?.find(p => p.gamertag === latestMaleMvp.gamertag);
+    items.push({
+      id: 'mvp-male',
+      type: 'mvp-male',
+      title: latestMaleMvp.gamertag,
+      subtitle: 'MVP Terbaru ♂',
+      description: `MVP terbaru divisi male di pekan ${latestMaleMvp.weekNumber}! ${latestMaleMvp.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${latestMaleMvp.totalMvp > 1 ? ` — sudah ${latestMaleMvp.totalMvp}x meraih MVP sepanjang musim` : ''}.`,
+      badge: `MVP W${latestMaleMvp.weekNumber} ♂`,
+      thumbLabel: `MVP ♂`,
+      imageUrl: getAvatarUrl(latestMaleMvp.gamertag, 'male', latestMaleMvp.avatar),
+      accentColor: '#22c55e',
+      accentLight: '#4ade80',
+      division: 'male',
+      mvpWeek: latestMaleMvp.weekNumber,
+      mvpCount: latestMaleMvp.totalMvp,
+      metadata: [
+        { icon: Award, label: 'MVP', value: `${latestMaleMvp.totalMvp}x` },
+        { icon: Trophy, label: 'Points', value: `${latestMaleMvp.points}` },
+        { icon: Eye, label: 'Wins', value: `${latestMaleMvp.totalWins}` },
+        { icon: Flame, label: 'Streak', value: `${latestMaleMvp.streak}W` },
+      ],
+      player: mvpPlayer ? { ...mvpPlayer, division: 'male' } : undefined,
+    });
   }
 
-  // ─── Empty state if no completed seasons yet ───
-  if (!hasAnySeasonChampion && uniqueSeasonNumbers.length === 0) {
+  // ─── 7. MVP Terbaru Female — latest weekly MVP in female division ───
+  const femaleMvpList = femaleData?.mvpHallOfFame || [];
+  const latestFemaleMvp = femaleMvpList.length > 0 ? femaleMvpList[femaleMvpList.length - 1] : null;
+  if (latestFemaleMvp) {
+    const mvpPlayer = femaleData?.topPlayers?.find(p => p.gamertag === latestFemaleMvp.gamertag);
     items.push({
-      id: 'juara-empty',
-      type: 'juara-empty',
-      title: 'Belum Ada Juara Season',
-      subtitle: 'Menunggu Season Pertama',
-      description: 'Season belum berakhir — juara akan ditentukan saat season ditutup berdasarkan peringkat #1 tarkam. Pemain yang berada di posisi puncak klasemen saat season berakhir akan dinobatkan sebagai Juara Season Tarkam.',
-      badge: 'JUARA SEASON',
-      thumbLabel: 'Juara Season',
-      accentColor: '#d4a853',
-      accentLight: '#f5d77a',
-      isEmpty: true,
+      id: 'mvp-female',
+      type: 'mvp-female',
+      title: latestFemaleMvp.gamertag,
+      subtitle: 'MVP Terbaru ♀',
+      description: `MVP terbaru divisi female di pekan ${latestFemaleMvp.weekNumber}! ${latestFemaleMvp.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${latestFemaleMvp.totalMvp > 1 ? ` — sudah ${latestFemaleMvp.totalMvp}x meraih MVP sepanjang musim` : ''}.`,
+      badge: `MVP W${latestFemaleMvp.weekNumber} ♀`,
+      thumbLabel: `MVP ♀`,
+      imageUrl: getAvatarUrl(latestFemaleMvp.gamertag, 'female', latestFemaleMvp.avatar),
+      accentColor: '#ec4899',
+      accentLight: '#f472b6',
+      division: 'female',
+      mvpWeek: latestFemaleMvp.weekNumber,
+      mvpCount: latestFemaleMvp.totalMvp,
       metadata: [
-        { icon: Crown, label: 'Status', value: 'Menunggu' },
-        { icon: Calendar, label: 'Season', value: 'Berjalan' },
+        { icon: Award, label: 'MVP', value: `${latestFemaleMvp.totalMvp}x` },
+        { icon: Trophy, label: 'Points', value: `${latestFemaleMvp.points}` },
+        { icon: Eye, label: 'Wins', value: `${latestFemaleMvp.totalWins}` },
+        { icon: Flame, label: 'Streak', value: `${latestFemaleMvp.streak}W` },
       ],
+      player: mvpPlayer ? { ...mvpPlayer, division: 'female' } : undefined,
     });
   }
 
@@ -414,10 +331,9 @@ function ShimmerOverlay({ accentColor, visible }: { accentColor: string; visible
 /* ─── Determine badge icon for featured card ─── */
 function getBadgeIcon(type: HighlightItem['type'], accentLight: string) {
   switch (type) {
-    case 'juara-season-male':
-    case 'juara-season-female':
-    case 'juara-empty':
-      return <Crown className="w-3.5 h-3.5" style={{ color: accentLight }} />;
+    case 'mvp-male':
+    case 'mvp-female':
+      return <Award className="w-3.5 h-3.5" style={{ color: accentLight }} />;
     case 'rank1-male':
     case 'rank1-female':
       return <Medal className="w-3.5 h-3.5" style={{ color: accentLight }} />;
@@ -434,10 +350,9 @@ function getBadgeIcon(type: HighlightItem['type'], accentLight: string) {
 /* ─── Determine watermark text for featured card ─── */
 function getWatermarkText(type: HighlightItem['type']): string {
   switch (type) {
-    case 'juara-season-male':
-    case 'juara-season-female':
-    case 'juara-empty':
-      return 'JUARA';
+    case 'mvp-male':
+    case 'mvp-female':
+      return 'MVP';
     case 'rank1-male':
       return '#1 MALE';
     case 'rank1-female':
@@ -544,10 +459,8 @@ function ThumbnailCard({
               <Gem className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
             ) : item.type === 'streak-male' || item.type === 'streak-female' ? (
               <Flame className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
-            ) : item.type === 'juara-season-male' || item.type === 'juara-season-female' ? (
-              <Crown className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
-            ) : item.type === 'juara-empty' ? (
-              <Trophy className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
+            ) : item.type === 'mvp-male' || item.type === 'mvp-female' ? (
+              <Award className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
             ) : (
               <Trophy className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
             )}
@@ -574,10 +487,11 @@ function ThumbnailCard({
           </div>
         )}
 
-        {/* Season champion trophy icon overlay */}
-        {(item.type === 'juara-season-male' || item.type === 'juara-season-female') && (
+        {/* Season champion trophy icon overlay — replaced by SeasonChampionSection */}
+        {/* MVP star icon overlay */}
+        {(item.type === 'mvp-male' || item.type === 'mvp-female') && (
           <div className="absolute top-1.5 right-1.5 pointer-events-none">
-            <Trophy className="w-3.5 h-3.5 text-idm-gold-warm" style={{ filter: 'drop-shadow(0 0 4px rgba(212,168,83,0.5))' }} />
+            <Award className="w-3.5 h-3.5" style={{ color: item.accentLight, filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }} />
           </div>
         )}
 
@@ -617,7 +531,7 @@ export function HighlightsSection({
   // CMS text fields with fallbacks
   const highlightsLabel = cmsSettings?.highlights_label || 'HIGHLIGHTS';
   const highlightsTitle = cmsSettings?.highlights_title || 'Puncak Prestasi';
-  const highlightsSubtitle = cmsSettings?.highlights_subtitle || 'Peringkat #1 tarkam, streak terpanjang, dan juara season di Tarkam IDM';
+  const highlightsSubtitle = cmsSettings?.highlights_subtitle || 'Peringkat #1 tarkam, streak terpanjang, dan MVP terbaru di Tarkam IDM';
   const highlightsVideoUrl = cmsSettings?.highlights_video_url || '';
   /* ─── Build highlight items from data ─── */
   const highlights = useMemo(
@@ -870,20 +784,11 @@ export function HighlightsSection({
                     </div>
                   )}
 
-                  {/* Juara Season trophy overlay — CSS float animation */}
-                  {(active.type === 'juara-season-male' || active.type === 'juara-season-female') && (
+                  {/* MVP Award overlay — CSS float animation */}
+                  {(active.type === 'mvp-male' || active.type === 'mvp-female') && (
                     <div className="absolute top-4 left-4 z-20 pointer-events-none">
                       <div className="animate-float-subtle">
-                        <Trophy className="w-8 h-8 text-idm-gold-warm drop-shadow-[0_0_12px_rgba(212,168,83,0.4)]" />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Empty state trophy overlay — CSS float animation */}
-                  {active.type === 'juara-empty' && (
-                    <div className="absolute top-4 left-4 z-20 pointer-events-none">
-                      <div className="animate-float-subtle">
-                        <Trophy className="w-8 h-8 text-idm-gold-warm/40 drop-shadow-[0_0_12px_rgba(212,168,83,0.2)]" />
+                        <Award className="w-8 h-8 drop-shadow-[0_0_12px_rgba(34,197,94,0.4)]" style={{ color: active.accentLight }} />
                       </div>
                     </div>
                   )}
@@ -988,10 +893,8 @@ export function HighlightsSection({
                           />
                         ) : active.type === 'rank1-male' || active.type === 'rank1-female' ? (
                           <Medal className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
-                        ) : active.type === 'juara-season-male' || active.type === 'juara-season-female' ? (
-                          <Crown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
-                        ) : active.type === 'juara-empty' ? (
-                          <Trophy className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight, opacity: 0.5 }} />
+                        ) : active.type === 'mvp-male' || active.type === 'mvp-female' ? (
+                          <Award className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
                         ) : active.type === 'rank1-club' ? (
                           <Gem className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
                         ) : active.type.includes('streak') ? (
