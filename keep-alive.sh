@@ -1,8 +1,11 @@
 #!/bin/bash
+# Auto-restart dev server
+cd /home/z/my-project
 while true; do
-  cd /home/z/my-project
-  if ! curl -s -o /dev/null http://localhost:3000/ 2>/dev/null; then
-    nohup bun run dev > /home/z/my-project/dev.log 2>&1 &
-  fi
-  sleep 10
+  unset DATABASE_URL
+  echo "[$(date)] Starting dev server..." >> dev.log
+  bun run dev >> dev.log 2>&1
+  EXIT_CODE=$?
+  echo "[$(date)] Server exited with code $EXIT_CODE, restarting in 3s..." >> dev.log
+  sleep 3
 done
