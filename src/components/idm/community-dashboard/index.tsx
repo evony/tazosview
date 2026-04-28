@@ -7,7 +7,7 @@ import {
   Users, Swords, Trophy, Crown, Medal,
   Flame, Radio, Star,
   Gamepad2, Target, Calendar,
-  Clock, Award,
+  Clock,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +35,7 @@ import { CommunityStreaks } from './community-streaks';
 import { CommunityDonors } from './community-donors';
 // CommunityActivityMarquee removed — too noisy for community dashboard
 import { SeasonComparison } from './season-comparison';
-import { CommunityAchievements } from './community-achievements';
+
 
 /* ═══════════════════════════════════════════
    Internal Tab Bar — reusable within sections
@@ -492,15 +492,10 @@ export function CommunityDashboard() {
         <MatchesSection maleData={maleData} femaleData={femaleData} />
       </Section>
 
-      {/* ═══ 8. Donasi + Pencapaian — Equal 2-col ═══ */}
-      <LayoutRow cols="2">
-        <Section title="Donasi Komunitas" icon={Medal} iconColor="text-pink-400">
-          <CommunityDonors maleData={maleData} femaleData={femaleData} />
-        </Section>
-        <Section title="Pencapaian" icon={Award} iconColor="text-purple-400">
-          <CommunityAchievements maleData={maleData} femaleData={femaleData} leagueData={leagueData} />
-        </Section>
-      </LayoutRow>
+      {/* ═══ 8. Donasi — Full width ═══ */}
+      <Section title="Donasi Komunitas" icon={Medal} iconColor="text-pink-400">
+        <CommunityDonors maleData={maleData} femaleData={femaleData} />
+      </Section>
 
       {/* Player & Club Profile Modals — same as division dashboard */}
       {selectedPlayer && (
