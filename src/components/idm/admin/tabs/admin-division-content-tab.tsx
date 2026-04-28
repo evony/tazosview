@@ -174,16 +174,17 @@ export function AdminDivisionContentTab() {
     setFormState(prev => ({ ...settingsMap, ...prev, ...updates }) as Record<string, string>);
   };
 
-  /* ── Default fallback data ── */
+  /* ── Default fallback data — sesuai logika backend score/route.ts ── */
   const defaults = {
     peraturan_subtitle: 'Panduan lengkap format turnamen, sistem poin, dan peraturan pertandingan Tarkam IDM.',
     peraturan_poin_title: 'Sistem Poin Tarkam',
     peraturan_poin_items: JSON.stringify([
-      { label: 'Menang Pertandingan', value: '+3 Poin', highlight: true },
-      { label: 'Kalah Pertandingan', value: '+1 Poin', highlight: false },
-      { label: 'Tidak Hadir / Walkout', value: '0 Poin', highlight: false },
-      { label: 'MVP Pekan', value: '+2 Bonus Poin', highlight: true },
-      { label: 'Streak 3+ Menang', value: '+1 Bonus Poin', highlight: true },
+      { label: 'Menang Pertandingan', value: '+2 Poin', highlight: true },
+      { label: 'Partisipasi Turnamen', value: '+1 Poin (sekali/tournament)', highlight: true },
+      { label: 'Seri / Draw (Grup)', value: '+1 Poin', highlight: false },
+      { label: 'Kalah Pertandingan', value: '0 Poin', highlight: false },
+      { label: 'MVP Turnamen', value: 'Sesuai Hadiah', highlight: true },
+      { label: 'Juara 1/2/3', value: 'Sesuai Hadiah', highlight: true },
     ]),
     peraturan_format_title: 'Format Turnamen',
     peraturan_format_items: JSON.stringify([
@@ -197,7 +198,6 @@ export function AdminDivisionContentTab() {
     peraturan_match_title: 'Peraturan Pertandingan',
     peraturan_match_items: JSON.stringify([
       { label: 'Peserta wajib hadir', value: 'Tepat Waktu', highlight: true },
-      { label: 'Terlambat / Tidak Hadir', value: 'Walkout (0 poin)', highlight: false },
       { label: 'Penilaian', value: 'Oleh Juri', highlight: false },
       { label: 'Keputusan Juri', value: 'Final & Binding', highlight: true },
       { label: 'MVP Dipilih', value: 'Oleh Organizer', highlight: false },
