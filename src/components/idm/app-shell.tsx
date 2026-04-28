@@ -66,6 +66,9 @@ const RegistrationForm = dynamic(() => import('./registration-form').then(m => (
 const CommunityDashboard = dynamic(() => import('./community-dashboard').then(m => ({ default: m.CommunityDashboard })), {
   loading: () => viewLoading,
 });
+const BantuanView = dynamic(() => import('./bantuan-view').then(m => ({ default: m.BantuanView })), {
+  loading: () => viewLoading,
+});
 
 /* ─── Navigation Items — Community-focused ─── */
 type NavItemDef = {
@@ -304,12 +307,13 @@ function DesktopSidebar({ onOpenAccountModal, onOpenAdminModal }: { onOpenAccoun
         {/* Bantuan */}
         <NavButton
           icon={HelpCircle} label="Bantuan" collapsed={collapsed}
-          isActive={false}
-          iconBg=""
-          activeGlow={false}
+          isActive={currentView === 'bantuan'}
+          iconBg={currentView === 'bantuan' ? 'bg-idm-gold-warm/15' : ''}
+          activeGlow={currentView === 'bantuan'}
           division={division}
           navActive={dt.navActive}
-          onClick={() => toast.info('Hubungi admin di Discord untuk bantuan')}
+          isCommunity
+          onClick={() => setCurrentView('bantuan')}
         />
 
         {/* Notifikasi */}
@@ -564,6 +568,7 @@ export function AppShell() {
       case 'admin': return adminAuth.isAuthenticated ? <AdminPanel /> : (() => { /* Open unified modal on admin tab instead of inline login */ setTimeout(() => { setAccountModalDefaultTab('admin'); setAccountModalOpen(true); setCurrentView('dashboard'); }, 0); return null; })();
       case 'register': return <RegistrationForm />;
       case 'community': return <CommunityDashboard />;
+      case 'bantuan': return <BantuanView />;
       // mytournament removed — integrated into Dashboard
       default: return <Dashboard />;
     }
@@ -637,7 +642,7 @@ export function AppShell() {
         </main>
       </div>
 
-      {/* ═══ Mobile Bottom Nav — 4 items: Home, Komunitas, Male, Female ═══ */}
+      {/* ═══ Mobile Bottom Nav — 5 items: Home, Komunitas, Male, Female, Bantuan ═══ */}
       <nav className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 ${dt.glassStrong} border-t border-border safe-area-bottom`}>
         {/* Division sub-nav — appears when in division view */}
         {(['dashboard', 'matchday', 'league'] as AppView[]).includes(currentView) && (
@@ -666,7 +671,7 @@ export function AppShell() {
           {/* Home */}
           <button
             onClick={() => { hapticTap(); setCurrentView('landing'); }}
-            className={`flex flex-col items-center justify-center gap-0.5 px-3 py-2 min-h-[44px] rounded-lg transition-colors duration-200 relative ${
+            className={`flex flex-col items-center justify-center gap-0.5 px-2 py-2 min-h-[44px] rounded-lg transition-colors duration-200 relative ${
               (currentView as AppView) === 'landing' ? dt.text : 'text-muted-foreground'
             }`}
           >
@@ -702,7 +707,7 @@ export function AppShell() {
                   if (navItem.division) setDivision(navItem.division);
                   setCurrentView(navItem.id);
                 }}
-                className={`flex flex-col items-center justify-center gap-0.5 px-3 py-2 min-h-[44px] rounded-lg transition-colors duration-200 relative ${
+                className={`flex flex-col items-center justify-center gap-0.5 px-2 py-2 min-h-[44px] rounded-lg transition-colors duration-200 relative ${
                   isActive ? activeColor : 'text-muted-foreground'
                 }`}
               >
@@ -714,6 +719,20 @@ export function AppShell() {
               </button>
             );
           })}
+
+          {/* Bantuan */}
+          <button
+            onClick={() => { hapticTap(); setCurrentView('bantuan'); }}
+            className={`flex flex-col items-center justify-center gap-0.5 px-2 py-2 min-h-[44px] rounded-lg transition-colors duration-200 relative ${
+              currentView === 'bantuan' ? 'text-idm-gold-warm' : 'text-muted-foreground'
+            }`}
+          >
+            <HelpCircle className="w-5 h-5" />
+            <span className="text-[10px] font-medium leading-tight">Bantuan</span>
+            {currentView === 'bantuan' && (
+              <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-idm-gold-warm" />
+            )}
+          </button>
         </div>
       </nav>
 
