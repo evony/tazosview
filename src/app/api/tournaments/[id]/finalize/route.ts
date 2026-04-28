@@ -191,6 +191,7 @@ export async function POST(
           reason: getPrizeReason(prize.position, prize.label),
           description: `MVP - ${tournament.name}`,
           tournamentId: id,
+          seasonId: tournament.seasonId,
         });
 
         await db.player.update({
@@ -253,6 +254,7 @@ export async function POST(
               reason: getPrizeReason(prize.position, prize.label),
               description: `${prize.label} - ${tournament.name} (${team.name})`,
               tournamentId: id,
+              seasonId: tournament.seasonId,
             });
 
             const part = await db.participation.findUnique({
@@ -296,13 +298,13 @@ export async function POST(
         select: { id: true, division: true },
       });
 
-      const updateData: { status: string; endDate: Date; championClubId?: string | null; championPlayerId?: string | null } = {
+      const updateData: { status: string; endDate: Date; championClubId?: string | null; championPlayerId?: string | null; championPlayerPoints?: number | null } = {
         status: 'completed',
         endDate: new Date(),
       };
 
       if (season?.division === 'liga') {
-        // Liga mode: champion is the club with most points
+        // Liga mode: champion is the club with most points in this season
         const topClub = await db.club.findFirst({
           where: { seasonId: tournament.seasonId },
           orderBy: [{ points: 'desc' }, { gameDiff: 'desc' }],
@@ -310,13 +312,34 @@ export async function POST(
         });
         updateData.championClubId = topClub?.id || null;
       } else {
-        // Tarkam mode: champion is the player with most points in this division
-        const topPlayer = await db.player.findFirst({
-          where: { division: season?.division || 'male', isActive: true },
-          orderBy: [{ points: 'desc' }, { totalWins: 'desc' }],
-          select: { id: true },
+        // Tarkam mode: champion is the player with most per-season points
+        // Compute from PlayerPoint records (not lifetime Player.points)
+        const seasonPoints = await db.playerPoint.groupBy({
+          by: ['playerId'],
+          where: { seasonId: tournament.seasonId },
+          _sum: { amount: true },
         });
-        updateData.championPlayerId = topPlayer?.id || null;
+
+        // Get player details for tiebreaking
+        const playerIds = seasonPoints.map(sp => sp.playerId);
+        const players = await db.player.findMany({
+          where: { id: { in: playerIds }, division: season?.division || 'male', isActive: true },
+          select: { id: true, totalWins: true, totalMvp: true },
+        });
+        const playerMap = new Map(players.map(p => [p.id, p]));
+
+        // Sort by per-season points desc, then totalWins desc as tiebreaker
+        seasonPoints.sort((a, b) => {
+          const ptsA = a._sum.amount || 0;
+          const ptsB = b._sum.amount || 0;
+          if (ptsB !== ptsA) return ptsB - ptsA;
+          const winsA = playerMap.get(a.playerId)?.totalWins || 0;
+          const winsB = playerMap.get(b.playerId)?.totalWins || 0;
+          return winsB - winsA;
+        });
+
+        updateData.championPlayerId = seasonPoints[0]?.playerId || null;
+        updateData.championPlayerPoints = seasonPoints[0]?._sum.amount || null;
       }
 
       await db.season.update({

@@ -15,7 +15,7 @@ export type Tier = 'S' | 'A' | 'B';
 
 /**
  * Award points to a player with full audit trail via PlayerPoint record.
- * Also updates the player's total points.
+ * Also updates the player's total (lifetime) points.
  */
 export async function awardPoints(params: {
   playerId: string;
@@ -24,8 +24,9 @@ export async function awardPoints(params: {
   description: string;
   tournamentId?: string;
   matchId?: string;
+  seasonId?: string;
 }) {
-  const { playerId, amount, reason, description, tournamentId, matchId } = params;
+  const { playerId, amount, reason, description, tournamentId, matchId, seasonId } = params;
 
   // Create audit record
   await db.playerPoint.create({
@@ -36,10 +37,11 @@ export async function awardPoints(params: {
       description,
       tournamentId: tournamentId || null,
       matchId: matchId || null,
+      seasonId: seasonId || null,
     },
   });
 
-  // Update player total points
+  // Update player total points (lifetime)
   const player = await db.player.findUnique({ where: { id: playerId } });
   if (player) {
     await db.player.update({

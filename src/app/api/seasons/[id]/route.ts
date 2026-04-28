@@ -101,7 +101,7 @@ export async function PUT(
 
   const { id } = await params;
   const body = await request.json();
-  const { name, status, championClubId, championPlayerId, championSquad, endDate } = body;
+  const { name, status, championClubId, championPlayerId, championPlayerPoints, championSquad, endDate } = body;
 
   const season = await db.season.findUnique({ where: { id } });
   if (!season) {
@@ -157,6 +157,7 @@ export async function PUT(
   if (status !== undefined) updateData.status = status;
   if (championClubId !== undefined) updateData.championClubId = championClubId || null;
   if (championPlayerId !== undefined) updateData.championPlayerId = championPlayerId || null;
+  if (championPlayerPoints !== undefined) updateData.championPlayerPoints = championPlayerPoints || null;
   if (championSquad !== undefined) updateData.championSquad = championSquad ? JSON.stringify(championSquad) : null;
   if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
 

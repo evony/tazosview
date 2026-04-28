@@ -6,7 +6,7 @@ import { broadcastInvalidation } from '@/lib/cross-tab-sync';
 import Image from 'next/image';
 import {
   Calendar, Crown, Trophy, Plus, Loader2, Check, X, Edit3,
-  Shield, Play, Flag, ChevronDown, ChevronUp, Star, Trash2, User
+  Shield, Play, Flag, ChevronDown, ChevronUp, Star, Trash2, User, Lock
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -203,6 +203,25 @@ export function AdminSeasonPanel({ division, dt, setConfirmDialog, mode = 'liga'
       broadcastInvalidation('league-landing', 'league', 'stats');
       setExpandedSeason(null);
       toast.success('Season berhasil dihapus!');
+    },
+    onError: (e: Error) => { toast.error(e.message); },
+  });
+
+  // Close season mutation (Tutup Season)
+  const closeSeason = useMutation({
+    mutationFn: async (seasonId: string) => {
+      const res = await authFetch(`/api/seasons/${seasonId}/close`, { method: 'POST' });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['admin-seasons'] });
+      qc.invalidateQueries({ queryKey: ['admin-season-detail', expandedSeason] });
+      qc.invalidateQueries({ queryKey: ['stats', division] });
+      qc.invalidateQueries({ queryKey: ['league'] });
+      qc.invalidateQueries({ queryKey: ['league-landing'] });
+      broadcastInvalidation('league-landing', 'league', 'stats');
+      toast.success(data.message || 'Season berhasil ditutup!');
     },
     onError: (e: Error) => { toast.error(e.message); },
   });
@@ -1044,6 +1063,40 @@ export function AdminSeasonPanel({ division, dt, setConfirmDialog, mode = 'liga'
                                 </div>
                               )}
                             </div>
+
+                            {/* ── Tutup Season Button ── */}
+                            {(seasonDetail?.status || season.status) === 'active' && (
+                              <div className="p-3 rounded-lg bg-orange-500/5 border border-orange-500/15">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-xs font-semibold text-orange-400 flex items-center gap-1.5">
+                                      <Lock className="w-3.5 h-3.5" /> Tutup Season
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                      Tutup season ini, tentukan champion otomatis berdasarkan per-season points. Season baru harus dibuat manual.
+                                    </p>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    className="text-[10px] bg-orange-500 hover:bg-orange-600 text-white shrink-0"
+                                    disabled={closeSeason.isPending}
+                                    onClick={() => {
+                                      setConfirmLocal({
+                                        open: true,
+                                        title: 'Tutup Season?',
+                                        description: `Season "${season.name}" akan ditutup dan status berubah menjadi "Selesai". Champion akan ditentukan otomatis dari per-season points. Tindakan ini tidak dapat dibatalkan.`,
+                                        onConfirm: () => {
+                                          closeSeason.mutate(season.id);
+                                        },
+                                      });
+                                    }}
+                                  >
+                                    {closeSeason.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Lock className="w-3 h-3 mr-1" />}
+                                    Tutup Season
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
 
                             {/* ── Season Stats Summary ── */}
                             <div className="grid grid-cols-3 gap-2">

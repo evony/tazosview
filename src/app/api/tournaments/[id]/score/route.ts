@@ -1,6 +1,5 @@
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/api-auth';
-import { awardPoints } from '@/lib/points';
 import { getSafeErrorMessage } from '@/lib/api-error';
 import { NextResponse } from 'next/server';
 
@@ -173,6 +172,7 @@ export async function POST(
                   data: {
                     playerId: tp.playerId, amount: 1, reason: 'participation',
                     description: `Partisipasi tournament - ${match.tournament.name}`, tournamentId: id, matchId,
+                    seasonId: match.tournament.seasonId,
                   },
                 });
               }
@@ -181,6 +181,7 @@ export async function POST(
                 data: {
                   playerId: tp.playerId, amount: drawPts, reason: 'match_draw',
                   description: `Seri match R${match.round}M${match.matchNumber}`, tournamentId: id, matchId,
+                  seasonId: match.tournament.seasonId,
                 },
               });
 
@@ -237,6 +238,7 @@ export async function POST(
               data: {
                 playerId: tp.playerId, amount: 1, reason: 'participation',
                 description: `Partisipasi tournament - ${match.tournament.name}`, tournamentId: id, matchId,
+                seasonId: match.tournament.seasonId,
               },
             });
           }
@@ -245,6 +247,7 @@ export async function POST(
             data: {
               playerId: tp.playerId, amount: winPts, reason: 'match_win',
               description: `Menang match ${matchLabel}`, tournamentId: id, matchId,
+              seasonId: match.tournament.seasonId,
             },
           });
 
@@ -286,6 +289,7 @@ export async function POST(
               data: {
                 playerId: tp.playerId, amount: 1, reason: 'participation',
                 description: `Partisipasi tournament - ${match.tournament.name}`, tournamentId: id, matchId,
+                seasonId: match.tournament.seasonId,
               },
             });
           }

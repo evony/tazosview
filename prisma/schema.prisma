@@ -57,9 +57,10 @@ model Season {
   status           String   @default("active") // "active" | "completed" | "upcoming"
   startDate        DateTime
   endDate          DateTime?
-  championClubId   String?  // ClubProfile that won the Liga IDM for this season (liga mode only)
-  championPlayerId String?  // Player that won the Tarkam season (tarkam mode only)
-  championSquad    String?  // JSON string: [{id, gamertag, division, role}] — 5 representatives for champion card (liga only)
+  championClubId      String?  // ClubProfile that won the Liga IDM for this season (liga mode only)
+  championPlayerId    String?  // Player that won the Tarkam season (tarkam mode only)
+  championPlayerPoints Int?    // Per-season points of the champion player at time of season closure (snapshot)
+  championSquad       String?  // JSON string: [{id, gamertag, division, role}] — 5 representatives for champion card (liga only)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -68,6 +69,7 @@ model Season {
   clubs          Club[]
   leagueMatches  LeagueMatch[]
   playoffMatches PlayoffMatch[]
+  pointRecords   PlayerPoint[]
   championClub   ClubProfile? @relation("SeasonChampion", fields: [championClubId], references: [id], onDelete: SetNull)
   championPlayer Player?     @relation("SeasonPlayerChampion", fields: [championPlayerId], references: [id], onDelete: SetNull)
 
@@ -484,19 +486,24 @@ model PlayerPoint {
   playerId     String
   tournamentId String?  // null for non-tournament adjustments
   matchId      String?  // null for non-match points
+  seasonId     String?  // Season this point belongs to — enables per-season leaderboard & champion determination
   amount       Int      // positive = earned, negative = deduction
-  reason       String   // "participation" | "match_win" | "prize_juara1" | "prize_juara2" | "prize_juara3" | "prize_mvp" | "admin_adjustment" | "tier_upgrade_bonus"
+  reason       String   // "participation" | "match_win" | "match_draw" | "prize_juara1" | "prize_juara2" | "prize_juara3" | "prize_mvp" | "admin_adjustment" | "tier_upgrade_bonus"
   description  String   // Human-readable detail e.g. "Menang match vs Team Alpha"
   createdAt    DateTime @default(now())
 
   player     Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
   tournament Tournament? @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
   match      Match?     @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  season     Season?    @relation(fields: [seasonId], references: [id], onDelete: SetNull)
 
   @@index([playerId])
   @@index([tournamentId])
+  @@index([seasonId])
   @@index([reason])
   @@index([playerId, tournamentId])
+  @@index([playerId, seasonId])
+  @@index([seasonId, reason])
 }
 
 // ============================================

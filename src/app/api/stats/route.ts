@@ -62,7 +62,8 @@ export async function GET(request: Request) {
     activeTournament,
     totalPlayers,
     seasonDonations,
-    topPlayers,
+    seasonPointsRaw,
+    allDivisionPlayers,
     clubs,
     recentMatches,
     upcomingMatches,
@@ -90,10 +91,17 @@ export async function GET(request: Request) {
       where: { seasonId: activeSeasonId, status: 'approved' },
     }),
 
-    // Top players leaderboard — show all active players for landing page roster
+    // Per-season points aggregation — compute from PlayerPoint records
+    // This ensures that when a new season starts, the leaderboard starts from 0
+    db.playerPoint.groupBy({
+      by: ['playerId'],
+      where: { seasonId: activeSeasonId },
+      _sum: { amount: true },
+    }),
+
+    // All active players for this division (needed for leaderboard even if no season points)
     db.player.findMany({
       where: { division, isActive: true },
-      orderBy: [{ points: 'desc' }, { totalWins: 'desc' }],
     }),
 
     // Clubs standings — use the season that actually has clubs
@@ -151,6 +159,24 @@ export async function GET(request: Request) {
       include: { club1: { include: { profile: true } }, club2: { include: { profile: true } } },
     }),
   ]);
+
+  // ── Compute per-season topPlayers leaderboard ──
+  // Build a map of playerId → per-season points from PlayerPoint aggregation
+  const seasonPointsMap = new Map(seasonPointsRaw.map((sp: { playerId: string; _sum: { amount: number | null } }) => [sp.playerId, sp._sum.amount || 0]));
+
+  // Merge: players with season points first (sorted by per-season points), then those without
+  const topPlayers = (allDivisionPlayers as any[])
+    .map(p => ({
+      ...p,
+      points: seasonPointsMap.get(p.id) || 0, // Override lifetime points with per-season points
+      seasonPoints: seasonPointsMap.get(p.id) || 0,
+      lifetimePoints: p.points,
+    }))
+    .sort((a: any, b: any) => {
+      if (b.seasonPoints !== a.seasonPoints) return b.seasonPoints - a.seasonPoints;
+      if (b.totalWins !== a.totalWins) return b.totalWins - a.totalWins;
+      return b.totalMvp - a.totalMvp;
+    });
 
   // ── No more fallback logo/banner resolution needed ──
   // ClubProfile is now persistent — logo/banner are always on the profile
@@ -368,7 +394,7 @@ export async function GET(request: Request) {
           gamertag: player.gamertag,
           avatar: player.avatar,
           tier: player.tier,
-          points: player.points,
+          points: s.championPlayerPoints ?? player.points, // Use snapshot per-season points if available
           totalWins: player.totalWins,
           totalMvp: player.totalMvp,
           streak: player.streak,

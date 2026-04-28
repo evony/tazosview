@@ -65,6 +65,7 @@ export async function POST(request: Request) {
       data: {
         championClubId: null,
         championPlayerId: null,
+        championPlayerPoints: null,
         championSquad: null,
         status: 'active',
       },
