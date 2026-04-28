@@ -108,6 +108,8 @@ function buildHighlights(
      5. Streak Female — female player with longest win streak
      6. MVP Terbaru Male — latest weekly MVP in male division
      7. MVP Terbaru Female — latest weekly MVP in female division
+     
+     Each category ALWAYS gets an item — either real data or an empty placeholder.
      ═══════════════════════════════════════════════════════════ */
 
   // ─── 1. #1 Tarkam Male — current #1 ranked male player ───
@@ -132,6 +134,21 @@ function buildHighlights(
         { icon: Flame, label: 'Streak', value: `${topMalePlayer.streak}W` },
       ],
       player: { ...topMalePlayer, division: 'male' },
+    });
+  } else {
+    items.push({
+      id: 'rank1-male-empty',
+      type: 'rank1-male',
+      title: 'Belum Ada Data',
+      subtitle: '#1 Tarkam Male',
+      description: 'Pemimpin klasemen divisi male akan muncul di sini setelah pertandingan dimulai.',
+      badge: '#1 TARKAM MALE',
+      thumbLabel: '#1 Male',
+      accentColor: '#06b6d4',
+      accentLight: '#22d3ee',
+      division: 'male',
+      isEmpty: true,
+      metadata: [],
     });
   }
 
@@ -158,13 +175,26 @@ function buildHighlights(
       ],
       player: { ...topFemalePlayer, division: 'female' },
     });
+  } else {
+    items.push({
+      id: 'rank1-female-empty',
+      type: 'rank1-female',
+      title: 'Belum Ada Data',
+      subtitle: '#1 Tarkam Female',
+      description: 'Pemimpin klasemen divisi female akan muncul di sini setelah pertandingan dimulai.',
+      badge: '#1 TARKAM FEMALE',
+      thumbLabel: '#1 Female',
+      accentColor: '#a855f7',
+      accentLight: '#c084fc',
+      division: 'female',
+      isEmpty: true,
+      metadata: [],
+    });
   }
 
   // ─── 3. #1 Club Tarkam — top club by COMBINED tarkam points of members ───
-  // Sort clubs by combined tarkam points of members, or use leagueData.stats.topClub
   let topClub = leagueData?.stats?.topClub || null;
   if (!topClub && leagueData?.clubs?.length > 0) {
-    // Sort clubs by combined member tarkam points
     const sortedClubs = [...leagueData.clubs].sort((a: any, b: any) => {
       const aPoints = a.members?.reduce((sum: number, m: any) => sum + (m.tarkamPoints || m.points || 0), 0) || a.points || 0;
       const bPoints = b.members?.reduce((sum: number, m: any) => sum + (m.tarkamPoints || m.points || 0), 0) || b.points || 0;
@@ -176,7 +206,6 @@ function buildHighlights(
     const maleCount = topClub.members?.filter((m: any) => m.division === 'male')?.length || 0;
     const femaleCount = topClub.members?.filter((m: any) => m.division === 'female')?.length || 0;
     const totalClubMembers = topClub.memberCount || topClub.members?.length || 0;
-    // Combined tarkam points from all members
     const combinedTarkamPoints = topClub.members?.reduce(
       (sum: number, m: any) => sum + (m.tarkamPoints || m.points || 0), 0
     ) || topClub.combinedPoints || topClub.points || 0;
@@ -199,6 +228,20 @@ function buildHighlights(
         { icon: Eye, label: 'Wins', value: `${topClub.wins || 0}` },
       ],
     });
+  } else {
+    items.push({
+      id: 'rank1-club-empty',
+      type: 'rank1-club',
+      title: 'Belum Ada Data',
+      subtitle: '#1 Club Tarkam',
+      description: 'Klub terkuat akan muncul di sini setelah ada klub yang berkompetisi.',
+      badge: '#1 CLUB TARKAM',
+      thumbLabel: '#1 Club',
+      accentColor: '#d4a853',
+      accentLight: '#f5d77a',
+      isEmpty: true,
+      metadata: [],
+    });
   }
 
   // ─── 4. Streak Male — male player with longest win streak ───
@@ -212,7 +255,7 @@ function buildHighlights(
       subtitle: 'Streak Male',
       description: `Streak ${maleStreakKing.streak} kemenangan berturut-turut di divisi male! ${maleStreakKing.gamertag} menunjukkan konsistensi luar biasa di setiap pertandingan Tarkam.`,
       badge: 'STREAK MALE',
-      thumbLabel: 'Streak Male',
+      thumbLabel: 'Streak ♂',
       imageUrl: getAvatarUrl(maleStreakKing.gamertag, 'male', maleStreakKing.avatar),
       accentColor: '#f97316',
       accentLight: '#fb923c',
@@ -223,6 +266,21 @@ function buildHighlights(
         { icon: Eye, label: 'Wins', value: `${maleStreakKing.totalWins}` },
       ],
       player: { ...maleStreakKing, division: 'male' },
+    });
+  } else {
+    items.push({
+      id: 'streak-male-empty',
+      type: 'streak-male',
+      title: 'Belum Ada Streak',
+      subtitle: 'Streak Male',
+      description: 'Pemain dengan streak kemenangan berturut-turut di divisi male akan muncul di sini. Menangkan 2+ pertandingan berturut-turut untuk memulai streak!',
+      badge: 'STREAK MALE',
+      thumbLabel: 'Streak ♂',
+      accentColor: '#f97316',
+      accentLight: '#fb923c',
+      division: 'male',
+      isEmpty: true,
+      metadata: [],
     });
   }
 
@@ -237,7 +295,7 @@ function buildHighlights(
       subtitle: 'Streak Female',
       description: `Streak ${femaleStreakKing.streak} kemenangan berturut-turut di divisi female! ${femaleStreakKing.gamertag} menunjukkan dominasi dan ketekunan yang luar biasa di Tarkam.`,
       badge: 'STREAK FEMALE',
-      thumbLabel: 'Streak Female',
+      thumbLabel: 'Streak ♀',
       imageUrl: getAvatarUrl(femaleStreakKing.gamertag, 'female', femaleStreakKing.avatar),
       accentColor: '#ef4444',
       accentLight: '#f87171',
@@ -249,12 +307,26 @@ function buildHighlights(
       ],
       player: { ...femaleStreakKing, division: 'female' },
     });
+  } else {
+    items.push({
+      id: 'streak-female-empty',
+      type: 'streak-female',
+      title: 'Belum Ada Streak',
+      subtitle: 'Streak Female',
+      description: 'Pemain dengan streak kemenangan berturut-turut di divisi female akan muncul di sini. Menangkan 2+ pertandingan berturut-turut untuk memulai streak!',
+      badge: 'STREAK FEMALE',
+      thumbLabel: 'Streak ♀',
+      accentColor: '#ef4444',
+      accentLight: '#f87171',
+      division: 'female',
+      isEmpty: true,
+      metadata: [],
+    });
   }
 
   // ─── 6. MVP Terbaru Male — latest weekly MVP, or top MVP player as fallback ───
   const maleMvpList = maleData?.mvpHallOfFame || [];
   const latestMaleMvp = maleMvpList.length > 0 ? maleMvpList[maleMvpList.length - 1] : null;
-  // Fallback: player with highest totalMvp from topPlayers (when no completed tournaments yet)
   const maleMvpFallback = !latestMaleMvp
     ? [...(maleData?.topPlayers || [])].filter(p => p.totalMvp > 0).sort((a, b) => b.totalMvp - a.totalMvp || b.points - a.points)[0] || null
     : null;
@@ -287,12 +359,26 @@ function buildHighlights(
       ],
       player: mvpPlayer ? { ...mvpPlayer, division: 'male' } : (maleMvpFallback ? { ...maleMvpFallback, division: 'male' } : undefined),
     });
+  } else {
+    items.push({
+      id: 'mvp-male-empty',
+      type: 'mvp-male',
+      title: 'Belum Ada MVP',
+      subtitle: 'MVP Male',
+      description: 'MVP pekan ini di divisi male akan muncul di sini setelah pertandingan selesai dan pemain terbaik dinobatkan.',
+      badge: 'MVP ♂',
+      thumbLabel: 'MVP ♂',
+      accentColor: '#22c55e',
+      accentLight: '#4ade80',
+      division: 'male',
+      isEmpty: true,
+      metadata: [],
+    });
   }
 
   // ─── 7. MVP Terbaru Female — latest weekly MVP, or top MVP player as fallback ───
   const femaleMvpList = femaleData?.mvpHallOfFame || [];
   const latestFemaleMvp = femaleMvpList.length > 0 ? femaleMvpList[femaleMvpList.length - 1] : null;
-  // Fallback: player with highest totalMvp from topPlayers (when no completed tournaments yet)
   const femaleMvpFallback = !latestFemaleMvp
     ? [...(femaleData?.topPlayers || [])].filter(p => p.totalMvp > 0).sort((a, b) => b.totalMvp - a.totalMvp || b.points - a.points)[0] || null
     : null;
@@ -324,6 +410,21 @@ function buildHighlights(
         { icon: Flame, label: 'Streak', value: `${femaleMvpSource.streak}W` },
       ],
       player: mvpPlayer ? { ...mvpPlayer, division: 'female' } : (femaleMvpFallback ? { ...femaleMvpFallback, division: 'female' } : undefined),
+    });
+  } else {
+    items.push({
+      id: 'mvp-female-empty',
+      type: 'mvp-female',
+      title: 'Belum Ada MVP',
+      subtitle: 'MVP Female',
+      description: 'MVP pekan ini di divisi female akan muncul di sini setelah pertandingan selesai dan pemain terbaik dinobatkan.',
+      badge: 'MVP ♀',
+      thumbLabel: 'MVP ♀',
+      accentColor: '#ec4899',
+      accentLight: '#f472b6',
+      division: 'female',
+      isEmpty: true,
+      metadata: [],
     });
   }
 
@@ -404,12 +505,13 @@ function ThumbnailCard({
 }) {
   const iconColor = isActive ? item.accentLight : item.accentColor;
   const iconScale = isActive ? 'scale(1.1)' : 'scale(1)';
+  const isEmpty = item.isEmpty || false;
 
   return (
     <button
       onClick={onClick}
       className={`reveal reveal-fade-up reveal-delay-${Math.min(index, 4)} group/thumb relative shrink-0 flex flex-col items-center gap-2 cursor-pointer transition-all duration-300 ${
-        isActive ? 'scale-105' : 'opacity-60 hover:opacity-100'
+        isActive ? 'scale-105' : isEmpty ? 'opacity-40 hover:opacity-70' : 'opacity-60 hover:opacity-100'
       }`}
       aria-label={`View highlight: ${item.title}`}
       aria-pressed={isActive}
@@ -699,57 +801,7 @@ export function HighlightsSection({
     }
   }, [activeIdx]);
 
-  /* ─── Empty state — show attractive placeholder instead of hiding section ─── */
-  if (highlights.length === 0) {
-    return (
-      <section
-        id="highlights"
-        role="region"
-        aria-label="Highlights"
-        className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 overflow-hidden"
-      >
-        {/* Background — same as normal section */}
-        <div className="absolute inset-0 bg-[#0d0d1a]" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-idm-gold-warm/25 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-idm-gold-warm/15 to-transparent" />
-        <div className="absolute inset-0 pointer-events-none opacity-[0.018]" style={{ backgroundImage: 'linear-gradient(rgba(212,168,83,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(212,168,83,0.4) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
-        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(212,168,83,0.08) 0%, transparent 55%)' }} />
-
-        <div className="relative z-10 max-w-7xl mx-auto">
-          <AnimatedSection>
-            <SectionHeader
-              icon={Trophy}
-              label={highlightsLabel}
-              title={highlightsTitle}
-              subtitle={highlightsSubtitle}
-            />
-          </AnimatedSection>
-
-          {/* Empty state cards — both divisions always shown */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mt-8">
-            {/* Male empty card */}
-            <div className="relative rounded-2xl border border-cyan-500/15 overflow-hidden" style={{ minHeight: '280px' }}>
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.06) 0%, rgba(13,13,26,0.9) 50%, rgba(6,182,212,0.03) 100%)' }} />
-              <div className="relative z-10 flex flex-col items-center justify-center h-full py-16 text-center">
-                <Medal className="w-14 h-14 mb-4 text-cyan-400/20" />
-                <p className="text-sm font-bold text-[#f5f0e8]/80 mb-1">Belum Ada Prestasi Male</p>
-                <p className="text-xs text-[#a09880] max-w-[240px]">Pemain terbaik divisi male akan muncul di sini setelah pertandingan dimulai</p>
-              </div>
-            </div>
-            {/* Female empty card */}
-            <div className="relative rounded-2xl border border-purple-500/15 overflow-hidden" style={{ minHeight: '280px' }}>
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.06) 0%, rgba(13,13,26,0.9) 50%, rgba(168,85,247,0.03) 100%)' }} />
-              <div className="relative z-10 flex flex-col items-center justify-center h-full py-16 text-center">
-                <Medal className="w-14 h-14 mb-4 text-purple-400/20" />
-                <p className="text-sm font-bold text-[#f5f0e8]/80 mb-1">Belum Ada Prestasi Female</p>
-                <p className="text-xs text-[#a09880] max-w-[240px]">Pemain terbaik divisi female akan muncul di sini setelah pertandingan dimulai</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  /* ─── Items always exist now (all 7 categories with empty placeholders) ─── */
 
   return (
     <section
@@ -1204,7 +1256,7 @@ export function HighlightsSection({
 
                     {/* Title in gold gradient text */}
                     <h3
-                      className="text-2xl sm:text-3xl font-black leading-tight mb-1"
+                      className={`text-2xl sm:text-3xl font-black leading-tight mb-1 ${active.isEmpty ? 'opacity-50' : ''}`}
                       style={{
                         background: `linear-gradient(135deg, #f5e6c8 0%, ${active.accentColor} 40%, #f5d77a 70%, ${active.accentColor} 100%)`,
                         WebkitBackgroundClip: 'text',
@@ -1220,7 +1272,26 @@ export function HighlightsSection({
                       {active.subtitle}
                     </p>
 
-                    {/* Metadata rows */}
+                    {/* Metadata rows — only show for non-empty items */}
+                    {active.isEmpty ? (
+                      <div className="flex flex-col items-center justify-center py-6 text-center">
+                        <div
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+                          style={{ backgroundColor: hexToRgba(active.accentColor, 0.1), border: `1px solid ${hexToRgba(active.accentColor, 0.15)}` }}
+                        >
+                          {active.type === 'streak-male' || active.type === 'streak-female' ? (
+                            <Flame className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
+                          ) : active.type === 'mvp-male' || active.type === 'mvp-female' ? (
+                            <Award className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
+                          ) : (
+                            <Medal className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground/60 mb-1">Belum ada data</p>
+                        <p className="text-xs text-muted-foreground/40 max-w-[200px]">{active.description}</p>
+                      </div>
+                    ) : (
+                    <>
                     <div className="space-y-3 mb-5">
                       {active.metadata.map((meta, i) => {
                         const MetaIcon = meta.icon;
@@ -1316,6 +1387,8 @@ export function HighlightsSection({
                         </button>
                       )}
                     </div>
+                    </>
+                    )}
                   </div>
                 </div>
               </div>

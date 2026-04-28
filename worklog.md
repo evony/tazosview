@@ -360,3 +360,30 @@ Stage Summary:
   - src/components/idm/community-dashboard/community-champions.tsx — always show both divisions with empty state
 - All sections now have consistent empty state handling
 - Lint passes cleanly
+
+---
+Task ID: 1
+Agent: main
+Task: Add empty state placeholders for MVP, Streak, and all highlight categories in Puncak Prestasi section
+
+Work Log:
+- Modified buildHighlights() to ALWAYS produce all 7 highlight categories
+- Each category now has an else branch that pushes an empty placeholder item with `isEmpty: true`
+- Empty placeholder items have descriptive titles ("Belum Ada Streak", "Belum Ada MVP") and descriptions explaining what will appear
+- Updated ThumbnailCard to render empty items with lower opacity (opacity-40 vs opacity-60) and no glow effects
+- Updated Featured Card to show a centered empty state with type-appropriate icon (Flame for streak, Award for MVP, Medal for rank1) when `isEmpty` is true
+- Empty items show descriptive message instead of metadata rows
+- "Lihat Detail" button already handled via `!active.isEmpty` check
+- Removed the overall section empty state (return null) since items now always exist
+- Lint passes cleanly, server compiles and responds with 200
+
+Stage Summary:
+- All 7 highlight categories now always show in Puncak Prestasi section:
+  1. #1 Male (cyan) — "Belum Ada Data" when empty
+  2. #1 Female (purple) — "Belum Ada Data" when empty
+  3. #1 Club (gold) — "Belum Ada Data" when empty
+  4. Streak Male (orange) — "Belum Ada Streak" when empty
+  5. Streak Female (red) — "Belum Ada Streak" when empty
+  6. MVP Male (green) — "Belum Ada MVP" when empty
+  7. MVP Female (pink) — "Belum Ada MVP" when empty
+- File modified: src/components/idm/landing/highlights-section.tsx
