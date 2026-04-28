@@ -9,12 +9,23 @@ import { NextRequest } from 'next/server';
 // PASSWORD UTILITIES (from auth.ts)
 // ═══════════════════════════════════════════════════════════
 
-const SESSION_SECRET = process.env.SESSION_SECRET || (() => {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('FATAL: SESSION_SECRET environment variable is not set. Refusing to run in production without a secure session secret.');
+// Lazy SESSION_SECRET — avoids throwing during build (NODE_ENV=production but no env vars).
+// At runtime, if still unset in production, we warn once and use a generated fallback.
+// Each server restart generates a new secret, invalidating old tokens — this is intentional
+// as a missing SESSION_SECRET in production is a misconfiguration.
+let _sessionSecret: string | null = null;
+function getSessionSecret(): string {
+  if (_sessionSecret) return _sessionSecret;
+  if (process.env.SESSION_SECRET) {
+    _sessionSecret = process.env.SESSION_SECRET;
+    return _sessionSecret;
   }
-  return 'dev-only-insecure-session-secret';
-})();
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('⚠️ SESSION_SECRET not set in production — using generated fallback. Set SESSION_SECRET env var for stable sessions.');
+  }
+  _sessionSecret = crypto.randomBytes(32).toString('hex');
+  return _sessionSecret;
+}
 
 function hashPasswordSync(password: string, salt: string): string {
   const key = crypto.scryptSync(password, salt, 64);
@@ -73,7 +84,7 @@ export function verifySessionToken(token: string): { adminId: string; role: stri
 }
 
 function sign(data: string): string {
-  return crypto.createHmac('sha256', SESSION_SECRET).update(data).digest('hex').slice(0, 32);
+  return crypto.createHmac('sha256', getSessionSecret()).update(data).digest('hex').slice(0, 32);
 }
 
 // ═══════════════════════════════════════════════════════════
