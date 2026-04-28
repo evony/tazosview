@@ -58,7 +58,7 @@ export function NoTournamentState({ data, setSelectedPlayer }: NoTournamentState
             alt=""
             fill
             sizes="100vw"
-            className={`object-cover ${division === 'male' ? 'object-[center_25%]' : ''}`}
+            className="object-cover object-[center_20%]"
             aria-hidden="true"
           />
         </div>

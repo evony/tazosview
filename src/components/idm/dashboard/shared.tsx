@@ -27,7 +27,7 @@ export const CasinoHeaderCard = React.memo(function CasinoHeaderCard({ icon: Ico
     <Card className={`${dt.casinoCard} ${dt.casinoGlow} casino-shimmer overflow-hidden group ${className}`}>
       <div className={dt.casinoBar} />
       <div className="relative img-zoom h-28 sm:h-32">
-        <Image src={dt.division === 'male' ? bgMale : bgFemale} alt="" fill sizes="(max-width: 768px) 100vw, 50vw" className={`object-cover card-cover ${dt.division === 'male' ? 'object-[center_25%]' : ''}`} aria-hidden="true" />
+        <Image src={dt.division === 'male' ? bgMale : bgFemale} alt="" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover card-cover object-[center_20%]" aria-hidden="true" />
         <div className="casino-img-overlay" />
         <div className={`absolute top-2 left-2 ${dt.cornerAccent}`} />
         <div className={`absolute top-2 right-2 rotate-90 ${dt.cornerAccent}`} />
