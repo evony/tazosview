@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       { key: 'nav_cta_male_text', value: 'MALE DIVISION', type: 'text' },
       { key: 'nav_cta_female_text', value: 'FEMALE DIVISION', type: 'text' },
       { key: 'footer_text', value: '© 2026 IDM League — Idol Meta Fan Made Edition. All rights reserved.', type: 'text' },
-      { key: 'footer_tagline', value: 'Dance. Compete. Dominate.', type: 'text' },
+      { key: 'footer_tagline', value: 'Idol Meta Fane Made Edition.', type: 'text' },
       { key: 'about_origin_story', value: 'Idol Meta dari Lyto Game — sebuah rhythm game yang menghidupkan panggung virtual. Kami para pemainnya, bermain setiap hari, menari, dan berkompetisi. Tapi lama-kelamaan, rutinitas tanpa tujuan terasa hampa. Tidak ada motivasi, tidak ada sesuatu yang kita kejar bersama.\n\nGame yang kami cintai mulai sepi. Player datang dan pergi tanpa alasan untuk bertahan. Lalu muncul sebuah pertanyaan sederhana: "Kenapa tidak kita buat sendiri alasan untuk terus bermain?"\n\nDari situlah IDM League lahir — bukan dari perusahaan, bukan dari sponsor besar, tapi dari komunitas pemain yang tidak ingin gamenya mati.', type: 'text' },
       { key: 'about_season1_text', value: 'Tahun 2025, Tarkam IDM Season 1 telah digelar dan berjalan sangat baik. Club-club bertarung, peserta bebas mix dari divisi male dan female, dan champion pun dinobatkan. Sambil menunggu dana terkumpul untuk season berikutnya, kami menyelenggarakan Weekly Tournament sebagai ajang berlatih dan bersaing secara individu.', type: 'text' },
       { key: 'about_tagline', value: 'By Players, For Players', type: 'text' },

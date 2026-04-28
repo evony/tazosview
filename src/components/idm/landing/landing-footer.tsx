@@ -70,8 +70,8 @@ export function LandingFooter({ cmsSettings }: LandingFooterProps) {
   /* ── CMS values ── */
   const logoUrl = cmsSettings.logo_url || '/logo1.webp';
   const siteTitle = cmsSettings.site_title || 'TARKAM IDM';
-  const tagline = cmsSettings.footer_tagline || 'Dance. Compete. Dominate.';
-  const footerText = cmsSettings.footer_text || '© 2025 Tarkam IDM. All rights reserved.';
+  const tagline = cmsSettings.footer_tagline || 'Idol Meta Fane Made Edition.';
+  const footerText = cmsSettings.footer_text || '© 2026 Tarkam IDM. All rights reserved.';
 
   /* ── Social URLs ── */
   const discordUrl = cmsSettings.social_discord_url || '';
@@ -181,7 +181,7 @@ export function LandingFooter({ cmsSettings }: LandingFooterProps) {
 
           <div className="flex items-center gap-3">
             <span className="text-[#a09880]/30 text-[11px] flex items-center gap-1">
-              Made with <span className="text-red-500/60">❤️</span> for Indonesian Dance Community
+              Made with <span className="text-red-500/60">❤️</span> by BorneoPride
             </span>
 
             {/* Back to Top */}
