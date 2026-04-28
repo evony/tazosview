@@ -34,7 +34,7 @@ const CATEGORIES: { id: CategoryOption; label: string; icon: React.ReactNode; de
 ];
 
 /* ═══════════════════════════════════════════════════════
-   SUBMIT MARKETPLACE MODAL
+   SUBMIT MARKETPLACE MODAL — Orange theme
    ═══════════════════════════════════════════════════════ */
 export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarketplaceModalProps) {
   const { playerAuth } = useAppStore();
@@ -81,7 +81,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
       const res = await fetch('/api/marketplace/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Include player session cookie
+        credentials: 'include',
         body: JSON.stringify({
           ...form,
           price: priceNum,
@@ -101,7 +101,6 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
       setSubmitResult('success');
       onSuccess();
 
-      // Reset form after success
       setTimeout(() => {
         setForm({
           sellerWhatsapp: '',
@@ -121,7 +120,6 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
     }
   }
 
-  // Get player info for display
   const playerGamertag = playerAuth.account?.player?.gamertag || '';
   const playerAvatar = playerAuth.account?.player?.avatar || null;
   const playerTier = playerAuth.account?.player?.tier || '';
@@ -141,14 +139,14 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-border/30 shadow-2xl"
+            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-orange-500/15 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4 pb-3 bg-background/95 backdrop-blur-sm border-b border-border/10">
+            {/* Header — Orange theme */}
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4 pb-3 bg-background/95 backdrop-blur-sm border-b border-orange-500/10">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-idm-gold-warm/15 flex items-center justify-center">
-                  <ShoppingBag className="w-4 h-4 text-idm-gold-warm" />
+                <div className="w-8 h-8 rounded-lg bg-orange-500/15 flex items-center justify-center">
+                  <ShoppingBag className="w-4 h-4 text-orange-400" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground">Pasang Iklan</h3>
@@ -166,8 +164,8 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
             {/* Not Logged In State */}
             {!isLoggedIn ? (
               <div className="flex flex-col items-center justify-center py-10 px-6">
-                <div className="w-14 h-14 rounded-full bg-idm-gold-warm/10 flex items-center justify-center mb-3">
-                  <LogIn className="w-7 h-7 text-idm-gold-warm/60" />
+                <div className="w-14 h-14 rounded-full bg-orange-500/10 flex items-center justify-center mb-3">
+                  <LogIn className="w-7 h-7 text-orange-400/60" />
                 </div>
                 <p className="text-sm font-bold text-foreground mb-1">Login Diperlukan</p>
                 <p className="text-[10px] text-muted-foreground text-center max-w-[240px] mb-4">
@@ -175,7 +173,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                 </p>
                 <button
                   onClick={handleClose}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-idm-gold-warm hover:bg-[#e5be4a] text-black text-xs font-bold transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors cursor-pointer"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   Login Sekarang
@@ -197,7 +195,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                 </p>
               </div>
             ) : (
-              /* Form — only shown when logged in */
+              /* Form — only shown when logged in, Orange theme */
               <form onSubmit={handleSubmit} className="p-4 space-y-4">
                 {/* Verified Seller Badge */}
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
@@ -205,8 +203,8 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                     {playerAvatar ? (
                       <img src={playerAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-idm-gold-warm/15 flex items-center justify-center">
-                        <span className="text-sm font-bold text-idm-gold-warm">{playerGamertag.charAt(0)}</span>
+                      <div className="w-10 h-10 rounded-full bg-orange-500/15 flex items-center justify-center">
+                        <span className="text-sm font-bold text-orange-400">{playerGamertag.charAt(0)}</span>
                       </div>
                     )}
                     <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
@@ -225,7 +223,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                   </div>
                 </div>
 
-                {/* Category Selection */}
+                {/* Category Selection — Orange active */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Kategori</label>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
@@ -236,7 +234,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                         onClick={() => setForm(p => ({ ...p, category: cat.id }))}
                         className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-[9px] font-semibold transition-all cursor-pointer ${
                           form.category === cat.id
-                            ? 'bg-idm-gold-warm/15 border-idm-gold-warm/30 text-idm-gold-warm'
+                            ? 'bg-orange-500/15 border-orange-500/30 text-orange-400'
                             : 'bg-white/[0.02] border-border/15 text-muted-foreground hover:bg-white/[0.05] hover:text-foreground'
                         }`}
                       >
@@ -247,7 +245,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                   </div>
                 </div>
 
-                {/* Item Details */}
+                {/* Item Details — Orange focus */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Detail Iklan</label>
                   <input
@@ -257,7 +255,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                     value={form.title}
                     onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))}
                     maxLength={100}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-idm-gold-warm/30 focus:ring-1 focus:ring-idm-gold-warm/20 transition-colors"
+                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
                   />
                   <textarea
                     required
@@ -266,18 +264,18 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                     onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))}
                     maxLength={500}
                     rows={3}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-idm-gold-warm/30 focus:ring-1 focus:ring-idm-gold-warm/20 transition-colors resize-none"
+                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors resize-none"
                   />
                   <div className="text-right">
                     <span className="text-[9px] text-muted-foreground/30">{form.description.length}/500</span>
                   </div>
                 </div>
 
-                {/* Price */}
+                {/* Price — Orange */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Harga (IDR)</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-idm-gold-warm/60">Rp</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-orange-400/60">Rp</span>
                     <input
                       type="number"
                       required
@@ -285,7 +283,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                       min="0"
                       value={form.price}
                       onChange={(e) => setForm(p => ({ ...p, price: e.target.value }))}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-idm-gold-warm/30 focus:ring-1 focus:ring-idm-gold-warm/20 transition-colors"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
                     />
                   </div>
                   <p className="text-[9px] text-muted-foreground/30">Masukkan 0 jika gratis</p>
@@ -299,7 +297,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                     placeholder="08xxx — untuk dihubungi pembeli"
                     value={form.sellerWhatsapp}
                     onChange={(e) => setForm(p => ({ ...p, sellerWhatsapp: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-idm-gold-warm/30 focus:ring-1 focus:ring-idm-gold-warm/20 transition-colors"
+                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
                   />
                 </div>
 
@@ -311,7 +309,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                     placeholder="URL gambar item kamu..."
                     value={form.imageUrl}
                     onChange={(e) => setForm(p => ({ ...p, imageUrl: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-idm-gold-warm/30 focus:ring-1 focus:ring-idm-gold-warm/20 transition-colors"
+                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
                   />
                 </div>
 
@@ -327,19 +325,19 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                   </motion.div>
                 )}
 
-                {/* Info Note */}
-                <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-idm-gold-warm/5 border border-idm-gold-warm/10">
-                  <AlertCircle className="w-3.5 h-3.5 text-idm-gold-warm/50 flex-shrink-0 mt-0.5" />
+                {/* Info Note — Orange */}
+                <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-orange-500/5 border border-orange-500/10">
+                  <AlertCircle className="w-3.5 h-3.5 text-orange-400/50 flex-shrink-0 mt-0.5" />
                   <p className="text-[9px] text-muted-foreground/50 leading-relaxed">
                     Iklan kamu akan ditinjau admin terlebih dahulu sebelum tampil di marketplace. Maksimal 5 pengajuan per hari. Nama penjual otomatis menggunakan gamertag kamu.
                   </p>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit Button — Orange */}
                 <button
                   type="submit"
                   disabled={isSubmitting || !form.title || !form.description || !form.price}
-                  className="w-full py-3 rounded-xl bg-idm-gold-warm hover:bg-[#e5be4a] disabled:opacity-40 disabled:cursor-not-allowed text-black text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>

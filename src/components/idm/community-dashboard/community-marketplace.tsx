@@ -30,10 +30,10 @@ interface MarketplaceItem {
 type CategoryFilter = 'all' | 'avatar' | 'accessory' | 'jasa_gb' | 'jasa_joki' | 'baju' | 'item' | 'lainnya';
 
 /* ═══════════════════════════════════════════════════════
-   CATEGORY CONFIG
+   CATEGORY CONFIG — Orange theme
    ═══════════════════════════════════════════════════════ */
 const CATEGORIES: { id: CategoryFilter; label: string; icon: React.ReactNode; color: string }[] = [
-  { id: 'all', label: 'Semua', icon: <ShoppingBag className="w-3.5 h-3.5" />, color: 'text-idm-gold-warm' },
+  { id: 'all', label: 'Semua', icon: <ShoppingBag className="w-3.5 h-3.5" />, color: 'text-orange-400' },
   { id: 'avatar', label: 'Avatar', icon: <UserCheck className="w-3.5 h-3.5" />, color: 'text-cyan-400' },
   { id: 'accessory', label: 'Aksesoris', icon: <Sparkles className="w-3.5 h-3.5" />, color: 'text-purple-400' },
   { id: 'jasa_gb', label: 'Jasa GB', icon: <Gamepad2 className="w-3.5 h-3.5" />, color: 'text-emerald-400' },
@@ -87,7 +87,7 @@ function timeAgo(dateStr: string): string {
 }
 
 /* ═══════════════════════════════════════════════════════
-   MARKETPLACE SECTION
+   MARKETPLACE SECTION — Orange theme
    ═══════════════════════════════════════════════════════ */
 export function CommunityMarketplace() {
   const [items, setItems] = useState<MarketplaceItem[]>([]);
@@ -126,8 +126,8 @@ export function CommunityMarketplace() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-idm-gold-warm/15 flex items-center justify-center">
-            <ShoppingBag className="w-4 h-4 text-idm-gold-warm" />
+          <div className="w-8 h-8 rounded-lg bg-orange-500/15 flex items-center justify-center">
+            <ShoppingBag className="w-4 h-4 text-orange-400" />
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-bold text-foreground">Marketplace</h3>
@@ -138,10 +138,10 @@ export function CommunityMarketplace() {
           <div className="text-[10px] text-muted-foreground/50">
             {items.length} iklan
           </div>
-          {/* Pasang Iklan Button */}
+          {/* Pasang Iklan Button — Orange */}
           <button
             onClick={() => setSubmitOpen(true)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-idm-gold-warm/15 border border-idm-gold-warm/25 text-[10px] sm:text-xs font-bold text-idm-gold-warm hover:bg-idm-gold-warm/25 transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-orange-500/15 border border-orange-500/25 text-[10px] sm:text-xs font-bold text-orange-400 hover:bg-orange-500/25 transition-colors cursor-pointer"
           >
             <Plus className="w-3 h-3" />
             <span className="hidden sm:inline">Pasang Iklan</span>
@@ -158,7 +158,7 @@ export function CommunityMarketplace() {
           placeholder="Cari item atau jasa..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-border/30 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-idm-gold-warm/30 focus:ring-1 focus:ring-idm-gold-warm/20 transition-colors"
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-orange-500/10 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
         />
       </div>
 
@@ -170,7 +170,7 @@ export function CommunityMarketplace() {
             onClick={() => setActiveCategory(cat.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
               activeCategory === cat.id
-                ? 'bg-idm-gold-warm/15 border-idm-gold-warm/30 text-idm-gold-warm'
+                ? 'bg-orange-500/15 border-orange-500/30 text-orange-400'
                 : 'bg-white/[0.03] border-border/20 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground'
             }`}
           >
@@ -187,7 +187,7 @@ export function CommunityMarketplace() {
             <Flame className="w-3.5 h-3.5 text-orange-400" />
             <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">Featured</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {premiumItems.map((item) => (
               <MarketplaceCard key={item.id} item={item} isPremium />
             ))}
@@ -195,7 +195,7 @@ export function CommunityMarketplace() {
         </div>
       )}
 
-      {/* ── Regular Items ── */}
+      {/* ── Regular Items — Full width grid ── */}
       <div className="space-y-2">
         {regularItems.length > 0 && premiumItems.length > 0 && (
           <div className="flex items-center gap-1.5">
@@ -203,7 +203,7 @@ export function CommunityMarketplace() {
             <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider">Semua Iklan</span>
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {regularItems.map((item) => (
             <MarketplaceCard key={item.id} item={item} />
           ))}
@@ -213,7 +213,7 @@ export function CommunityMarketplace() {
       {/* ── Loading ── */}
       {loading && (
         <div className="flex items-center justify-center py-8">
-          <div className="w-5 h-5 border-2 border-idm-gold-warm/30 border-t-idm-gold-warm rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-orange-500/30 border-t-orange-400 rounded-full animate-spin" />
         </div>
       )}
 
@@ -224,8 +224,8 @@ export function CommunityMarketplace() {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center justify-center py-10 text-center"
         >
-          <div className="w-14 h-14 rounded-2xl bg-idm-gold-warm/10 flex items-center justify-center mb-3">
-            <ShoppingBag className="w-7 h-7 text-idm-gold-warm/40" />
+          <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-3">
+            <ShoppingBag className="w-7 h-7 text-orange-400/40" />
           </div>
           <p className="text-sm font-semibold text-muted-foreground/60 mb-1">Belum Ada Iklan</p>
           <p className="text-[10px] text-muted-foreground/40 max-w-[200px] mb-4">
@@ -235,7 +235,7 @@ export function CommunityMarketplace() {
           </p>
           <button
             onClick={() => setSubmitOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-idm-gold-warm/10 border border-idm-gold-warm/20 text-[10px] font-bold text-idm-gold-warm hover:bg-idm-gold-warm/20 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-[10px] font-bold text-orange-400 hover:bg-orange-500/20 transition-colors cursor-pointer"
           >
             <Plus className="w-3 h-3" />
             Jadilah yang pertama menjual!
@@ -254,7 +254,7 @@ export function CommunityMarketplace() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   MARKETPLACE CARD
+   MARKETPLACE CARD — Orange theme
    ═══════════════════════════════════════════════════════ */
 function MarketplaceCard({ item, isPremium = false }: { item: MarketplaceItem; isPremium?: boolean }) {
   const [showWhatsApp, setShowWhatsApp] = useState(false);
@@ -267,15 +267,15 @@ function MarketplaceCard({ item, isPremium = false }: { item: MarketplaceItem; i
       animate={{ opacity: 1, y: 0 }}
       className={`relative rounded-xl border overflow-hidden transition-all duration-200 hover:scale-[1.01] ${
         isPremium
-          ? 'bg-gradient-to-br from-idm-gold-warm/10 via-transparent to-idm-gold-warm/5 border-idm-gold-warm/25 shadow-[0_0_20px_rgba(212,168,83,0.06)]'
-          : 'bg-white/[0.02] border-border/15 hover:border-border/30'
+          ? 'bg-gradient-to-br from-orange-500/10 via-transparent to-orange-500/5 border-orange-500/25 shadow-[0_0_20px_rgba(249,115,22,0.06)]'
+          : 'bg-white/[0.02] border-border/15 hover:border-orange-500/15'
       }`}
     >
-      {/* Premium badge */}
+      {/* Premium badge — Orange */}
       {isPremium && (
-        <div className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-idm-gold-warm/20 border border-idm-gold-warm/30">
-          <Crown className="w-2.5 h-2.5 text-idm-gold-warm" />
-          <span className="text-[8px] font-bold text-idm-gold-warm uppercase tracking-wider">Premium</span>
+        <div className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/30">
+          <Crown className="w-2.5 h-2.5 text-orange-400" />
+          <span className="text-[8px] font-bold text-orange-300 uppercase tracking-wider">Premium</span>
         </div>
       )}
 
@@ -314,18 +314,18 @@ function MarketplaceCard({ item, isPremium = false }: { item: MarketplaceItem; i
             {item.description}
           </p>
 
-          {/* Bottom row: price + seller + CTA */}
+          {/* Bottom row: price + CTA */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              {/* Price */}
+              {/* Price — Orange */}
               <span className={`text-xs sm:text-sm font-black ${
-                item.price === 0 ? 'text-emerald-400' : 'text-idm-gold-warm'
+                item.price === 0 ? 'text-emerald-400' : 'text-orange-400'
               }`}>
                 {formatPrice(item.price)}
               </span>
             </div>
 
-            {/* CTA */}
+            {/* CTA — Orange theme */}
             <AnimatePresence mode="wait">
               {!showWhatsApp ? (
                 <motion.button
@@ -334,7 +334,7 @@ function MarketplaceCard({ item, isPremium = false }: { item: MarketplaceItem; i
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   onClick={() => setShowWhatsApp(true)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-idm-gold-warm/10 border border-idm-gold-warm/20 text-[10px] font-bold text-idm-gold-warm hover:bg-idm-gold-warm/20 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-[10px] font-bold text-orange-400 hover:bg-orange-500/20 transition-colors cursor-pointer"
                 >
                   <MessageCircle className="w-3 h-3" />
                   <span className="hidden sm:inline">Hubungi</span>
@@ -377,8 +377,8 @@ function MarketplaceCard({ item, isPremium = false }: { item: MarketplaceItem; i
             {item.sellerAvatar ? (
               <img src={item.sellerAvatar} alt="" className="w-4 h-4 rounded-full" />
             ) : (
-              <div className="w-4 h-4 rounded-full bg-idm-gold-warm/10 flex items-center justify-center">
-                <span className="text-[7px] font-bold text-idm-gold-warm/60">{item.sellerName.charAt(0)}</span>
+              <div className="w-4 h-4 rounded-full bg-orange-500/10 flex items-center justify-center">
+                <span className="text-[7px] font-bold text-orange-400/60">{item.sellerName.charAt(0)}</span>
               </div>
             )}
             <span className="text-[9px] text-muted-foreground/50 font-medium truncate">{item.sellerName}</span>
