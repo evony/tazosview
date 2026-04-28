@@ -16,6 +16,8 @@ interface LeaderboardClub {
   name: string;
   logo: string | null;
   points: number;
+  malePoints: number;
+  femalePoints: number;
   wins: number;
   losses: number;
   gameDiff: number;
@@ -105,9 +107,13 @@ export async function GET(request: Request) {
       let totalLosses = 0;
       let totalGameDiff = 0;
 
+      // Calculate division-specific points (always available for Tarkam display)
+      const malePoints = maleMembers.reduce((sum, m) => sum + m.player.points, 0);
+      const femalePoints = femaleMembers.reduce((sum, m) => sum + m.player.points, 0);
+
       if (type === 'tarkam') {
         // Tarkam: Club points = sum of all active member player.points
-        points = activeMembers.reduce((sum, m) => sum + m.player.points, 0);
+        points = malePoints + femalePoints;
       } else {
         // Liga: Club points = sum of season entry stats for the best season
         // Merge male + female entries for the same season number
@@ -128,6 +134,8 @@ export async function GET(request: Request) {
         name: profile.name,
         logo: profile.logo,
         points,
+        malePoints,
+        femalePoints,
         wins: totalWins,
         losses: totalLosses,
         gameDiff: totalGameDiff,

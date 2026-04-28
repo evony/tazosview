@@ -30,6 +30,8 @@ interface TarkamClub {
   name: string;
   logo: string | null;
   points: number;
+  malePoints: number;
+  femalePoints: number;
   wins: number;
   losses: number;
   gameDiff: number;
@@ -307,18 +309,23 @@ export function CommunityLeaderboard({
                     <TableHeader>
                       <TableRow className={`hover:bg-transparent border-b ${dt.border} bg-muted/30`}>
                         <TableHead className="w-10 text-center text-[10px] font-semibold">#</TableHead>
-                        <TableHead className="text-[10px] font-semibold min-w-[140px]">Club</TableHead>
-                        <TableHead className="w-14 text-center text-[10px] font-semibold">Anggota</TableHead>
-                        <TableHead className="w-16 text-center text-[10px] font-semibold hidden sm:table-cell">Rata-rata</TableHead>
+                        <TableHead className="text-[10px] font-semibold min-w-[130px]">Club</TableHead>
+                        <TableHead className="w-14 text-center text-[10px] font-semibold">
+                          <span className="text-idm-male">Pts M</span>
+                        </TableHead>
+                        <TableHead className="w-14 text-center text-[10px] font-semibold hidden sm:table-cell">
+                          <span className="text-idm-female">Pts F</span>
+                        </TableHead>
                         <TableHead className="w-14 text-right text-[10px] font-semibold">Pts</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {displayedClubs?.map((club, idx) => {
-                        const avgPts = club.memberCount > 0 ? (club.points / club.memberCount).toFixed(1) : '0';
                         const memberLabel = club.maleMemberCount > 0 && club.femaleMemberCount > 0
                           ? `${club.maleMemberCount}M + ${club.femaleMemberCount}F`
-                          : `${club.memberCount}`;
+                          : club.maleMemberCount > 0
+                            ? `${club.maleMemberCount}M`
+                            : `${club.femaleMemberCount}F`;
 
                         return (
                           <TableRow
@@ -356,8 +363,14 @@ export function CommunityLeaderboard({
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="text-center text-xs font-medium">{club.memberCount}</TableCell>
-                            <TableCell className="text-center text-xs text-muted-foreground hidden sm:table-cell">{avgPts}</TableCell>
+                            <TableCell className="text-center">
+                              <span className="text-xs font-bold text-idm-male">{club.malePoints}</span>
+                              <span className="text-[8px] text-muted-foreground block">{club.maleMemberCount}p</span>
+                            </TableCell>
+                            <TableCell className="text-center hidden sm:table-cell">
+                              <span className="text-xs font-bold text-idm-female">{club.femalePoints}</span>
+                              <span className="text-[8px] text-muted-foreground block">{club.femaleMemberCount}p</span>
+                            </TableCell>
                             <TableCell className={`text-right font-bold text-xs ${idx === 0 ? dt.neonGradient : idx < 4 ? dt.neonText : ''}`}>{club.points}</TableCell>
                           </TableRow>
                         );
