@@ -2,9 +2,10 @@
 
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
-  Users, Building2, Award, Shield, Flame,
-  ChevronDown, ChevronUp, Search,
+  Users, Award, Shield, Flame,
+  ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,23 +23,28 @@ import { useAppStore } from '@/lib/store';
 import type { StatsData, TopPlayer } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════
-   COMMUNITY LEADERBOARD — Same Toornament style as division standings
+   Tarkam Club type — from /api/clubs/leaderboard?type=tarkam
+   ═══════════════════════════════════════════════════════ */
+interface TarkamClub {
+  id: string;
+  name: string;
+  logo: string | null;
+  points: number;
+  wins: number;
+  losses: number;
+  gameDiff: number;
+  memberCount: number;
+  maleMemberCount: number;
+  femaleMemberCount: number;
+  rank: number;
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMMUNITY LEADERBOARD — Tarkam mode for clubs
    ═══════════════════════════════════════════════════════ */
 interface CommunityLeaderboardProps {
   maleData?: StatsData;
   femaleData?: StatsData;
-  leagueData?: {
-    clubs?: Array<{
-      id: string;
-      name: string;
-      logo?: string | null;
-      wins: number;
-      losses: number;
-      points: number;
-      gameDiff: number;
-      memberCount: number;
-    }>;
-  };
   onPlayerClick: (player: TopPlayer & { division?: string }, division: 'male' | 'female') => void;
   onClubClick?: (club: StatsData['clubs'][0]) => void;
 }
@@ -48,7 +54,6 @@ type DivisionFilter = 'all' | 'male' | 'female';
 export function CommunityLeaderboard({
   maleData,
   femaleData,
-  leagueData,
   onPlayerClick,
   onClubClick,
 }: CommunityLeaderboardProps) {
@@ -58,6 +63,20 @@ export function CommunityLeaderboard({
   const [divisionFilter, setDivisionFilter] = useState<DivisionFilter>('all');
   const [showAllPlayers, setShowAllPlayers] = useState(false);
   const [showAllClubs, setShowAllClubs] = useState(false);
+
+  /* ─── Fetch Tarkam club leaderboard ─── */
+  const { data: tarkamClubData, isLoading: isClubLoading } = useQuery<{ clubs: TarkamClub[]; type: string }>({
+    queryKey: ['clubs-leaderboard', 'tarkam'],
+    queryFn: async () => {
+      const res = await fetch('/api/clubs/leaderboard?type=tarkam');
+      if (!res.ok) return { clubs: [], type: 'tarkam' };
+      return res.json();
+    },
+    staleTime: 15000,
+    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+    enabled: leaderboardSort === 'clubs',
+  });
 
   // Skin maps from both divisions
   const skinMap = {
@@ -77,7 +96,7 @@ export function CommunityLeaderboard({
   }, [maleData, femaleData, divisionFilter]);
 
   const displayedPlayers = showAllPlayers ? mergedPlayers : mergedPlayers.slice(0, 10);
-  const clubs = leagueData?.clubs || [];
+  const clubs = tarkamClubData?.clubs || [];
   const displayedClubs = showAllClubs ? clubs : clubs.slice(0, 6);
 
   return (
@@ -256,7 +275,7 @@ export function CommunityLeaderboard({
         </Card>
       )}
 
-      {/* ═══ Club Standings — Toornament clean table ═══ */}
+      {/* ═══ Club Standings — TARKAM MODE (poin = total poin anggota) ═══ */}
       {leaderboardSort === 'clubs' && (
         <Card className={`${dt.casinoCard} overflow-hidden`}>
           <div className={dt.casinoBar} />
@@ -265,9 +284,22 @@ export function CommunityLeaderboard({
               <Shield className={`w-3 h-3 ${dt.neonText}`} />
             </div>
             <h3 className="text-xs font-semibold uppercase tracking-wider">Klasemen Club</h3>
-            <Badge className={`${dt.casinoBadge} ml-auto text-[9px]`}>{clubs.length} Clubs</Badge>
+            <Badge className={`${dt.casinoBadge} ml-auto text-[9px]`}>TARKAM</Badge>
           </div>
-          {clubs.length > 0 ? (
+          {isClubLoading ? (
+            <div className="p-6 text-center">
+              <div className="animate-pulse space-y-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-muted/30" />
+                    <div className="w-7 h-7 rounded-lg bg-muted/30" />
+                    <div className="flex-1 h-4 rounded bg-muted/20" />
+                    <div className="w-12 h-4 rounded bg-muted/20" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : clubs.length > 0 ? (
             <>
               <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
                 <div className="overflow-x-auto">
@@ -276,59 +308,60 @@ export function CommunityLeaderboard({
                       <TableRow className={`hover:bg-transparent border-b ${dt.border} bg-muted/30`}>
                         <TableHead className="w-10 text-center text-[10px] font-semibold">#</TableHead>
                         <TableHead className="text-[10px] font-semibold min-w-[140px]">Club</TableHead>
-                        <TableHead className="w-10 text-center text-[10px] font-semibold">W</TableHead>
-                        <TableHead className="w-10 text-center text-[10px] font-semibold hidden sm:table-cell">L</TableHead>
-                        <TableHead className="w-12 text-center text-[10px] font-semibold hidden md:table-cell">Selisih</TableHead>
+                        <TableHead className="w-14 text-center text-[10px] font-semibold">Anggota</TableHead>
+                        <TableHead className="w-16 text-center text-[10px] font-semibold hidden sm:table-cell">Rata-rata</TableHead>
                         <TableHead className="w-14 text-right text-[10px] font-semibold">Pts</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {displayedClubs?.map((club, idx) => (
-                        <TableRow
-                          key={club.id}
-                          className={`standings-row-enter standings-row-glass ${idx % 2 === 0 ? 'standings-row-glass-even' : 'standings-row-glass-odd'} ${division === 'male' ? 'standings-row-glow-male' : 'standings-row-glow-female'} cursor-pointer transition-all duration-200 border-b ${dt.borderSubtle} ${
-                            idx < 4 ? `${dt.bgSubtle}` : ''
-                          }`}
-                          style={{ animationDelay: `${idx * 50}ms` }}
-                          onClick={() => onClubClick?.(club as StatsData['clubs'][0])}
-                        >
-                          <TableCell className="text-center">
-                            <span className={`w-6 h-6 rounded-full inline-flex items-center justify-center text-[10px] font-bold ${
-                              idx === 0 ? 'rank-badge-gold-enhanced text-black' :
-                              idx === 1 ? 'rank-badge-silver-enhanced text-black' :
-                              idx === 2 ? 'rank-badge-bronze-enhanced text-black' :
-                              'text-muted-foreground'
-                            }`}>
-                              {idx + 1}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0">
-                                {club.logo ? (
-                                  <ClubLogoImage clubName={club.name} dbLogo={club.logo} alt={club.name} width={28} height={28} className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className={`w-full h-full ${dt.iconBg} flex items-center justify-center`}>
-                                    <Shield className={`w-3.5 h-3.5 ${dt.text}`} />
-                                  </div>
-                                )}
+                      {displayedClubs?.map((club, idx) => {
+                        const avgPts = club.memberCount > 0 ? (club.points / club.memberCount).toFixed(1) : '0';
+                        const memberLabel = club.maleMemberCount > 0 && club.femaleMemberCount > 0
+                          ? `${club.maleMemberCount}M + ${club.femaleMemberCount}F`
+                          : `${club.memberCount}`;
+
+                        return (
+                          <TableRow
+                            key={club.id}
+                            className={`standings-row-enter standings-row-glass ${idx % 2 === 0 ? 'standings-row-glass-even' : 'standings-row-glass-odd'} cursor-pointer transition-all duration-200 border-b ${dt.borderSubtle} ${
+                              idx < 4 ? `${dt.bgSubtle}` : ''
+                            }`}
+                            style={{ animationDelay: `${idx * 50}ms` }}
+                            onClick={() => onClubClick?.(club as StatsData['clubs'][0])}
+                          >
+                            <TableCell className="text-center">
+                              <span className={`w-6 h-6 rounded-full inline-flex items-center justify-center text-[10px] font-bold ${
+                                idx === 0 ? 'rank-badge-gold-enhanced text-black' :
+                                idx === 1 ? 'rank-badge-silver-enhanced text-black' :
+                                idx === 2 ? 'rank-badge-bronze-enhanced text-black' :
+                                'text-muted-foreground'
+                              }`}>
+                                {idx + 1}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0">
+                                  {club.logo ? (
+                                    <ClubLogoImage clubName={club.name} dbLogo={club.logo} alt={club.name} width={28} height={28} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className={`w-full h-full ${dt.iconBg} flex items-center justify-center`}>
+                                      <Shield className={`w-3.5 h-3.5 ${dt.text}`} />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <span className="text-xs font-semibold truncate">{club.name}</span>
+                                  <p className="text-[9px] text-muted-foreground">{memberLabel} anggota</p>
+                                </div>
                               </div>
-                              <div className="min-w-0">
-                                <span className="text-xs font-semibold truncate">{club.name}</span>
-                                {club.memberCount > 0 && <p className="text-[9px] text-muted-foreground">{club.memberCount} anggota</p>}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center text-xs text-green-500 font-medium">{club.wins}</TableCell>
-                          <TableCell className="text-center text-xs text-red-500 font-medium hidden sm:table-cell">{club.losses}</TableCell>
-                          <TableCell className="text-center text-xs hidden md:table-cell">
-                            <span className={club.gameDiff > 0 ? 'text-green-500' : club.gameDiff < 0 ? 'text-red-500' : 'text-muted-foreground'}>
-                              {club.gameDiff > 0 ? '+' : ''}{club.gameDiff}
-                            </span>
-                          </TableCell>
-                          <TableCell className={`text-right font-bold text-xs ${idx === 0 ? dt.neonGradient : idx < 4 ? dt.neonText : ''}`}>{club.points}</TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                            <TableCell className="text-center text-xs font-medium">{club.memberCount}</TableCell>
+                            <TableCell className="text-center text-xs text-muted-foreground hidden sm:table-cell">{avgPts}</TableCell>
+                            <TableCell className={`text-right font-bold text-xs ${idx === 0 ? dt.neonGradient : idx < 4 ? dt.neonText : ''}`}>{club.points}</TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
@@ -349,6 +382,7 @@ export function CommunityLeaderboard({
               <div className={`p-6 rounded-xl ${dt.bgSubtle} ${dt.border} text-center`}>
                 <Shield className={`w-8 h-8 mx-auto mb-2 opacity-30 ${dt.text}`} />
                 <p className="text-sm text-muted-foreground">Belum ada club terdaftar</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">Poin klub dihitung dari total poin semua anggota</p>
               </div>
             </div>
           )}

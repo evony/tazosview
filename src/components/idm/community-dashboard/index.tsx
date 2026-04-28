@@ -530,7 +530,6 @@ export function CommunityDashboard() {
         <CommunityLeaderboard
           maleData={maleData}
           femaleData={femaleData}
-          leagueData={leagueData}
           onPlayerClick={handlePlayerClick}
           onClubClick={(club) => setSelectedClub(club)}
         />
