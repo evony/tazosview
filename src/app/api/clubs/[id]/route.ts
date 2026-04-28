@@ -63,6 +63,7 @@ export async function GET(
 }
 
 // PUT /api/clubs/[id] — Edit club (name, logo, banner → all on ClubProfile now)
+// Accepts BOTH Club ID (season entry) and ClubProfile ID (unified mode)
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -74,18 +75,35 @@ export async function PUT(
   const body = await request.json();
   const { name, logo, bannerImage } = body;
 
-  const club = await db.club.findUnique({
+  // Try to find as Club (season entry) first, then as ClubProfile
+  let club = await db.club.findUnique({
     where: { id },
     include: { profile: true },
   });
-  if (!club) return NextResponse.json({ error: 'Club tidak ditemukan' }, { status: 404 });
+
+  let profileId: string;
+  let profileName: string;
+
+  if (club) {
+    // ID is a Club (season entry) ID
+    profileId = club.profileId;
+    profileName = club.profile.name;
+  } else {
+    // Try as ClubProfile ID (unified mode returns profile.id)
+    const profile = await db.clubProfile.findUnique({ where: { id } });
+    if (!profile) {
+      return NextResponse.json({ error: 'Club tidak ditemukan' }, { status: 404 });
+    }
+    profileId = profile.id;
+    profileName = profile.name;
+  }
 
   // ── Update ClubProfile (persistent identity: name, logo, banner) ──
   if (name || logo !== undefined || bannerImage !== undefined) {
     // Check name uniqueness if renaming
-    if (name && name !== club.profile.name) {
+    if (name && name !== profileName) {
       const existing = await db.clubProfile.findFirst({
-        where: { name, id: { not: club.profileId } },
+        where: { name, id: { not: profileId } },
       });
       if (existing) {
         return NextResponse.json({ error: 'Nama club sudah digunakan' }, { status: 409 });
@@ -93,7 +111,7 @@ export async function PUT(
     }
 
     await db.clubProfile.update({
-      where: { id: club.profileId },
+      where: { id: profileId },
       data: {
         ...(name && { name: name.trim() }),
         ...(logo !== undefined && { logo }),
@@ -102,30 +120,48 @@ export async function PUT(
     });
   }
 
-  // Re-fetch updated club with profile
-  const updated = await db.club.findUnique({
-    where: { id },
-    include: { profile: true },
+  // Re-fetch updated profile
+  const updatedProfile = await db.clubProfile.findUnique({
+    where: { id: profileId },
   });
 
-  // Invalidate ALL Next.js/Vercel cache layers
+  // If we originally found a Club entry, also return club-level data
+  if (club) {
+    const updatedClub = await db.club.findUnique({
+      where: { id: club.id },
+    });
+    revalidatePath('/');
+    revalidatePath('/api/league');
+    revalidateTag('league-data', 'max');
+    revalidatePath('/api/stats');
+
+    return NextResponse.json({
+      id: updatedClub!.id,
+      profileId: updatedProfile!.id,
+      name: updatedProfile!.name,
+      logo: updatedProfile!.logo,
+      bannerImage: updatedProfile!.bannerImage,
+      division: updatedClub!.division,
+      seasonId: updatedClub!.seasonId,
+      wins: updatedClub!.wins,
+      losses: updatedClub!.losses,
+      points: updatedClub!.points,
+      gameDiff: updatedClub!.gameDiff,
+    });
+  }
+
+  // Return profile-level response for unified mode
   revalidatePath('/');
   revalidatePath('/api/league');
   revalidateTag('league-data', 'max');
   revalidatePath('/api/stats');
 
   return NextResponse.json({
-    id: updated!.id,
-    profileId: updated!.profileId,
-    name: updated!.profile.name,
-    logo: updated!.profile.logo,
-    bannerImage: updated!.profile.bannerImage,
-    division: updated!.division,
-    seasonId: updated!.seasonId,
-    wins: updated!.wins,
-    losses: updated!.losses,
-    points: updated!.points,
-    gameDiff: updated!.gameDiff,
+    id: updatedProfile!.id,
+    profileId: updatedProfile!.id,
+    name: updatedProfile!.name,
+    logo: updatedProfile!.logo,
+    bannerImage: updatedProfile!.bannerImage,
   });
 }
 
