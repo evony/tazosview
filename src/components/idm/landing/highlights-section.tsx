@@ -699,8 +699,57 @@ export function HighlightsSection({
     }
   }, [activeIdx]);
 
-  /* ─── No data state ─── */
-  if (highlights.length === 0) return null;
+  /* ─── Empty state — show attractive placeholder instead of hiding section ─── */
+  if (highlights.length === 0) {
+    return (
+      <section
+        id="highlights"
+        role="region"
+        aria-label="Highlights"
+        className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      >
+        {/* Background — same as normal section */}
+        <div className="absolute inset-0 bg-[#0d0d1a]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-idm-gold-warm/25 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-idm-gold-warm/15 to-transparent" />
+        <div className="absolute inset-0 pointer-events-none opacity-[0.018]" style={{ backgroundImage: 'linear-gradient(rgba(212,168,83,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(212,168,83,0.4) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(212,168,83,0.08) 0%, transparent 55%)' }} />
+
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <AnimatedSection>
+            <SectionHeader
+              icon={Trophy}
+              label={highlightsLabel}
+              title={highlightsTitle}
+              subtitle={highlightsSubtitle}
+            />
+          </AnimatedSection>
+
+          {/* Empty state cards — both divisions always shown */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mt-8">
+            {/* Male empty card */}
+            <div className="relative rounded-2xl border border-cyan-500/15 overflow-hidden" style={{ minHeight: '280px' }}>
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.06) 0%, rgba(13,13,26,0.9) 50%, rgba(6,182,212,0.03) 100%)' }} />
+              <div className="relative z-10 flex flex-col items-center justify-center h-full py-16 text-center">
+                <Medal className="w-14 h-14 mb-4 text-cyan-400/20" />
+                <p className="text-sm font-bold text-[#f5f0e8]/80 mb-1">Belum Ada Prestasi Male</p>
+                <p className="text-xs text-[#a09880] max-w-[240px]">Pemain terbaik divisi male akan muncul di sini setelah pertandingan dimulai</p>
+              </div>
+            </div>
+            {/* Female empty card */}
+            <div className="relative rounded-2xl border border-purple-500/15 overflow-hidden" style={{ minHeight: '280px' }}>
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.06) 0%, rgba(13,13,26,0.9) 50%, rgba(168,85,247,0.03) 100%)' }} />
+              <div className="relative z-10 flex flex-col items-center justify-center h-full py-16 text-center">
+                <Medal className="w-14 h-14 mb-4 text-purple-400/20" />
+                <p className="text-sm font-bold text-[#f5f0e8]/80 mb-1">Belum Ada Prestasi Female</p>
+                <p className="text-xs text-[#a09880] max-w-[240px]">Pemain terbaik divisi female akan muncul di sini setelah pertandingan dimulai</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section

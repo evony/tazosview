@@ -335,3 +335,28 @@ Stage Summary:
 - Fixed visual inconsistency in marquee ticker - all cards now have uniform compact horizontal style
 - File modified: src/components/idm/marquee-ticker.tsx
 - Lint passes cleanly
+
+---
+Task ID: 1
+Agent: main
+Task: Add empty states for Highlights and Champions sections that were hidden when no data
+
+Work Log:
+- Investigated all sections that display champion/MVP/highlights data
+- Found 2 components with missing/poor empty states:
+  1. HighlightsSection (landing): `return null` when no highlights — entire section disappears
+  2. CommunityChampions (dashboard): divisions hidden with `null` when no topPlayers
+- Found CommunityStreaks already has a good empty state ✅
+- Found SeasonChampionSection already has EmptyChampionCard ✅
+- Found MvpSpotlight already has empty card ✅
+
+- Fixed HighlightsSection: Replaced `return null` with attractive empty state showing both Male/Female placeholder cards with Medal icon and descriptive text ("Belum Ada Prestasi Male/Female — Pemain terbaik akan muncul di sini setelah pertandingan dimulai")
+- Fixed CommunityChampions: Changed from conditional `null` rendering to always showing both division cards. Each division now shows an empty state with Crown icon and descriptive text ("Belum Ada Champion Male/Female — Champion akan muncul setelah season dimulai dan pertandingan selesai")
+- Cleaned up unused imports in community-champions.tsx (motion, Trophy, Award, TierBadge)
+
+Stage Summary:
+- Files modified:
+  - src/components/idm/landing/highlights-section.tsx — empty state with Male/Female cards
+  - src/components/idm/community-dashboard/community-champions.tsx — always show both divisions with empty state
+- All sections now have consistent empty state handling
+- Lint passes cleanly

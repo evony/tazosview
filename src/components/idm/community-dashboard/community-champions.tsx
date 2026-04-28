@@ -1,11 +1,9 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Crown, Trophy, Award } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { PlayerCard } from '../player-card';
-import { TierBadge } from '../tier-badge';
 import { getDivisionTheme } from '@/hooks/use-division-theme';
 import type { StatsData, TopPlayer } from '@/types/stats';
 
@@ -21,24 +19,20 @@ interface CommunityChampionsProps {
 export function CommunityChampions({ maleData, femaleData, onPlayerClick }: CommunityChampionsProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      {maleData?.topPlayers?.length ? (
-        <ChampionsSection
-          title="Male Champions"
-          emoji="🕺"
-          division="male"
-          data={maleData}
-          onPlayerClick={onPlayerClick}
-        />
-      ) : null}
-      {femaleData?.topPlayers?.length ? (
-        <ChampionsSection
-          title="Female Champions"
-          emoji="💃"
-          division="female"
-          data={femaleData}
-          onPlayerClick={onPlayerClick}
-        />
-      ) : null}
+      <ChampionsSection
+        title="Male Champions"
+        emoji="🕺"
+        division="male"
+        topPlayers={maleData?.topPlayers || []}
+        onPlayerClick={onPlayerClick}
+      />
+      <ChampionsSection
+        title="Female Champions"
+        emoji="💃"
+        division="female"
+        topPlayers={femaleData?.topPlayers || []}
+        onPlayerClick={onPlayerClick}
+      />
     </div>
   );
 }
@@ -48,17 +42,17 @@ function ChampionsSection({
   title,
   emoji,
   division,
-  data,
+  topPlayers,
   onPlayerClick,
 }: {
   title: string;
   emoji: string;
   division: 'male' | 'female';
-  data: StatsData;
+  topPlayers: TopPlayer[];
   onPlayerClick: (player: TopPlayer & { division?: string }, division: 'male' | 'female') => void;
 }) {
   const dt = getDivisionTheme(division);
-  const top3 = data.topPlayers.slice(0, 3);
+  const top3 = topPlayers.slice(0, 3);
 
   return (
     <Card className={`${dt.casinoCard} overflow-hidden relative`}>
@@ -72,10 +66,12 @@ function ChampionsSection({
           <Crown className={`w-3 h-3 lg:w-3.5 lg:h-3.5 ${dt.neonText}`} />
         </div>
         <h3 className="text-xs lg:text-sm font-semibold uppercase tracking-wider">{title}</h3>
-        <Badge className={`hidden sm:inline-flex ${dt.casinoBadge} ml-auto text-[9px]`}>SEASON BEST</Badge>
+        {top3.length > 0 && (
+          <Badge className={`hidden sm:inline-flex ${dt.casinoBadge} ml-auto text-[9px]`}>SEASON BEST</Badge>
+        )}
       </div>
 
-      {/* Top 3 PlayerCard grid — same style as division dashboard */}
+      {/* Content — top 3 players or empty state */}
       <div className="p-3 lg:p-6">
         {top3.length > 0 ? (
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -98,9 +94,10 @@ function ChampionsSection({
             ))}
           </div>
         ) : (
-          <div className={`p-6 rounded-xl ${dt.bgSubtle} ${dt.border} text-center`}>
-            <Crown className={`w-8 h-8 mx-auto mb-2 opacity-30 ${dt.text}`} />
-            <p className="text-sm text-muted-foreground">Belum ada champion</p>
+          <div className={`p-8 rounded-xl ${dt.bgSubtle} ${dt.border} text-center`}>
+            <Crown className={`w-10 h-10 mx-auto mb-3 opacity-20 ${dt.text}`} />
+            <p className="text-sm font-semibold text-muted-foreground/80 mb-1">Belum Ada Champion {division === 'male' ? 'Male' : 'Female'}</p>
+            <p className="text-xs text-muted-foreground/50">Champion akan muncul setelah season dimulai dan pertandingan selesai</p>
           </div>
         )}
       </div>
