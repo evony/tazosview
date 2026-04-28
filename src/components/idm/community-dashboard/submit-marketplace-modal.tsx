@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, ShoppingBag, Upload, CheckCircle, AlertCircle,
-  UserCheck, Sparkles, Gamepad2, Wand2, Shirt, Package, Tag,
-  Loader2, LogIn, ShieldCheck, Plus, Trash2, Image as ImageIcon
+  UserCheck, Sparkles, Gamepad2, Package, Tag,
+  Loader2, LogIn, ShieldCheck, Plus, Trash2, Image as ImageIcon, Cloud
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+import { CloudinaryPicker } from './cloudinary-picker';
 
 /* ═══════════════════════════════════════════════════════
    TYPES
@@ -34,7 +35,92 @@ const CATEGORIES: { id: CategoryOption; label: string; icon: React.ReactNode; de
 const MAX_IMAGES = 5;
 
 /* ═══════════════════════════════════════════════════════
-   SUBMIT MARKETPLACE MODAL — Orange theme
+   SINGLE IMAGE UPLOADER — Uses CloudinaryPicker
+   ═══════════════════════════════════════════════════════ */
+function ImageUploader({
+  index,
+  url,
+  onChange,
+  onRemove,
+  canRemove,
+  isFirst,
+}: {
+  index: number;
+  url: string;
+  onChange: (url: string) => void;
+  onRemove: () => void;
+  canRemove: boolean;
+  isFirst: boolean;
+}) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-2">
+        {/* Image number indicator */}
+        <div className="w-6 h-6 rounded bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+          <span className="text-[9px] font-bold text-orange-400">{index + 1}</span>
+        </div>
+
+        {/* URL input */}
+        <input
+          type="url"
+          placeholder={isFirst ? 'URL gambar utama (wajib)' : 'URL gambar (opsional)'}
+          value={url}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-border/30 text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
+        />
+
+        {/* Upload button */}
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="flex items-center gap-1 px-2.5 py-2 rounded-lg bg-orange-500/10 border border-orange-500/15 text-[10px] font-bold text-orange-400 hover:bg-orange-500/20 transition-colors cursor-pointer flex-shrink-0"
+        >
+          <Cloud className="w-3 h-3" />
+          Upload
+        </button>
+
+        {/* Remove button */}
+        {canRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="w-6 h-6 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400/60 hover:text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer flex-shrink-0"
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        )}
+      </div>
+
+      {/* Preview thumbnail */}
+      {url && (
+        <div className="ml-8 relative w-20 h-14 rounded-lg overflow-hidden border border-orange-500/15 bg-muted/20 group">
+          <img src={url} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+          <button
+            className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            onClick={() => setPickerOpen(true)}
+            title="Ganti gambar"
+          >
+            <Cloud className="w-3.5 h-3.5 text-white" />
+          </button>
+        </div>
+      )}
+
+      {/* Cloudinary Picker Modal */}
+      <CloudinaryPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(selectedUrl) => onChange(selectedUrl)}
+        currentImage={url}
+        uploadFolder="cms/marketplace"
+      />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   SUBMIT MARKETPLACE MODAL — Orange theme + Upload
    ═══════════════════════════════════════════════════════ */
 export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarketplaceModalProps) {
   const { playerAuth } = useAppStore();
@@ -151,6 +237,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
   const playerGamertag = playerAuth.account?.player?.gamertag || '';
   const playerAvatar = playerAuth.account?.player?.avatar || null;
   const playerTier = playerAuth.account?.player?.tier || '';
+  const validImageCount = form.imageUrls.filter(u => u.trim()).length;
 
   return (
     <AnimatePresence>
@@ -273,7 +360,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                   </div>
                 </div>
 
-                {/* Item Details — Orange focus */}
+                {/* Item Details */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Detail Iklan</label>
                   <input
@@ -299,10 +386,13 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                   </div>
                 </div>
 
-                {/* Image URLs — Up to 5 */}
+                {/* ═══ Screenshot Upload — dengan Cloudinary ═══ */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Screenshot ({form.imageUrls.filter(u => u.trim()).length}/{MAX_IMAGES})</label>
+                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <ImageIcon className="w-3 h-3 text-orange-400" />
+                      Screenshot ({validImageCount}/{MAX_IMAGES})
+                    </label>
                     {form.imageUrls.length < MAX_IMAGES && (
                       <button
                         type="button"
@@ -314,32 +404,21 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                       </button>
                     )}
                   </div>
-                  <div className="space-y-1.5">
+
+                  <div className="space-y-2">
                     {form.imageUrls.map((url, i) => (
-                      <div key={i} className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 rounded bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-                          <ImageIcon className="w-2.5 h-2.5 text-orange-400/60" />
-                        </div>
-                        <input
-                          type="url"
-                          placeholder={`URL gambar ${i + 1}${i === 0 ? ' (utama)' : ''}`}
-                          value={url}
-                          onChange={(e) => updateImageUrl(i, e.target.value)}
-                          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-border/30 text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
-                        />
-                        {form.imageUrls.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeImageField(i)}
-                            className="w-6 h-6 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400/60 hover:text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer flex-shrink-0"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
+                      <ImageUploader
+                        key={i}
+                        index={i}
+                        url={url}
+                        onChange={(newUrl) => updateImageUrl(i, newUrl)}
+                        onRemove={() => removeImageField(i)}
+                        canRemove={form.imageUrls.length > 1}
+                        isFirst={i === 0}
+                      />
                     ))}
                   </div>
-                  <p className="text-[9px] text-muted-foreground/30">Maksimal {MAX_IMAGES} screenshot. Gambar pertama akan jadi thumbnail.</p>
+                  <p className="text-[9px] text-muted-foreground/30">Klik &quot;Upload&quot; untuk mengupload gambar dari HP/komputer kamu. Maksimal {MAX_IMAGES} screenshot. Gambar pertama jadi thumbnail.</p>
                 </div>
 
                 {/* Price — Orange */}
