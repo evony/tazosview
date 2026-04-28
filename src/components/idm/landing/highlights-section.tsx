@@ -567,14 +567,52 @@ export function HighlightsSection({
     }
   }, [highlights.length, activeIdx]);
 
+  /* ─── Auto-Rotation State ─── */
+  const AUTO_ROTATE_INTERVAL = 5000;
+  const RESUME_DELAY = 3000;
+  const [autoRotateMode, setAutoRotateMode] = useState<'running' | 'paused' | 'resuming'>(highlights.length > 1 ? 'running' : 'paused');
+
+  // Auto-rotation timer — only runs in 'running' mode
+  useEffect(() => {
+    if (highlights.length <= 1 || autoRotateMode !== 'running') return;
+
+    const timer = setTimeout(() => {
+      setActiveIdx(prev => {
+        const next = (prev + 1) % highlights.length;
+        setIsTransitioning(true);
+        setTimeout(() => setIsTransitioning(false), 800);
+        return next;
+      });
+    }, AUTO_ROTATE_INTERVAL);
+
+    return () => clearTimeout(timer);
+  }, [highlights.length, autoRotateMode, activeIdx]);
+
+  // Resume delay timer — when in 'resuming' mode, wait then switch to 'running'
+  useEffect(() => {
+    if (autoRotateMode !== 'resuming') return;
+
+    const timer = setTimeout(() => {
+      setAutoRotateMode('running');
+    }, RESUME_DELAY);
+
+    return () => clearTimeout(timer);
+  }, [autoRotateMode]);
+
+  /* ─── Touch/Swipe State ─── */
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+
   /* ─── Handle thumbnail click with transition ─── */
   const handleThumbClick = useCallback((idx: number) => {
-    if (idx === activeIdx) return;
-    setIsTransitioning(true);
-    setActiveIdx(idx);
-    // Shimmer duration
-    setTimeout(() => setIsTransitioning(false), 800);
-  }, [activeIdx]);
+    setActiveIdx(prev => {
+      if (prev === idx) return prev;
+      setIsTransitioning(true);
+      setTimeout(() => setIsTransitioning(false), 800);
+      return idx;
+    });
+    // Schedule delayed resume of auto-rotation
+    setAutoRotateMode('resuming');
+  }, []);
 
   /* ─── 3D tilt hook for featured card ─── */
   const { cardRef, handleMouseMove, handleMouseLeave } = use3DTilt(8);
@@ -610,6 +648,42 @@ export function HighlightsSection({
     el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
   }, []);
 
+  /* ─── Touch/Swipe Handlers ─── */
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStart) return;
+    const deltaX = e.changedTouches[0].clientX - touchStart.x;
+    const deltaY = e.changedTouches[0].clientY - touchStart.y;
+    setTouchStart(null);
+
+    // Only handle horizontal swipes (not vertical scrolls)
+    if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > Math.abs(deltaX)) return;
+
+    // Schedule delayed resume of auto-rotation
+    setAutoRotateMode('resuming');
+
+    if (deltaX < 0) {
+      // Swipe left → next
+      setActiveIdx(prev => {
+        const next = (prev + 1) % highlights.length;
+        setIsTransitioning(true);
+        setTimeout(() => setIsTransitioning(false), 800);
+        return next;
+      });
+    } else {
+      // Swipe right → prev
+      setActiveIdx(prev => {
+        const prevIdx = (prev - 1 + highlights.length) % highlights.length;
+        setIsTransitioning(true);
+        setTimeout(() => setIsTransitioning(false), 800);
+        return prevIdx;
+      });
+    }
+  }, [touchStart, highlights.length]);
+
   // Auto-scroll to active thumbnail
   useEffect(() => {
     const el = thumbScrollRef.current;
@@ -633,6 +707,8 @@ export function HighlightsSection({
       role="region"
       aria-label="Highlights"
       className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      onMouseEnter={() => setAutoRotateMode('paused')}
+      onMouseLeave={() => setAutoRotateMode('resuming')}
     >
       {/* ═══ Background Layers ═══ */}
       <div className="absolute inset-0 bg-[#0d0d1a]" />
@@ -714,6 +790,8 @@ export function HighlightsSection({
                       setSelectedPlayer(active.player);
                     }
                   }}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
                 >
                   {/* Shimmer effect during transition */}
                   <ShimmerOverlay accentColor={active.accentColor} visible={isTransitioning} />
@@ -1173,20 +1251,20 @@ export function HighlightsSection({
               </div>
             </div>
 
-            {/* Progress dots (mobile) */}
-            <div className="flex items-center justify-center gap-1.5 mt-3 sm:hidden">
-              {highlights.map((_, idx) => (
+            {/* Progress dots indicator */}
+            <div className="flex items-center justify-center gap-1.5 mt-3">
+              {highlights.map((item, idx) => (
                 <button
-                  key={idx}
+                  key={item.id}
                   onClick={() => handleThumbClick(idx)}
                   className={`rounded-full transition-all duration-300 cursor-pointer ${
-                    idx === activeIdx ? 'w-6 h-1.5' : 'w-1.5 h-1.5'
+                    idx === activeIdx
+                      ? 'w-2.5 h-2.5'
+                      : 'w-1.5 h-1.5 hover:w-2 hover:h-2'
                   }`}
                   style={{
-                    backgroundColor:
-                      idx === activeIdx
-                        ? highlights[activeIdx].accentColor
-                        : 'rgba(255,255,255,0.15)',
+                    backgroundColor: idx === activeIdx ? item.accentColor : 'rgba(255,255,255,0.25)',
+                    boxShadow: idx === activeIdx ? `0 0 8px ${hexToRgba(item.accentColor, 0.5)}` : 'none',
                   }}
                   aria-label={`Go to highlight ${idx + 1}`}
                 />

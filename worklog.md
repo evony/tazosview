@@ -267,3 +267,32 @@ Stage Summary:
 - Uses `topPlayers` sorted by `totalMvp` as fallback data source
 - When tournaments ARE completed, still uses the more specific `mvpHallOfFame` data with week numbers
 - Two display modes: "MVP Terbaru" (with week) and "MVP Terbanyak" (total count only)
+
+---
+Task ID: 5
+Agent: Main Agent + Sub-agent
+Task: Add auto-rotation, progress dots, and swipe support to highlights section
+
+Work Log:
+- Implemented auto-rotation with 5-second interval using setTimeout-based approach
+- Auto-rotation pauses when user hovers over the section (mouseEnter → 'paused')
+- Auto-rotation resumes after 3-second grace period when mouse leaves (mouseLeave → 'resuming' → 'running')
+- Manual thumbnail click or swipe also triggers pause + delayed resume
+- Auto-rotation only runs when there are 2+ highlights
+- Added progress dots indicator below thumbnail strip
+  - Active dot: w-2.5 h-2.5, filled with item's accentColor, with glow effect
+  - Inactive dots: w-1.5 h-1.5, muted color, hover effect to grow larger
+  - All dots are clickable (same as clicking a thumbnail)
+  - Smooth transitions on size/color changes
+- Added touch/swipe support on the featured card for mobile
+  - Swipe left → next highlight (wraps around)
+  - Swipe right → previous highlight (wraps around)
+  - Minimum 50px horizontal distance to trigger, ignores vertical swipes
+- Fixed TypeScript error: type alias inside component function body → inlined union type
+- ESLint passes, dev server running without errors
+
+Stage Summary:
+- Highlights section now auto-rotates every 5 seconds with smart pause/resume
+- Progress dots give visual feedback on current position and total items
+- Mobile users can swipe the featured card to navigate between highlights
+- All existing functionality preserved — only additive changes
