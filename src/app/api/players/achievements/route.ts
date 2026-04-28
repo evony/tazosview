@@ -51,11 +51,22 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Look up tournament's seasonId for per-season attribution
+      let seasonId: string | null = null;
+      if (tournamentId) {
+        const tournament = await prisma.tournament.findUnique({
+          where: { id: tournamentId },
+          select: { seasonId: true },
+        });
+        seasonId = tournament?.seasonId || null;
+      }
+
       // Record point transaction
       await prisma.playerPoint.create({
         data: {
           playerId,
           tournamentId,
+          seasonId,
           amount: achievement.rewardPoints,
           reason: 'achievement_reward',
           description: `Earned achievement: ${achievement.displayName}`,

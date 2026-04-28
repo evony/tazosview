@@ -60,12 +60,14 @@ export async function POST(request: Request) {
     });
     results.clubsReset = clubUpdate.count;
 
-    // 6. Reset all seasons — remove champion references, set status to active
+    // 6. Reset all seasons — remove champion references, snapshots, set status to active
     const seasonUpdate = await db.season.updateMany({
       data: {
         championClubId: null,
         championPlayerId: null,
         championPlayerPoints: null,
+        championPlayerSnapshot: null,
+        championClubSnapshot: null,
         championSquad: null,
         status: 'active',
       },

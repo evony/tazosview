@@ -83,12 +83,19 @@ export async function checkAndAwardAchievements(
 
       // Award bonus points if any
       if (achievement.rewardPoints > 0) {
+        // Look up the tournament's seasonId so the point is attributed to the correct season
+        const tournament = await db.tournament.findUnique({
+          where: { id: tournamentId },
+          select: { seasonId: true },
+        });
+
         await awardPoints({
           playerId: player.id,
           amount: achievement.rewardPoints,
           reason: 'achievement_bonus',
           description: `Achievement: ${achievement.displayName}`,
           tournamentId: tournamentId,
+          seasonId: tournament?.seasonId || undefined,
         });
       }
 

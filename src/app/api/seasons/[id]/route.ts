@@ -198,7 +198,16 @@ export async function PUT(
     });
     if (player) {
       const activeClub = player.clubMembers[0]?.profile?.name || null;
-      const perSeasonPoints = championPlayerPoints || player.points;
+      // Compute per-season points from PlayerPoint aggregation (not lifetime)
+      let perSeasonPoints = championPlayerPoints;
+      if (!perSeasonPoints) {
+        const seasonPoints = await db.playerPoint.groupBy({
+          by: ['playerId'],
+          where: { playerId: championPlayerId, seasonId: id },
+          _sum: { amount: true },
+        });
+        perSeasonPoints = seasonPoints[0]?._sum.amount || 0;
+      }
       updateData.championPlayerSnapshot = JSON.stringify({
         gamertag: player.gamertag,
         avatar: player.avatar,

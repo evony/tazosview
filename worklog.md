@@ -54,3 +54,27 @@ Stage Summary:
 - Key insight: existing system only stored `championPlayerPoints` (integer), now stores full JSON snapshot
 - The flow is: Season ACTIVE → points recorded with seasonId → "Tutup Season" → champion determined from per-season PlayerPoint aggregation → full stats snapshot written → Season COMPLETED → new season can be created → old champion display uses snapshot data
 - Files changed: prisma/schema.prisma, src/app/api/seasons/[id]/close/route.ts, src/app/api/seasons/[id]/route.ts, src/app/api/tournaments/[id]/finalize/route.ts, src/app/api/stats/route.ts
+
+---
+Task ID: 2
+Agent: main
+Task: Audit and fix remaining bugs in per-season point tracking system
+
+Work Log:
+- Ran comprehensive audit of all per-season point tracking components (10 areas checked)
+- Found 3 bugs that needed fixing:
+  - BUG #1: Achievement PlayerPoint.create was missing seasonId — achievement reward points weren't attributed to any season
+  - BUG #2: Reset API was missing championPlayerSnapshot/championClubSnapshot resets — orphaned snapshot data after reset
+  - BUG #3: Season PUT manual champion setting fell back to lifetime Player.points instead of per-season PlayerPoint.groupBy aggregation
+- Fixed BUG #1: Updated src/lib/achievements.ts to look up tournament.seasonId before calling awardPoints; updated src/app/api/players/achievements/route.ts to look up seasonId and include it in playerPoint.create
+- Fixed BUG #2: Added championPlayerSnapshot: null and championClubSnapshot: null to season reset in src/app/api/reset/route.ts
+- Fixed BUG #3: Replaced `championPlayerPoints || player.points` fallback with db.playerPoint.groupBy query in src/app/api/seasons/[id]/route.ts
+- All lint checks pass clean
+- Dev server compiles and runs successfully
+
+Stage Summary:
+- All 3 audit bugs fixed, per-season point tracking is now complete and consistent
+- Every PlayerPoint.create call now includes seasonId (scoring, finalize, achievements)
+- Reset API properly cleans all snapshot fields
+- Manual champion setting uses per-season aggregation instead of lifetime points
+- System is production-ready for per-season point tracking
