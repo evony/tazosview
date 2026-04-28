@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Crown, Trophy, Medal, Eye, Flame, Calendar, Music, Shield } from 'lucide-react';
+import { Crown, Trophy, Medal, Flame, Calendar, Music, Shield, Swords } from 'lucide-react';
 import { SectionHeader, AnimatedSection } from './shared';
 import { TierBadge } from '../tier-badge';
 import { getAvatarUrl, hexToRgba } from '@/lib/utils';
@@ -12,8 +12,8 @@ import type { StatsData, SeasonChampionPlayer } from '@/types/stats';
    Dedicated section showing ONLY completed season champions.
    - Male Champion = #1 ranked player when male season closed
    - Female Champion = #1 ranked player when female season closed
-   - Only appears if there are completed seasons with champion data
-   - Does NOT show weekly champions — those are in HallOfFame/community dashboard
+   - ALWAYS renders — shows attractive empty state when no champions yet
+   - Does NOT show weekly champions — those are in Puncak Prestasi
    ═══════════════════════════════════════════════════════════════ */
 
 interface SeasonChampionSectionProps {
@@ -71,7 +71,66 @@ function buildSeasonChampions(
   return { male, female };
 }
 
-/* ─── Champion Card ─── */
+/* ─── Empty/Upcoming Champion Card — shown when no season is completed yet ─── */
+function EmptyChampionCard({ division }: { division: 'male' | 'female' }) {
+  const isMale = division === 'male';
+  const accent = isMale ? '#06b6d4' : '#a855f7';
+  const accentLight = isMale ? '#22d3ee' : '#c084fc';
+  const DivisionIcon = isMale ? Music : Shield;
+  const divisionLabel = isMale ? 'Male' : 'Female';
+
+  return (
+    <div
+      className="champion-card reveal reveal-fade-up rounded-xl overflow-hidden bg-[#0d0d1a] border transition-colors duration-500 hover:border-[rgba(212,168,83,0.2)]"
+      style={{ borderColor: hexToRgba(accent, 0.10) }}
+    >
+      {/* Gold accent line */}
+      <div className="h-0.5 bg-gradient-to-r from-transparent via-[#d4a853] to-transparent" />
+
+      {/* Header */}
+      <div className="relative h-14 overflow-hidden">
+        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${hexToRgba(accent, 0.12)} 0%, transparent 60%)` }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/50 to-transparent" />
+        <div className="absolute bottom-2.5 left-4 right-4 flex items-end justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: hexToRgba(accent, 0.18) }}>
+              <DivisionIcon className="w-3.5 h-3.5" style={{ color: accentLight }} />
+            </div>
+            <span className="text-xs font-black uppercase tracking-wider" style={{ color: accentLight }}>{divisionLabel}</span>
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border" style={{ color: '#a09880', backgroundColor: 'rgba(160,152,128,0.08)', borderColor: 'rgba(160,152,128,0.15)' }}>
+            <Swords className="w-2.5 h-2.5 inline mr-1" />Berlangsung
+          </span>
+        </div>
+      </div>
+
+      {/* Empty state content */}
+      <div className="relative flex flex-col items-center justify-center py-10 px-6 text-center">
+        {/* Background glow */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 50%, ${hexToRgba(accent, 0.04)}, transparent 60%)` }} />
+
+        {/* Crown with float animation */}
+        <div className="champion-crown-float relative mb-4">
+          <Crown className="w-12 h-12 opacity-20" style={{ color: accent }} />
+        </div>
+
+        <p className="relative text-sm font-bold text-[#f5f0e8]/80 mb-1">Belum Ada Champion</p>
+        <p className="relative text-xs text-[#a09880] max-w-[200px]">
+          Juara {divisionLabel} akan dinobatkan setelah season berakhir
+        </p>
+
+        {/* Decorative line */}
+        <div className="relative flex items-center gap-2 mt-4">
+          <div className="w-8 h-px bg-gradient-to-r from-transparent to-[#d4a853]/30" />
+          <Trophy className="w-3 h-3 text-[#d4a853]/30" />
+          <div className="w-8 h-px bg-gradient-to-l from-transparent to-[#d4a853]/30" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Champion Card — with data ─── */
 function ChampionCard({
   champions,
   division,
@@ -87,7 +146,9 @@ function ChampionCard({
   const DivisionIcon = isMale ? Music : Shield;
   const divisionLabel = isMale ? 'Male' : 'Female';
 
-  if (champions.length === 0) return null;
+  if (champions.length === 0) {
+    return <EmptyChampionCard division={division} />;
+  }
 
   const latestChampion = champions[0]; // Most recent season champion
 
@@ -247,6 +308,7 @@ function ChampionCard({
 
 /* ═══════════════════════════════════════════════════════════════
    MAIN SEASON CHAMPION SECTION COMPONENT
+   ALWAYS renders — shows empty state when no champions yet
    ═══════════════════════════════════════════════════════════════ */
 export function SeasonChampionSection({
   maleData,
@@ -255,11 +317,6 @@ export function SeasonChampionSection({
   setSelectedPlayer,
 }: SeasonChampionSectionProps) {
   const { male: maleChampions, female: femaleChampions } = buildSeasonChampions(maleData, femaleData);
-
-  // Only render if there are any completed seasons with champions
-  const hasAnyChampion = maleChampions.length > 0 || femaleChampions.length > 0;
-
-  if (!hasAnyChampion && !isDataLoading) return null;
 
   return (
     <section id="season-champion" role="region" aria-label="Season Champion" className="landing-section relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
@@ -282,7 +339,7 @@ export function SeasonChampionSection({
           />
         </AnimatedSection>
 
-        {/* Champion Cards Grid */}
+        {/* Champion Cards Grid — always shows both cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative mt-10 sm:mt-14">
           {/* Center divider */}
           <div className="hidden md:block absolute top-12 bottom-12 left-1/2 w-px bg-gradient-to-b from-transparent via-[rgba(212,168,83,0.20)] to-transparent z-10" />

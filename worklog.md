@@ -215,3 +215,29 @@ Stage Summary:
 - Season Champion data comes from allSeasons with championPlayer (set during season auto-close)
 - Weekly champions NO LONGER shown on landing page (were shown in old HallOfFame Champion tab)
 - Navigation updated across desktop and mobile navs
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix SeasonChampionSection disappearing from landing page when no completed seasons exist
+
+Work Log:
+- Diagnosed root cause: SeasonChampionSection returned `null` when no completed seasons had championPlayer data (`if (!hasAnyChampion && !isDataLoading) return null;`)
+- Also ChampionCard returned `null` when `champions.length === 0`, meaning both cards disappeared even if the section rendered during loading
+- Created `EmptyChampionCard` component that shows an attractive placeholder state:
+  - Division header (Male/Female) with accent color and "Berlangsung" badge instead of season number badge
+  - Crown icon with float animation
+  - "Belum Ada Champion" text with explanation "Juara {division} akan dinobatkan setelah season berakhir"
+  - Decorative trophy line at bottom
+- Modified `ChampionCard` to render `EmptyChampionCard` when `champions.length === 0` instead of returning `null`
+- Removed the `if (!hasAnyChampion && !isDataLoading) return null;` guard from `SeasonChampionSection` — section now ALWAYS renders
+- Both male and female cards always show (either with champion data or empty state)
+- Navigation links (#season-champion) now always work instead of pointing to a missing section
+- ESLint passes, dev server running without errors
+
+Stage Summary:
+- SeasonChampionSection now always renders on the landing page
+- Shows attractive empty state ("Belum Ada Champion") when no seasons are completed yet
+- Shows champion data when seasons are completed with championPlayer
+- Navigation (#season-champion) no longer breaks when there are no completed seasons
+- No other sections or navigation were changed
