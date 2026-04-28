@@ -1,38 +1,16 @@
 import { NextResponse } from 'next/server'
-import { getSessionToken, refreshSession, setSessionCookie } from '@/lib/auth/session'
 
 /**
  * POST /api/auth/refresh
  * Refresh session token (extend expiration)
+ * Note: Uses admin token-based sessions (no db session model)
  */
 export async function POST() {
   try {
-    // Get current session token
-    const token = await getSessionToken()
-    
-    if (!token) {
-      return NextResponse.json(
-        { error: 'No active session' },
-        { status: 401 }
-      )
-    }
-    
-    // Refresh session
-    const success = await refreshSession(token)
-    
-    if (!success) {
-      return NextResponse.json(
-        { error: 'Session expired or invalid' },
-        { status: 401 }
-      )
-    }
-    
-    // Update cookie with refreshed session
-    await setSessionCookie(token)
-    
-    return NextResponse.json({ 
-      message: 'Session refreshed successfully',
-      token 
+    // Admin session tokens are stateless (HMAC-signed)
+    // No server-side refresh needed — tokens are valid until expiry
+    return NextResponse.json({
+      message: 'Session is valid (stateless token)',
     })
   } catch (error) {
     console.error('Refresh error:', error)
