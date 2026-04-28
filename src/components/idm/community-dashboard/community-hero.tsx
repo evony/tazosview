@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { Users, Radio, Trophy, Zap, ArrowRight, UserPlus, Eye } from 'lucide-react';
+import { Users, Radio, Trophy, Zap, ArrowRight, UserPlus, Eye, Gift } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import type { StatsData } from '@/types/stats';
 
@@ -78,9 +78,10 @@ interface CommunityHeroProps {
       liveMatches: number;
     };
   };
+  onSawer?: () => void;
 }
 
-export function CommunityHero({ maleData, femaleData, leagueData }: CommunityHeroProps) {
+export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: CommunityHeroProps) {
   const { setCurrentView, setDivision, setInitialDashboardTab } = useAppStore();
   const malePlayers = maleData?.totalPlayers || 0;
   const femalePlayers = femaleData?.totalPlayers || 0;
@@ -95,6 +96,9 @@ export function CommunityHero({ maleData, femaleData, leagueData }: CommunityHer
   const seasonProgress = maleData?.seasonProgress || femaleData?.seasonProgress;
   const currentWeek = seasonProgress?.completedWeeks || 0;
   const totalWeeks = seasonProgress?.totalWeeks || 10;
+
+  // Combined prize pool from both divisions
+  const combinedPrizePool = (maleData?.totalPrizePool || 0) + (femaleData?.totalPrizePool || 0);
 
   // Check if registration is open in any division
   const isRegistrationOpen =
@@ -249,7 +253,7 @@ export function CommunityHero({ maleData, femaleData, leagueData }: CommunityHer
           transition={{ delay: 0.5, duration: 0.5 }}
           className="text-xs sm:text-sm text-muted-foreground/60 max-w-md mb-6"
         >
-          Tempat dancer terbaik berkompetisi. Lihat peringkat, champion, dan aktivitas komunitas.
+          Tempat dancer terbaik berkompetisi. Sawer untuk menambah prize pool dan dapatkan skin eksklusif!
         </motion.p>
 
         {/* Animated underline */}
@@ -300,6 +304,17 @@ export function CommunityHero({ maleData, femaleData, leagueData }: CommunityHer
             </button>
           )}
 
+          {/* Sawer CTA button — always visible */}
+          {onSawer && (
+            <button
+              onClick={onSawer}
+              className="group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+            >
+              <Gift className="w-4 h-4" />
+              <span>Sawer</span>
+            </button>
+          )}
+
           {/* If neither is available, show a subtle info */}
           {!isRegistrationOpen && !hasBrackets && (
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-muted-foreground">
@@ -316,6 +331,31 @@ export function CommunityHero({ maleData, femaleData, leagueData }: CommunityHer
           transition={{ delay: 0.6, duration: 0.5 }}
           className="flex flex-wrap items-center gap-4 sm:gap-6"
         >
+          {/* Prize Pool — MOST PROMINENT stat */}
+          {combinedPrizePool > 0 && (
+            <>
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-idm-gold-warm/15 flex items-center justify-center">
+                  <Trophy className="w-5 h-5 text-idm-gold-warm" />
+                </div>
+                <div>
+                  <p
+                    className="text-xl sm:text-2xl font-black text-idm-gold-warm"
+                    style={{
+                      textShadow: '0 0 20px rgba(212,168,83,0.4), 0 0 40px rgba(212,168,83,0.15)',
+                    }}
+                  >
+                    <AnimatedNumber value={combinedPrizePool} duration={1800} />
+                  </p>
+                  <p className="text-[9px] text-idm-gold-warm/70 uppercase tracking-wider font-semibold">
+                    Prize Pool
+                  </p>
+                </div>
+              </div>
+              <div className="w-px h-8 bg-border/30" />
+            </>
+          )}
+
           {/* Male Players */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">

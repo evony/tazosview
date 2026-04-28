@@ -7,7 +7,7 @@ import {
   Users, Swords, Trophy, Crown, Medal,
   Flame, Radio, Star,
   Gamepad2, Target, Calendar,
-  Clock,
+  Clock, Gift,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +35,7 @@ import { CommunityStreaks } from './community-streaks';
 import { CommunityDonors } from './community-donors';
 // CommunityActivityMarquee removed — too noisy for community dashboard
 import { SeasonComparison } from './season-comparison';
+import { DonationModal } from '../donation-modal';
 
 
 /* ═══════════════════════════════════════════
@@ -367,6 +368,19 @@ export function CommunityDashboard() {
   const [selectedPlayer, setSelectedPlayer] = useState<(TopPlayer & { division?: string }) | null>(null);
   // Selected club for profile modal
   const [selectedClub, setSelectedClub] = useState<StatsData['clubs'][0] | null>(null);
+  // Donation modal state
+  const [donationOpen, setDonationOpen] = useState(false);
+
+  // CMS settings for donation modal
+  const { data: cms } = useQuery<Record<string, string>>({
+    queryKey: ['cms-settings'],
+    queryFn: async () => {
+      const res = await fetch('/api/cms/content');
+      if (!res.ok) return {};
+      const json = await res.json();
+      return json.settings || {};
+    },
+  });
 
 
   // Fetch male stats
@@ -450,7 +464,7 @@ export function CommunityDashboard() {
     <div className="space-y-6 lg:space-y-8">
       {/* ═══ 1. Hero — Full width ═══ */}
       <Section sectionId="hero">
-        <CommunityHero maleData={maleData} femaleData={femaleData} leagueData={leagueData} />
+        <CommunityHero maleData={maleData} femaleData={femaleData} leagueData={leagueData} onSawer={() => setDonationOpen(true)} />
       </Section>
 
       {/* ═══ 2. Quick Search — Full width ═══ */}
@@ -463,12 +477,17 @@ export function CommunityDashboard() {
         <CommunityStats maleData={maleData} femaleData={femaleData} leagueData={leagueData} />
       </Section>
 
-      {/* ═══ 4. Season — Full width with internal tabs (Progress | Perbandingan) ═══ */}
+      {/* ═══ 4. Saweran — MOVED UP (sawer-driven prize pool model) ═══ */}
+      <Section title="Saweran Komunitas" icon={Gift} iconColor="text-idm-gold-warm" sectionId="saweran">
+        <CommunityDonors maleData={maleData} femaleData={femaleData} onSawer={() => setDonationOpen(true)} />
+      </Section>
+
+      {/* ═══ 5. Season — Full width with internal tabs (Progress | Perbandingan) ═══ */}
       <Section sectionId="season">
         <SeasonProgressSection maleData={maleData} femaleData={femaleData} />
       </Section>
 
-      {/* ═══ 5. Champions & MVP — Full width with internal tabs ═══ */}
+      {/* ═══ 6. Champions & MVP — Full width with internal tabs ═══ */}
       <Section sectionId="champions">
         <ChampionsMvpSection
           maleData={maleData}
@@ -477,7 +496,7 @@ export function CommunityDashboard() {
         />
       </Section>
 
-      {/* ═══ 6. Rankings + Streak — Full width ═══ */}
+      {/* ═══ 7. Rankings + Streak — Full width ═══ */}
       <Section title="Peringkat" icon={Trophy} iconColor="text-idm-gold-warm" sectionId="rankings">
         <CommunityLeaderboard
           maleData={maleData}
@@ -487,15 +506,18 @@ export function CommunityDashboard() {
         />
       </Section>
 
-      {/* ═══ 7. Matches — Full width with internal tabs ═══ */}
+      {/* ═══ 8. Matches — Full width with internal tabs ═══ */}
       <Section sectionId="matches">
         <MatchesSection maleData={maleData} femaleData={femaleData} />
       </Section>
 
-      {/* ═══ 8. Donasi — Full width ═══ */}
-      <Section title="Donasi Komunitas" icon={Medal} iconColor="text-pink-400">
-        <CommunityDonors maleData={maleData} femaleData={femaleData} />
-      </Section>
+      {/* ═══ Donation Modal ═══ */}
+      <DonationModal
+        open={donationOpen}
+        onOpenChange={setDonationOpen}
+        defaultType="weekly"
+        cmsSettings={cms || {}}
+      />
 
       {/* Player & Club Profile Modals — same as division dashboard */}
       {selectedPlayer && (

@@ -16,6 +16,7 @@ import type { StatsData, TopDonor } from '@/types/stats';
 interface CommunityDonorsProps {
   maleData?: StatsData;
   femaleData?: StatsData;
+  onSawer?: () => void;
 }
 
 const RANK_MEDALS = ['🥇', '🥈', '🥉'];
@@ -29,7 +30,7 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-export function CommunityDonors({ maleData, femaleData }: CommunityDonorsProps) {
+export function CommunityDonors({ maleData, femaleData, onSawer }: CommunityDonorsProps) {
   const dt = useCommunityTheme();
 
   // Merge topDonors from both divisions and combine same-name donors
@@ -97,7 +98,7 @@ export function CommunityDonors({ maleData, femaleData }: CommunityDonorsProps) 
         {/* Total donation header */}
         <div className={`flex items-center justify-between mb-4 p-3 rounded-xl ${dt.bgSubtle} border ${dt.borderSubtle}`}>
           <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Total Donasi Komunitas</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Total Saweran → Prize Pool</p>
             <p className={`text-lg font-black ${dt.neonGradient}`}>
               {formatCurrencyShort(
                 (maleData?.seasonDonationTotal || 0) + (femaleData?.seasonDonationTotal || 0)
@@ -139,22 +140,25 @@ export function CommunityDonors({ maleData, femaleData }: CommunityDonorsProps) 
                   {(() => {
                     const sawerTier = getSawerTier(donor.totalAmount);
                     if (!sawerTier) return null;
+                    const tierColors: Record<string, { bg: string; border: string; text: string }> = {
+                      sawer_diamond: { bg: 'rgba(34,211,238,0.15)', border: 'rgba(34,211,238,0.4)', text: 'text-cyan-300' },
+                      sawer_gold: { bg: 'rgba(250,204,21,0.15)', border: 'rgba(250,204,21,0.4)', text: 'text-yellow-300' },
+                      sawer_silver: { bg: 'rgba(156,163,175,0.15)', border: 'rgba(156,163,175,0.4)', text: 'text-gray-300' },
+                      sawer_bronze: { bg: 'rgba(180,83,9,0.15)', border: 'rgba(180,83,9,0.4)', text: 'text-amber-400' },
+                    };
+                    const tc = tierColors[sawerTier] || tierColors.sawer_bronze;
+                    const tierLabel = sawerTier.replace('sawer_', '').charAt(0).toUpperCase() + sawerTier.replace('sawer_', '').slice(1);
+                    const tierEmoji = sawerTier === 'sawer_diamond' ? '💎' : sawerTier === 'sawer_gold' ? '🥇' : sawerTier === 'sawer_silver' ? '🥈' : '🥉';
                     return (
                       <span
-                        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] shrink-0"
+                        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold shrink-0 border ${tc.text}`}
                         style={{
-                          backgroundColor:
-                            sawerTier === 'sawer_diamond'
-                              ? 'rgba(34,211,238,0.2)'
-                              : sawerTier === 'sawer_gold'
-                                ? 'rgba(250,204,21,0.2)'
-                                : sawerTier === 'sawer_silver'
-                                  ? 'rgba(156,163,175,0.2)'
-                                  : 'rgba(180,83,9,0.2)',
+                          backgroundColor: tc.bg,
+                          borderColor: tc.border,
                         }}
-                        title={`Sawer ${sawerTier.replace('sawer_', '').charAt(0).toUpperCase() + sawerTier.replace('sawer_', '').slice(1)}`}
+                        title={`Sawer ${tierLabel}`}
                       >
-                        {sawerTier === 'sawer_diamond' ? '💎' : sawerTier === 'sawer_gold' ? '🥇' : sawerTier === 'sawer_silver' ? '🥈' : '🥉'}
+                        {tierEmoji} {tierLabel}
                       </span>
                     );
                   })()}
@@ -194,7 +198,8 @@ export function CommunityDonors({ maleData, femaleData }: CommunityDonorsProps) 
         {/* Sawer CTA */}
         <div className="mt-4">
           <button
-            className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-yellow-500/20 via-amber-500/20 to-yellow-500/20 border border-yellow-500/20 ${dt.neonText} hover:from-yellow-500/30 hover:via-amber-500/30 hover:to-yellow-500/30 transition-all duration-300`}
+            onClick={onSawer}
+            className="w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer min-h-[36px]"
           >
             💰 Sawer Sekarang
           </button>
