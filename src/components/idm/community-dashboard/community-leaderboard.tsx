@@ -29,6 +29,7 @@ interface TarkamClub {
   id: string;
   name: string;
   logo: string | null;
+  bannerImage: string | null;
   points: number;
   malePoints: number;
   femalePoints: number;

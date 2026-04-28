@@ -15,6 +15,7 @@ interface LeaderboardClub {
   id: string;
   name: string;
   logo: string | null;
+  bannerImage: string | null;
   points: number;
   malePoints: number;
   femalePoints: number;
@@ -139,6 +140,7 @@ export async function GET(request: Request) {
           id: profile.id,
           name: profile.name,
           logo: profile.logo,
+          bannerImage: profile.bannerImage,
           points,
           malePoints,
           femalePoints,
@@ -171,6 +173,7 @@ export async function GET(request: Request) {
           id: profile.id,
           name: profile.name,
           logo: profile.logo,
+          bannerImage: profile.bannerImage,
           points,
           malePoints,
           femalePoints,

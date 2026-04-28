@@ -82,6 +82,7 @@ export interface ClubData {
   id: string;
   name: string;
   logo?: string | null;
+  bannerImage?: string | null;
   wins: number;
   losses: number;
   points: number;
