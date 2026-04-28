@@ -241,3 +241,29 @@ Stage Summary:
 - Shows champion data when seasons are completed with championPlayer
 - Navigation (#season-champion) no longer breaks when there are no completed seasons
 - No other sections or navigation were changed
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix MVP not showing in Puncak Prestasi section — add fallback when mvpHallOfFame is empty
+
+Work Log:
+- Diagnosed root cause: `buildHighlights()` only reads MVP from `mvpHallOfFame` which is empty when no tournaments are completed yet
+- MVP data exists on players (male: 3 players with totalMvp>0, female: 5 players with totalMvp>0) but was not being used
+- Added fallback logic to both male and female MVP sections in `highlights-section.tsx`:
+  - Primary: use latest MVP from `mvpHallOfFame` (when tournaments are completed)
+  - Fallback: use player with highest `totalMvp` from `topPlayers` (when no completed tournaments yet)
+- Fallback displays differently:
+  - Subtitle: "MVP Terbanyak" instead of "MVP Terbaru"
+  - Badge: "{totalMvp}x MVP" instead of "MVP W{weekNumber}"
+  - Description: focuses on total MVP count and points instead of weekly achievement
+  - mvpWeek: undefined for fallback (no week number available)
+- Both primary and fallback use the same visual card style with Award icon
+- ESLint passes, dev server running without errors
+- Verified: 3 MVP players in male division, 5 in female division — MVP items will now appear
+
+Stage Summary:
+- MVP now shows in Puncak Prestasi even when no tournaments are completed yet
+- Uses `topPlayers` sorted by `totalMvp` as fallback data source
+- When tournaments ARE completed, still uses the more specific `mvpHallOfFame` data with week numbers
+- Two display modes: "MVP Terbaru" (with week) and "MVP Terbanyak" (total count only)

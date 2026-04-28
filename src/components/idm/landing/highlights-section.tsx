@@ -251,61 +251,77 @@ function buildHighlights(
     });
   }
 
-  // ─── 6. MVP Terbaru Male — latest weekly MVP in male division ───
+  // ─── 6. MVP Terbaru Male — latest weekly MVP, or top MVP player as fallback ───
   const maleMvpList = maleData?.mvpHallOfFame || [];
   const latestMaleMvp = maleMvpList.length > 0 ? maleMvpList[maleMvpList.length - 1] : null;
-  if (latestMaleMvp) {
-    const mvpPlayer = maleData?.topPlayers?.find(p => p.gamertag === latestMaleMvp.gamertag);
+  // Fallback: player with highest totalMvp from topPlayers (when no completed tournaments yet)
+  const maleMvpFallback = !latestMaleMvp
+    ? [...(maleData?.topPlayers || [])].filter(p => p.totalMvp > 0).sort((a, b) => b.totalMvp - a.totalMvp || b.points - a.points)[0] || null
+    : null;
+  const maleMvpSource = latestMaleMvp || maleMvpFallback;
+  if (maleMvpSource) {
+    const isMaleMvpFromHall = !!latestMaleMvp;
+    const mvpPlayer = maleData?.topPlayers?.find(p => p.gamertag === maleMvpSource.gamertag);
     items.push({
       id: 'mvp-male',
       type: 'mvp-male',
-      title: latestMaleMvp.gamertag,
-      subtitle: 'MVP Terbaru ♂',
-      description: `MVP terbaru divisi male di pekan ${latestMaleMvp.weekNumber}! ${latestMaleMvp.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${latestMaleMvp.totalMvp > 1 ? ` — sudah ${latestMaleMvp.totalMvp}x meraih MVP sepanjang musim` : ''}.`,
-      badge: `MVP W${latestMaleMvp.weekNumber} ♂`,
+      title: maleMvpSource.gamertag,
+      subtitle: isMaleMvpFromHall ? `MVP Terbaru ♂` : 'MVP Terbanyak ♂',
+      description: isMaleMvpFromHall
+        ? `MVP terbaru divisi male di pekan ${maleMvpSource.weekNumber}! ${maleMvpSource.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${maleMvpSource.totalMvp > 1 ? ` — sudah ${maleMvpSource.totalMvp}x meraih MVP sepanjang musim` : ''}.`
+        : `Pemain dengan MVP terbanyak di divisi male! ${maleMvpSource.gamertag} telah meraih ${maleMvpSource.totalMvp}x MVP dan mengumpulkan ${maleMvpSource.points} poin sepanjang musim.`,
+      badge: isMaleMvpFromHall ? `MVP W${maleMvpSource.weekNumber} ♂` : `${maleMvpSource.totalMvp}x MVP ♂`,
       thumbLabel: `MVP ♂`,
-      imageUrl: getAvatarUrl(latestMaleMvp.gamertag, 'male', latestMaleMvp.avatar),
+      imageUrl: getAvatarUrl(maleMvpSource.gamertag, 'male', maleMvpSource.avatar),
       accentColor: '#22c55e',
       accentLight: '#4ade80',
       division: 'male',
-      mvpWeek: latestMaleMvp.weekNumber,
-      mvpCount: latestMaleMvp.totalMvp,
+      mvpWeek: isMaleMvpFromHall ? maleMvpSource.weekNumber : undefined,
+      mvpCount: maleMvpSource.totalMvp,
       metadata: [
-        { icon: Award, label: 'MVP', value: `${latestMaleMvp.totalMvp}x` },
-        { icon: Trophy, label: 'Points', value: `${latestMaleMvp.points}` },
-        { icon: Eye, label: 'Wins', value: `${latestMaleMvp.totalWins}` },
-        { icon: Flame, label: 'Streak', value: `${latestMaleMvp.streak}W` },
+        { icon: Award, label: 'MVP', value: `${maleMvpSource.totalMvp}x` },
+        { icon: Trophy, label: 'Points', value: `${maleMvpSource.points}` },
+        { icon: Eye, label: 'Wins', value: `${maleMvpSource.totalWins}` },
+        { icon: Flame, label: 'Streak', value: `${maleMvpSource.streak}W` },
       ],
-      player: mvpPlayer ? { ...mvpPlayer, division: 'male' } : undefined,
+      player: mvpPlayer ? { ...mvpPlayer, division: 'male' } : (maleMvpFallback ? { ...maleMvpFallback, division: 'male' } : undefined),
     });
   }
 
-  // ─── 7. MVP Terbaru Female — latest weekly MVP in female division ───
+  // ─── 7. MVP Terbaru Female — latest weekly MVP, or top MVP player as fallback ───
   const femaleMvpList = femaleData?.mvpHallOfFame || [];
   const latestFemaleMvp = femaleMvpList.length > 0 ? femaleMvpList[femaleMvpList.length - 1] : null;
-  if (latestFemaleMvp) {
-    const mvpPlayer = femaleData?.topPlayers?.find(p => p.gamertag === latestFemaleMvp.gamertag);
+  // Fallback: player with highest totalMvp from topPlayers (when no completed tournaments yet)
+  const femaleMvpFallback = !latestFemaleMvp
+    ? [...(femaleData?.topPlayers || [])].filter(p => p.totalMvp > 0).sort((a, b) => b.totalMvp - a.totalMvp || b.points - a.points)[0] || null
+    : null;
+  const femaleMvpSource = latestFemaleMvp || femaleMvpFallback;
+  if (femaleMvpSource) {
+    const isFemaleMvpFromHall = !!latestFemaleMvp;
+    const mvpPlayer = femaleData?.topPlayers?.find(p => p.gamertag === femaleMvpSource.gamertag);
     items.push({
       id: 'mvp-female',
       type: 'mvp-female',
-      title: latestFemaleMvp.gamertag,
-      subtitle: 'MVP Terbaru ♀',
-      description: `MVP terbaru divisi female di pekan ${latestFemaleMvp.weekNumber}! ${latestFemaleMvp.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${latestFemaleMvp.totalMvp > 1 ? ` — sudah ${latestFemaleMvp.totalMvp}x meraih MVP sepanjang musim` : ''}.`,
-      badge: `MVP W${latestFemaleMvp.weekNumber} ♀`,
+      title: femaleMvpSource.gamertag,
+      subtitle: isFemaleMvpFromHall ? `MVP Terbaru ♀` : 'MVP Terbanyak ♀',
+      description: isFemaleMvpFromHall
+        ? `MVP terbaru divisi female di pekan ${femaleMvpSource.weekNumber}! ${femaleMvpSource.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${femaleMvpSource.totalMvp > 1 ? ` — sudah ${femaleMvpSource.totalMvp}x meraih MVP sepanjang musim` : ''}.`
+        : `Pemain dengan MVP terbanyak di divisi female! ${femaleMvpSource.gamertag} telah meraih ${femaleMvpSource.totalMvp}x MVP dan mengumpulkan ${femaleMvpSource.points} poin sepanjang musim.`,
+      badge: isFemaleMvpFromHall ? `MVP W${femaleMvpSource.weekNumber} ♀` : `${femaleMvpSource.totalMvp}x MVP ♀`,
       thumbLabel: `MVP ♀`,
-      imageUrl: getAvatarUrl(latestFemaleMvp.gamertag, 'female', latestFemaleMvp.avatar),
+      imageUrl: getAvatarUrl(femaleMvpSource.gamertag, 'female', femaleMvpSource.avatar),
       accentColor: '#ec4899',
       accentLight: '#f472b6',
       division: 'female',
-      mvpWeek: latestFemaleMvp.weekNumber,
-      mvpCount: latestFemaleMvp.totalMvp,
+      mvpWeek: isFemaleMvpFromHall ? femaleMvpSource.weekNumber : undefined,
+      mvpCount: femaleMvpSource.totalMvp,
       metadata: [
-        { icon: Award, label: 'MVP', value: `${latestFemaleMvp.totalMvp}x` },
-        { icon: Trophy, label: 'Points', value: `${latestFemaleMvp.points}` },
-        { icon: Eye, label: 'Wins', value: `${latestFemaleMvp.totalWins}` },
-        { icon: Flame, label: 'Streak', value: `${latestFemaleMvp.streak}W` },
+        { icon: Award, label: 'MVP', value: `${femaleMvpSource.totalMvp}x` },
+        { icon: Trophy, label: 'Points', value: `${femaleMvpSource.points}` },
+        { icon: Eye, label: 'Wins', value: `${femaleMvpSource.totalWins}` },
+        { icon: Flame, label: 'Streak', value: `${femaleMvpSource.streak}W` },
       ],
-      player: mvpPlayer ? { ...mvpPlayer, division: 'female' } : undefined,
+      player: mvpPlayer ? { ...mvpPlayer, division: 'female' } : (femaleMvpFallback ? { ...femaleMvpFallback, division: 'female' } : undefined),
     });
   }
 
