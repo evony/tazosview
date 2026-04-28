@@ -70,13 +70,27 @@ export async function GET(
     }));
   }
 
-  // Parse championSquad JSON string for SQLite compatibility
+  // Parse JSON string fields for SQLite compatibility
   const response = { ...season } as Record<string, unknown>;
   if (response.championSquad && typeof response.championSquad === 'string') {
     try {
       response.championSquad = JSON.parse(response.championSquad as string);
     } catch {
       response.championSquad = null;
+    }
+  }
+  if (response.championPlayerSnapshot && typeof response.championPlayerSnapshot === 'string') {
+    try {
+      response.championPlayerSnapshot = JSON.parse(response.championPlayerSnapshot as string);
+    } catch {
+      response.championPlayerSnapshot = null;
+    }
+  }
+  if (response.championClubSnapshot && typeof response.championClubSnapshot === 'string') {
+    try {
+      response.championClubSnapshot = JSON.parse(response.championClubSnapshot as string);
+    } catch {
+      response.championClubSnapshot = null;
     }
   }
   // Add players for tarkam seasons
@@ -166,6 +180,70 @@ export async function PUT(
     updateData.endDate = new Date();
   }
 
+  // ===== SNAPSHOT CHAMPION DATA when manually setting champion + completing season =====
+  // This ensures historical champion data is preserved even when new seasons run
+  const willBeCompleted = status === 'completed' || (status === undefined && season.status === 'completed');
+
+  // Snapshot tarkam champion player
+  if (championPlayerId && willBeCompleted) {
+    const player = await db.player.findUnique({
+      where: { id: championPlayerId },
+      include: {
+        clubMembers: {
+          where: { leftAt: null },
+          include: { profile: { select: { name: true } } },
+          take: 1,
+        },
+      },
+    });
+    if (player) {
+      const activeClub = player.clubMembers[0]?.profile?.name || null;
+      const perSeasonPoints = championPlayerPoints || player.points;
+      updateData.championPlayerSnapshot = JSON.stringify({
+        gamertag: player.gamertag,
+        avatar: player.avatar,
+        tier: player.tier,
+        points: perSeasonPoints,
+        totalWins: player.totalWins,
+        totalMvp: player.totalMvp,
+        streak: player.streak,
+        maxStreak: player.maxStreak,
+        matches: player.matches,
+        club: activeClub,
+        division: player.division,
+      });
+    }
+  }
+
+  // Snapshot liga champion club
+  if (championClubId && willBeCompleted) {
+    const profile = await db.clubProfile.findUnique({
+      where: { id: championClubId },
+      select: { id: true, name: true, logo: true },
+    });
+    const clubEntry = await db.club.findFirst({
+      where: { profileId: championClubId, seasonId: id },
+    });
+    if (profile) {
+      updateData.championClubSnapshot = JSON.stringify({
+        name: profile.name,
+        logo: profile.logo,
+        wins: clubEntry?.wins || 0,
+        losses: clubEntry?.losses || 0,
+        points: clubEntry?.points || 0,
+        gameDiff: clubEntry?.gameDiff || 0,
+      });
+    }
+  }
+
+  // Clear snapshots when removing champion
+  if (championPlayerId === null) {
+    updateData.championPlayerSnapshot = null;
+  }
+  if (championClubId === null) {
+    updateData.championClubSnapshot = null;
+  }
+
   const updated = await db.season.update({
     where: { id },
     data: updateData,
@@ -176,13 +254,27 @@ export async function PUT(
     },
   });
 
-  // Parse championSquad JSON string for SQLite compatibility
+  // Parse JSON string fields for SQLite compatibility
   const updatedResponse = { ...updated } as Record<string, unknown>;
   if (updatedResponse.championSquad && typeof updatedResponse.championSquad === 'string') {
     try {
       updatedResponse.championSquad = JSON.parse(updatedResponse.championSquad as string);
     } catch {
       updatedResponse.championSquad = null;
+    }
+  }
+  if (updatedResponse.championPlayerSnapshot && typeof updatedResponse.championPlayerSnapshot === 'string') {
+    try {
+      updatedResponse.championPlayerSnapshot = JSON.parse(updatedResponse.championPlayerSnapshot as string);
+    } catch {
+      updatedResponse.championPlayerSnapshot = null;
+    }
+  }
+  if (updatedResponse.championClubSnapshot && typeof updatedResponse.championClubSnapshot === 'string') {
+    try {
+      updatedResponse.championClubSnapshot = JSON.parse(updatedResponse.championClubSnapshot as string);
+    } catch {
+      updatedResponse.championClubSnapshot = null;
     }
   }
 

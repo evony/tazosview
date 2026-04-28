@@ -298,7 +298,15 @@ export async function POST(
         select: { id: true, division: true },
       });
 
-      const updateData: { status: string; endDate: Date; championClubId?: string | null; championPlayerId?: string | null; championPlayerPoints?: number | null } = {
+      const updateData: {
+        status: string;
+        endDate: Date;
+        championClubId?: string | null;
+        championPlayerId?: string | null;
+        championPlayerPoints?: number | null;
+        championPlayerSnapshot?: string | null;
+        championClubSnapshot?: string | null;
+      } = {
         status: 'completed',
         endDate: new Date(),
       };
@@ -308,9 +316,21 @@ export async function POST(
         const topClub = await db.club.findFirst({
           where: { seasonId: tournament.seasonId },
           orderBy: [{ points: 'desc' }, { gameDiff: 'desc' }],
-          select: { id: true },
+          include: { profile: { select: { id: true, name: true, logo: true } } },
         });
-        updateData.championClubId = topClub?.id || null;
+        updateData.championClubId = topClub?.profileId || null;
+
+        // Snapshot the champion club data
+        if (topClub?.profile) {
+          updateData.championClubSnapshot = JSON.stringify({
+            name: topClub.profile.name,
+            logo: topClub.profile.logo,
+            wins: topClub.wins,
+            losses: topClub.losses,
+            points: topClub.points,
+            gameDiff: topClub.gameDiff,
+          });
+        }
       } else {
         // Tarkam mode: champion is the player with most per-season points
         // Compute from PlayerPoint records (not lifetime Player.points)
@@ -320,11 +340,17 @@ export async function POST(
           _sum: { amount: true },
         });
 
-        // Get player details for tiebreaking
+        // Get player details for tiebreaking AND snapshot
         const playerIds = seasonPoints.map(sp => sp.playerId);
         const players = await db.player.findMany({
           where: { id: { in: playerIds }, division: season?.division || 'male', isActive: true },
-          select: { id: true, totalWins: true, totalMvp: true },
+          include: {
+            clubMembers: {
+              where: { leftAt: null },
+              include: { profile: { select: { name: true } } },
+              take: 1,
+            },
+          },
         });
         const playerMap = new Map(players.map(p => [p.id, p]));
 
@@ -338,8 +364,30 @@ export async function POST(
           return winsB - winsA;
         });
 
-        updateData.championPlayerId = seasonPoints[0]?.playerId || null;
+        const championId = seasonPoints[0]?.playerId;
+        updateData.championPlayerId = championId || null;
         updateData.championPlayerPoints = seasonPoints[0]?._sum.amount || null;
+
+        // Snapshot the champion player data at time of season closure
+        if (championId) {
+          const champion = playerMap.get(championId);
+          if (champion) {
+            const activeClub = champion.clubMembers[0]?.profile?.name || null;
+            updateData.championPlayerSnapshot = JSON.stringify({
+              gamertag: champion.gamertag,
+              avatar: champion.avatar,
+              tier: champion.tier,
+              points: seasonPoints[0]?._sum.amount || 0, // Per-season points (not lifetime)
+              totalWins: champion.totalWins,
+              totalMvp: champion.totalMvp,
+              streak: champion.streak,
+              maxStreak: champion.maxStreak,
+              matches: champion.matches,
+              club: activeClub,
+              division: champion.division,
+            });
+          }
+        }
       }
 
       await db.season.update({

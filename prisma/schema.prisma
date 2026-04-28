@@ -57,10 +57,12 @@ model Season {
   status           String   @default("active") // "active" | "completed" | "upcoming"
   startDate        DateTime
   endDate          DateTime?
-  championClubId      String?  // ClubProfile that won the Liga IDM for this season (liga mode only)
-  championPlayerId    String?  // Player that won the Tarkam season (tarkam mode only)
-  championPlayerPoints Int?    // Per-season points of the champion player at time of season closure (snapshot)
-  championSquad       String?  // JSON string: [{id, gamertag, division, role}] — 5 representatives for champion card (liga only)
+  championClubId         String?  // ClubProfile that won the Liga IDM for this season (liga mode only)
+  championPlayerId       String?  // Player that won the Tarkam season (tarkam mode only)
+  championPlayerPoints   Int?     // Per-season points of the champion player at time of season closure (snapshot)
+  championPlayerSnapshot String?  // JSON snapshot of champion player stats at season closure: {gamertag, avatar, tier, points, totalWins, totalMvp, streak, maxStreak, matches, club, division}
+  championClubSnapshot   String?  // JSON snapshot of champion club stats at season closure: {name, logo, wins, losses, points, gameDiff}
+  championSquad          String?  // JSON string: [{id, gamertag, division, role}] — 5 representatives for champion card (liga only)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

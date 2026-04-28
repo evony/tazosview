@@ -376,45 +376,91 @@ export async function GET(request: Request) {
   };
 
   // All seasons info for season selector — include champion player data
-  const allSeasonsInfo = await Promise.all(allSeasons.map(async (s: { id: string; name: string; number: number; status: string; startDate: Date | null; endDate: Date | null; championClubId: string | null; championPlayerId: string | null; championPlayerPoints: number | null; _count?: { tournaments?: number } }) => {
+  // For completed seasons: use JSON snapshots (preserves historical data even when new seasons run)
+  // For active seasons: query live player data (no snapshot exists yet)
+  const allSeasonsInfo = await Promise.all(allSeasons.map(async (s: { id: string; name: string; number: number; status: string; startDate: Date | null; endDate: Date | null; championClubId: string | null; championPlayerId: string | null; championPlayerPoints: number | null; championPlayerSnapshot?: string | null; championClubSnapshot?: string | null; _count?: { tournaments?: number } }) => {
     let championPlayer: SeasonChampionPlayer | null = null;
     if (s.championPlayerId) {
-      const player = await db.player.findUnique({
-        where: { id: s.championPlayerId },
-        include: {
-          clubMembers: {
-            where: { leftAt: null },
-            include: { profile: { select: { name: true } } },
-            take: 1,
+      // Try to use snapshot for completed seasons (preserves historical stats)
+      if (s.championPlayerSnapshot && s.status === 'completed') {
+        try {
+          const snapshot = JSON.parse(s.championPlayerSnapshot);
+          championPlayer = {
+            id: s.championPlayerId,
+            gamertag: snapshot.gamertag || '',
+            avatar: snapshot.avatar || null,
+            tier: snapshot.tier || 'B',
+            points: snapshot.points || 0, // Per-season points at time of closure
+            totalWins: snapshot.totalWins || 0,
+            totalMvp: snapshot.totalMvp || 0,
+            streak: snapshot.streak || 0,
+            maxStreak: snapshot.maxStreak || 0,
+            matches: snapshot.matches || 0,
+            club: snapshot.club || null,
+            division: snapshot.division,
+          };
+        } catch {
+          // Fallback to live data if snapshot is corrupted
+        }
+      }
+
+      // Fallback: query live player data (for active seasons or if snapshot is missing/corrupted)
+      if (!championPlayer) {
+        const player = await db.player.findUnique({
+          where: { id: s.championPlayerId },
+          include: {
+            clubMembers: {
+              where: { leftAt: null },
+              include: { profile: { select: { name: true } } },
+              take: 1,
+            },
           },
-        },
-      });
-      if (player) {
-        const activeClub = player.clubMembers[0]?.profile?.name || null;
-        championPlayer = {
-          id: player.id,
-          gamertag: player.gamertag,
-          avatar: player.avatar,
-          tier: player.tier,
-          points: s.championPlayerPoints ?? player.points, // Use snapshot per-season points if available
-          totalWins: player.totalWins,
-          totalMvp: player.totalMvp,
-          streak: player.streak,
-          maxStreak: player.maxStreak,
-          matches: player.matches,
-          club: activeClub,
-          division: player.division,
-        };
+        });
+        if (player) {
+          const activeClub = player.clubMembers[0]?.profile?.name || null;
+          championPlayer = {
+            id: player.id,
+            gamertag: player.gamertag,
+            avatar: player.avatar,
+            tier: player.tier,
+            points: s.championPlayerPoints ?? player.points, // Use snapshot per-season points if available
+            totalWins: player.totalWins,
+            totalMvp: player.totalMvp,
+            streak: player.streak,
+            maxStreak: player.maxStreak,
+            matches: player.matches,
+            club: activeClub,
+            division: player.division,
+          };
+        }
       }
     }
-    // Enrich champion club with name + logo from ClubProfile
+
+    // Enrich champion club — use snapshot for completed seasons
     let championClub: { id: string; name: string; logo: string | null } | null = null;
     if (s.championClubId) {
-      const profile = await db.clubProfile.findUnique({
-        where: { id: s.championClubId },
-        select: { id: true, name: true, logo: true },
-      });
-      if (profile) championClub = profile;
+      // Try to use snapshot for completed seasons
+      if (s.championClubSnapshot && s.status === 'completed') {
+        try {
+          const snapshot = JSON.parse(s.championClubSnapshot);
+          championClub = {
+            id: s.championClubId,
+            name: snapshot.name || '',
+            logo: snapshot.logo || null,
+          };
+        } catch {
+          // Fallback to live data
+        }
+      }
+
+      // Fallback: query live ClubProfile
+      if (!championClub) {
+        const profile = await db.clubProfile.findUnique({
+          where: { id: s.championClubId },
+          select: { id: true, name: true, logo: true },
+        });
+        if (profile) championClub = profile;
+      }
     }
 
     return {

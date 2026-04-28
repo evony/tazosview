@@ -29,3 +29,28 @@ Stage Summary:
 - Season champion snapshot: championPlayerPoints stored at closure time for accurate landing page display
 - No automatic next season creation: Admin creates new seasons manually as agreed
 - All APIs backward-compatible: seasonId is nullable, lifetime points still tracked via Player.points
+
+---
+Task ID: 1
+Agent: main
+Task: Implement per-season point tracking and season champion snapshot system
+
+Work Log:
+- Reviewed existing codebase: Prisma schema, scoring API, leaderboard API, stats API, admin season panel, landing champion section
+- Discovered that per-season point tracking was ALREADY mostly implemented: PlayerPoint.seasonId exists, scoring API records seasonId, leaderboard aggregates by seasonId, close season API determines champion from per-season points
+- Identified the critical gap: champion data for completed seasons was reading from LIVE player data, meaning when Season 2 runs, Season 1 champion display would show Season 2 stats instead of the snapshot from when Season 1 closed
+- Added `championPlayerSnapshot` and `championClubSnapshot` JSON fields to Season model in Prisma schema
+- Ran `db:push` to apply schema changes
+- Updated `/api/seasons/[id]/close/route.ts` to write full champion snapshots (gamertag, avatar, tier, points, totalWins, totalMvp, streak, maxStreak, matches, club, division) when closing a season
+- Updated `/api/tournaments/[id]/finalize/route.ts` auto-close logic to also write full snapshots
+- Updated `/api/stats/route.ts` to read from snapshots for completed seasons (with fallback to live data for active seasons or corrupted snapshots)
+- Updated `/api/seasons/[id]/route.ts` GET to parse JSON snapshot strings for SQLite compatibility
+- Updated `/api/seasons/[id]/route.ts` PUT to write snapshots when admin manually sets champion + completes season, and clear snapshots when removing champion
+- All lint checks pass clean
+
+Stage Summary:
+- Per-season point tracking was already implemented from before
+- Added champion snapshot system to preserve historical champion data when new seasons run
+- Key insight: existing system only stored `championPlayerPoints` (integer), now stores full JSON snapshot
+- The flow is: Season ACTIVE → points recorded with seasonId → "Tutup Season" → champion determined from per-season PlayerPoint aggregation → full stats snapshot written → Season COMPLETED → new season can be created → old champion display uses snapshot data
+- Files changed: prisma/schema.prisma, src/app/api/seasons/[id]/close/route.ts, src/app/api/seasons/[id]/route.ts, src/app/api/tournaments/[id]/finalize/route.ts, src/app/api/stats/route.ts
