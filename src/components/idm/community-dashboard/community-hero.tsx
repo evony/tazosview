@@ -130,8 +130,19 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
         <img
           src={heroBannerDashboard}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover opacity-35 pointer-events-none"
           aria-hidden="true"
+        />
+      )}
+
+      {/* Dark scrim — ensures text readability over background image */}
+      {heroBannerDashboard && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(10,10,20,0.3) 0%, rgba(10,10,20,0.55) 40%, rgba(10,10,20,0.75) 100%)',
+          }}
         />
       )}
 
@@ -226,7 +237,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent to-idm-gold-warm/50" />
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-idm-gold-warm/20 bg-idm-gold-warm/[0.06]">
             <Zap className="w-3 h-3 text-idm-gold-warm/80" />
-            <span className="text-[10px] text-idm-gold-warm/80 font-bold tracking-[0.15em] uppercase">
+            <span className="text-[10px] text-idm-gold-warm font-bold tracking-[0.15em] uppercase">
               IDM TARKAM
             </span>
           </div>
@@ -244,7 +255,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
               'linear-gradient(135deg, #f5e6c8 0%, #d4a853 30%, #e5be4a 50%, #f5d77a 70%, #d4a853 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 2px 8px rgba(212,168,83,0.15))',
+            filter: 'drop-shadow(0 2px 12px rgba(212,168,83,0.4)) drop-shadow(0 0 30px rgba(212,168,83,0.2))',
           }}
         >
           KOMUNITAS
@@ -254,7 +265,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, letterSpacing: '0.3em' }}
           animate={{ opacity: 1, letterSpacing: '0.12em' }}
           transition={{ delay: 0.4, duration: 0.6 }}
-          className="text-sm sm:text-base text-idm-gold-warm/60 uppercase tracking-widest mb-1"
+          className="text-sm sm:text-base text-idm-gold-warm/85 uppercase tracking-widest mb-1"
         >
           Komunitas Idol Meta
         </motion.p>
@@ -263,7 +274,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="text-xs sm:text-sm text-muted-foreground/60 max-w-md mb-6"
+          className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mb-6"
         >
           Tempat pemain terbaik dari seluruh kota berkompetisi. Sawer untuk menambah prize pool dan dapatkan skin eksklusif!
         </motion.p>
