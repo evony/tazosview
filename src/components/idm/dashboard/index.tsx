@@ -21,7 +21,6 @@ import { Button } from '@/components/ui/button';
 import {
   CasinoHeroSkeleton,
   StatsRowSkeleton,
-  MatchRowSkeleton,
   TableSkeleton,
 } from '../ui/skeleton';
 import { PlayerProfile } from '../player-profile';
@@ -32,7 +31,7 @@ import { ShareButton } from '../ui/share-button';
 import { TierBadge } from '../tier-badge';
 import { SkinBadgesRow, SkinName } from '../skin-renderer';
 import { getPrimarySkin } from '@/lib/skin-utils';
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatCurrency, formatCurrencyShort, clubToString } from '@/lib/utils';
