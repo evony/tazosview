@@ -41,6 +41,7 @@ import { NoSeasonState } from './no-season-state';
 import { NoTournamentState } from './no-tournament-state';
 import { OverviewTab } from './overview-tab';
 import { StandingsTab } from './standings-tab';
+import { MatchesTab } from './matches-tab';
 import { DonationModal } from '../donation-modal';
 import { ActivityFeed } from '../activity-feed';
 
@@ -216,6 +217,28 @@ export function Dashboard() {
   };
 
   const recentMatches = data?.recentMatches ?? [];
+  const upcomingMatches = data?.upcomingMatches ?? [];
+
+  /* Group matches by week for the Bracket tab */
+  const matchesByWeek = React.useMemo(() => {
+    const map: Record<number, StatsData['recentMatches']> = {};
+    for (const m of recentMatches) {
+      const w = m.week;
+      if (!map[w]) map[w] = [];
+      map[w].push(m);
+    }
+    return map;
+  }, [recentMatches]);
+
+  const upcomingByWeek = React.useMemo(() => {
+    const map: Record<number, StatsData['upcomingMatches']> = {};
+    for (const m of upcomingMatches) {
+      const w = m.week;
+      if (!map[w]) map[w] = [];
+      map[w].push(m);
+    }
+    return map;
+  }, [upcomingMatches]);
 
   if (isLoading) {
     return (
@@ -234,7 +257,7 @@ export function Dashboard() {
         <StatsRowSkeleton count={4} />
         <div className="border-b border-border">
           <div className="flex items-center gap-0">
-            {Array.from({ length: 3 }).map((_, i) => (
+            {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-9 w-24 rounded-none" />
             ))}
           </div>
@@ -687,13 +710,14 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* ========== TAB BAR — 3 tabs: Beranda, Peringkat, Info ========== */}
+      {/* ========== TAB BAR — 4 tabs: Beranda, Bracket, Peringkat, Info ========== */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <div className={`border-b ${dt.border}`}>
             <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none">
               {[
                 { value: 'overview', label: 'Beranda', icon: Trophy },
+                { value: 'matches', label: 'Bracket', icon: Swords },
                 { value: 'standings', label: 'Peringkat', icon: Shield },
                 { value: 'info', label: 'Info', icon: BookOpen },
               ].map(tab => (
@@ -871,6 +895,18 @@ export function Dashboard() {
               </CardContent>
             </Card>
           ) : null}
+        </TabsContent>
+
+        {/* ═══════════════ BRACKET TAB ═══════════════ */}
+        <TabsContent value="matches" className="mt-3 sm:mt-4 lg:mt-6 space-y-3 sm:space-y-4">
+          <MatchesTab
+            data={data}
+            recentMatches={recentMatches}
+            upcomingMatches={upcomingMatches}
+            matchesByWeek={matchesByWeek}
+            upcomingByWeek={upcomingByWeek}
+            clubs={data.clubs}
+          />
         </TabsContent>
 
         {/* ═══════════════ PERINGKAT TAB ═══════════════ */}
