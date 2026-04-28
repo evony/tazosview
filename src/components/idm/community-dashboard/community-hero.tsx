@@ -347,12 +347,18 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
             </button>
           )}
 
-          {/* If neither is available, show a subtle info */}
+          {/* Daftar Tarkam button — always shown when no registration is open and no brackets */}
           {!isRegistrationOpen && !hasBrackets && (
-            <div className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 text-[10px] sm:text-xs text-muted-foreground">
-              <Trophy className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-idm-gold-warm/50" />
-              <span>Turnamen segera dimulai</span>
-            </div>
+            <button
+              onClick={() => setCurrentView('register')}
+              className="group flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Daftar Tarkam</span>
+              <span className="relative flex items-center justify-center ml-0.5">
+                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </span>
+            </button>
           )}
         </motion.div>
 

@@ -5,10 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, ShoppingBag, Upload, CheckCircle, AlertCircle,
   UserCheck, Sparkles, Gamepad2, Package, Tag,
-  Loader2, LogIn, ShieldCheck, Plus, Trash2, Image as ImageIcon, Cloud
+  Loader2, LogIn, ShieldCheck, Plus, Trash2, Image as ImageIcon
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { CloudinaryPicker } from './cloudinary-picker';
 
 /* ═══════════════════════════════════════════════════════
    TYPES
@@ -35,7 +34,7 @@ const CATEGORIES: { id: CategoryOption; label: string; icon: React.ReactNode; de
 const MAX_IMAGES = 5;
 
 /* ═══════════════════════════════════════════════════════
-   SINGLE IMAGE UPLOADER — Uses CloudinaryPicker
+   SINGLE IMAGE UPLOADER — Upload ke Cloudinary (player auth)
    ═══════════════════════════════════════════════════════ */
 function ImageUploader({
   index,
@@ -52,7 +51,73 @@ function ImageUploader({
   canRemove: boolean;
   isFirst: boolean;
 }) {
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const fileInputRef = useState<HTMLInputElement | null>(null);
+
+  async function handleFileSelect(file: File) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Hanya file gambar yang diperbolehkan');
+      return;
+    }
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Ukuran file maksimal 5MB');
+      return;
+    }
+
+    setUploadError('');
+    setIsUploading(true);
+
+    try {
+      // Read file as base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Show local preview while uploading
+      setLocalPreview(base64);
+
+      // Upload to Cloudinary via player-authenticated endpoint
+      const res = await fetch('/api/marketplace/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ file: base64 }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Upload gagal');
+      }
+
+      // Set the URL from Cloudinary response
+      onChange(data.url);
+      setLocalPreview(null);
+    } catch (err: any) {
+      setUploadError(err.message || 'Upload gagal, coba lagi');
+      setLocalPreview(null);
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  function triggerFileInput() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) handleFileSelect(file);
+    };
+    input.click();
+  }
 
   return (
     <div className="space-y-1.5">
@@ -68,21 +133,27 @@ function ImageUploader({
           placeholder={isFirst ? 'URL gambar utama (wajib)' : 'URL gambar (opsional)'}
           value={url}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-border/30 text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors"
+          disabled={isUploading}
+          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-border/30 text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/30 focus:ring-1 focus:ring-orange-500/20 transition-colors disabled:opacity-50"
         />
 
         {/* Upload button */}
         <button
           type="button"
-          onClick={() => setPickerOpen(true)}
-          className="flex items-center gap-1 px-2.5 py-2 rounded-lg bg-orange-500/10 border border-orange-500/15 text-[10px] font-bold text-orange-400 hover:bg-orange-500/20 transition-colors cursor-pointer flex-shrink-0"
+          onClick={triggerFileInput}
+          disabled={isUploading}
+          className="flex items-center gap-1 px-2.5 py-2 rounded-lg bg-orange-500/10 border border-orange-500/15 text-[10px] font-bold text-orange-400 hover:bg-orange-500/20 transition-colors cursor-pointer flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Cloud className="w-3 h-3" />
-          Upload
+          {isUploading ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Upload className="w-3 h-3" />
+          )}
+          {isUploading ? 'Uploading...' : 'Upload'}
         </button>
 
         {/* Remove button */}
-        {canRemove && (
+        {canRemove && !isUploading && (
           <button
             type="button"
             onClick={onRemove}
@@ -93,28 +164,35 @@ function ImageUploader({
         )}
       </div>
 
-      {/* Preview thumbnail */}
-      {url && (
-        <div className="ml-8 relative w-20 h-14 rounded-lg overflow-hidden border border-orange-500/15 bg-muted/20 group">
-          <img src={url} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
-          <button
-            className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-            onClick={() => setPickerOpen(true)}
-            title="Ganti gambar"
-          >
-            <Cloud className="w-3.5 h-3.5 text-white" />
-          </button>
-        </div>
+      {/* Upload error */}
+      {uploadError && (
+        <p className="ml-8 text-[9px] text-red-400">{uploadError}</p>
       )}
 
-      {/* Cloudinary Picker Modal */}
-      <CloudinaryPicker
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        onSelect={(selectedUrl) => onChange(selectedUrl)}
-        currentImage={url}
-        uploadFolder="cms/marketplace"
-      />
+      {/* Preview thumbnail */}
+      {(url || localPreview) && (
+        <div className="ml-8 relative w-20 h-14 rounded-lg overflow-hidden border border-orange-500/15 bg-muted/20 group">
+          <img
+            src={localPreview || url}
+            alt={`Preview ${index + 1}`}
+            className="w-full h-full object-cover"
+          />
+          {!isUploading && url && (
+            <button
+              className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              onClick={triggerFileInput}
+              title="Ganti gambar"
+            >
+              <Upload className="w-3.5 h-3.5 text-white" />
+            </button>
+          )}
+          {isUploading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -418,7 +496,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                       />
                     ))}
                   </div>
-                  <p className="text-[9px] text-muted-foreground/30">Klik &quot;Upload&quot; untuk mengupload gambar dari HP/komputer kamu. Maksimal {MAX_IMAGES} screenshot. Gambar pertama jadi thumbnail.</p>
+                  <p className="text-[9px] text-muted-foreground/30">Klik &quot;Upload&quot; untuk mengupload gambar dari HP/komputer kamu (otomatis tersimpan di Cloudinary). Atau tempel URL gambar langsung. Maksimal {MAX_IMAGES} screenshot. Gambar pertama jadi thumbnail.</p>
                 </div>
 
                 {/* Price — Orange */}
