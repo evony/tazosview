@@ -161,7 +161,7 @@ export function AdminDivisionContentTab() {
     queryKey: ['cms-settings'],
     queryFn: async () => {
       const res = await fetch('/api/cms/settings', { credentials: 'include' });
-      return res.json() as Promise<{ map: Record<string, string> }>;
+      return res.json() as Promise<{ settings: { id: string; key: string; value: string; type: string }[]; map: Record<string, string> }>;
     },
   });
 

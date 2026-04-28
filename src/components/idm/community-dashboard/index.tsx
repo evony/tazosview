@@ -373,13 +373,13 @@ export function CommunityDashboard() {
 
   // CMS settings for donation modal
   const { data: cms } = useQuery<Record<string, string>>({
-    queryKey: ['cms-settings'],
+    queryKey: ['cms-content'],
     queryFn: async () => {
       const res = await fetch('/api/cms/content');
-      if (!res.ok) return {};
-      const json = await res.json();
-      return json.settings || {};
+      if (!res.ok) return { settings: {}, sections: {} };
+      return res.json();
     },
+    select: (data) => data.settings || {},
   });
 
 

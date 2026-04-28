@@ -21,16 +21,22 @@ const DEFAULTS: BackgroundImages = {
  *
  * Uses React Query with 60s staleTime — cached across all components,
  * only one network request per minute max.
+ *
+ * IMPORTANT: Uses the same queryKey as CMS Panel (['cms-settings']) but with
+ * identical queryFn return shape ({ settings, map }) and `select` to extract
+ * just the map. This prevents cache collisions where different data shapes
+ * would overwrite each other.
  */
 export function useBackgroundImages(): BackgroundImages & { isLoading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ['cms-settings'],
     queryFn: async () => {
       const res = await fetch('/api/cms/settings');
-      if (!res.ok) return DEFAULTS;
+      if (!res.ok) return { settings: [], map: {} as Record<string, string> };
       const json = await res.json();
-      return (json.map || {}) as Record<string, string>;
+      return json as { settings: { id: string; key: string; value: string; type: string }[]; map: Record<string, string> };
     },
+    select: (data) => data.map || {},
     staleTime: 60_000,
     refetchOnWindowFocus: false,
     placeholderData: (prev) => prev,

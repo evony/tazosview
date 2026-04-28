@@ -100,7 +100,7 @@ export function LeagueView() {
     queryKey: ['cms-settings'],
     queryFn: async () => {
       const res = await fetch('/api/cms/settings');
-      return res.json() as Promise<{ map: Record<string, string> }>;
+      return res.json() as Promise<{ settings: { id: string; key: string; value: string; type: string }[]; map: Record<string, string> }>;
     },
     staleTime: 60_000,
   });
