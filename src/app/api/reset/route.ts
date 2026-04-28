@@ -17,23 +17,23 @@ export async function POST(request: Request) {
     const results: Record<string, number> = {};
 
     // 1. Delete all tournament-related data (respect foreign key order)
-    results.playerAchievement = await db.playerAchievement.deleteMany();
-    results.playerPoint = await db.playerPoint.deleteMany();
-    results.sponsoredPrize = await db.sponsoredPrize.deleteMany();
-    results.tournamentSponsor = await db.tournamentSponsor.deleteMany();
-    results.tournamentPrize = await db.tournamentPrize.deleteMany();
-    results.teamPlayer = await db.teamPlayer.deleteMany();
-    results.match = await db.match.deleteMany();
-    results.team = await db.team.deleteMany();
-    results.participation = await db.participation.deleteMany();
-    results.tournament = await db.tournament.deleteMany();
+    results.playerAchievement = (await db.playerAchievement.deleteMany()).count;
+    results.playerPoint = (await db.playerPoint.deleteMany()).count;
+    results.sponsoredPrize = (await db.sponsoredPrize.deleteMany()).count;
+    results.tournamentSponsor = (await db.tournamentSponsor.deleteMany()).count;
+    results.tournamentPrize = (await db.tournamentPrize.deleteMany()).count;
+    results.teamPlayer = (await db.teamPlayer.deleteMany()).count;
+    results.match = (await db.match.deleteMany()).count;
+    results.team = (await db.team.deleteMany()).count;
+    results.participation = (await db.participation.deleteMany()).count;
+    results.tournament = (await db.tournament.deleteMany()).count;
 
     // 2. Delete all league & playoff matches
-    results.playoffMatch = await db.playoffMatch.deleteMany();
-    results.leagueMatch = await db.leagueMatch.deleteMany();
+    results.playoffMatch = (await db.playoffMatch.deleteMany()).count;
+    results.leagueMatch = (await db.leagueMatch.deleteMany()).count;
 
     // 3. Delete all donations
-    results.donation = await db.donation.deleteMany();
+    results.donation = (await db.donation.deleteMany()).count;
 
     // 4. Reset all player stats to zero
     const playerUpdate = await db.player.updateMany({

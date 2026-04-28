@@ -53,7 +53,7 @@ export async function GET(
     // Sort by skin priority desc (highest priority first)
     activeSkins.sort((a, b) => b.skin.priority - a.skin.priority);
 
-    const skinsData = activeSkins.map(ps => ({
+    const skinsData: Array<Record<string, any>> = activeSkins.map(ps => ({
       id: ps.id,
       skinId: ps.skinId,
       skinType: ps.skin.type,

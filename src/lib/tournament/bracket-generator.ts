@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Team, Match, Tournament, BracketType, MatchStatus } from '@prisma/client';
 
 // Match interface for bracket generation

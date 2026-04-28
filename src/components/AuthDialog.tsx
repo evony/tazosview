@@ -31,7 +31,7 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({ open, onOpenChange, defaultTab = 'login', defaultDivision }: AuthDialogProps) {
-  const { login, register, isLoading } = useAuth();
+  const { login, register, loading } = useAuth();
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [selectedDivision, setSelectedDivision] = useState<'MALE' | 'FEMALE'>(defaultDivision || 'MALE');
   const [showPassword, setShowPassword] = useState(false);
@@ -62,7 +62,7 @@ export function AuthDialog({ open, onOpenChange, defaultTab = 'login', defaultDi
       toast({
         title: 'Login Berhasil!',
         description: 'Selamat datang kembali!',
-        variant: 'success'
+        variant: 'default'
       });
       onOpenChange(false);
       setLoginForm({ phone: '', password: '' });
@@ -95,15 +95,14 @@ export function AuthDialog({ open, onOpenChange, defaultTab = 'login', defaultDi
       phone: registerForm.phone,
       password: registerForm.password,
       name: registerForm.name,
-      email: registerForm.email || undefined,
-      gender: selectedDivision
+      email: registerForm.email || undefined
     });
     
     if (result.success) {
       toast({
         title: 'Registrasi Berhasil!',
         description: 'Akun kamu telah dibuat. Selamat bermain!',
-        variant: 'success'
+        variant: 'default'
       });
       onOpenChange(false);
       setRegisterForm({ phone: '', password: '', confirmPassword: '', name: '', email: '' });

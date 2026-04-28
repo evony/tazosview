@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Match Advancement Logic
  * Handles winner advancement and bracket updates

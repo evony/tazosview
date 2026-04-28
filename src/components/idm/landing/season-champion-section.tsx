@@ -199,6 +199,7 @@ function ChampionCard({
           setSelectedPlayer({
             ...latestChampion.player,
             division,
+            club: latestChampion.player.club ?? undefined,
             name: latestChampion.player.gamertag,
             gamertag: latestChampion.player.gamertag,
             avatar: latestChampion.player.avatar,
@@ -216,6 +217,7 @@ function ChampionCard({
             setSelectedPlayer({
               ...latestChampion.player,
               division,
+              club: latestChampion.player.club ?? undefined,
               name: latestChampion.player.gamertag,
               gamertag: latestChampion.player.gamertag,
               avatar: latestChampion.player.avatar,
@@ -281,6 +283,7 @@ function ChampionCard({
                   setSelectedPlayer({
                     ...champ.player,
                     division,
+                    club: champ.player.club ?? undefined,
                     name: champ.player.gamertag,
                     gamertag: champ.player.gamertag,
                     avatar: champ.player.avatar,

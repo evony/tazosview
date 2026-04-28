@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { Instagram, Youtube, ArrowUp } from 'lucide-react';
-import type { StatsData } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════════════
    Tarkam IDM — Premium Footer
@@ -10,10 +9,6 @@ import type { StatsData } from '@/types/stats';
    ═══════════════════════════════════════════════════════════════ */
 
 interface LandingFooterProps {
-  maleData: StatsData | undefined;
-  femaleData: StatsData | undefined;
-  leagueData: any;
-  cmsSections: Record<string, any>;
   cmsSettings: Record<string, string>;
 }
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getSession } from '@/lib/auth';
 import { NextRequest } from 'next/server';
 

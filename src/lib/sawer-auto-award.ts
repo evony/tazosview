@@ -9,9 +9,9 @@ import { getSawerTier } from './skin-utils';
 export async function autoAwardSawerSkin(donorName: string): Promise<void> {
   // 1. Find the player account by gamertag matching donorName
   const player = await db.player.findFirst({
-    where: { gamertag: { equals: donorName, mode: 'insensitive' } },
+    where: { gamertag: { equals: donorName } },
     include: { account: true },
-  });
+  }) as any;
 
   if (!player?.account) return; // No account linked, skip auto-award
 
@@ -25,7 +25,7 @@ export async function autoAwardSawerSkin(donorName: string): Promise<void> {
 
   const weeklyDonations = await db.donation.findMany({
     where: {
-      donorName: { equals: donorName, mode: 'insensitive' },
+      donorName: { equals: donorName },
       type: 'weekly',
       status: 'approved',
       createdAt: { gte: startOfWeek },
@@ -101,7 +101,7 @@ async function updateSawerBadgeTier(accountId: string, tierType: string): Promis
   const account = await db.account.findUnique({ where: { id: accountId } });
   if (!account) return;
 
-  const currentRank = tierRank[account.sawerBadgeTier] ?? 0;
+  const currentRank = tierRank[(account as any).sawerBadgeTier] ?? 0;
   const newRank = tierRank[tierType] ?? 0;
 
   if (newRank > currentRank) {

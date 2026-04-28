@@ -10,7 +10,7 @@ import {
 import { SectionHeader, AnimatedSection } from './shared';
 import { ClubLogoImage } from '@/components/idm/club-logo-image';
 import { getAvatarUrl, hexToRgba } from '@/lib/utils';
-import type { StatsData, TopPlayer, SeasonInfo } from '@/types/stats';
+import type { StatsData, TopPlayer, SeasonInfo, MvpHallOfFameEntry } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════════════
    TARKAM IDM — HIGHLIGHTS SECTION (PUNCAK PRESTASI)
@@ -261,6 +261,7 @@ function buildHighlights(
   const maleMvpSource = latestMaleMvp || maleMvpFallback;
   if (maleMvpSource) {
     const isMaleMvpFromHall = !!latestMaleMvp;
+    const maleMvpWeek = isMaleMvpFromHall ? (maleMvpSource as MvpHallOfFameEntry).weekNumber : undefined;
     const mvpPlayer = maleData?.topPlayers?.find(p => p.gamertag === maleMvpSource.gamertag);
     items.push({
       id: 'mvp-male',
@@ -268,15 +269,15 @@ function buildHighlights(
       title: maleMvpSource.gamertag,
       subtitle: isMaleMvpFromHall ? `MVP Terbaru ♂` : 'MVP Terbanyak ♂',
       description: isMaleMvpFromHall
-        ? `MVP terbaru divisi male di pekan ${maleMvpSource.weekNumber}! ${maleMvpSource.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${maleMvpSource.totalMvp > 1 ? ` — sudah ${maleMvpSource.totalMvp}x meraih MVP sepanjang musim` : ''}.`
+        ? `MVP terbaru divisi male di pekan ${maleMvpWeek}! ${maleMvpSource.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${maleMvpSource.totalMvp > 1 ? ` — sudah ${maleMvpSource.totalMvp}x meraih MVP sepanjang musim` : ''}.`
         : `Pemain dengan MVP terbanyak di divisi male! ${maleMvpSource.gamertag} telah meraih ${maleMvpSource.totalMvp}x MVP dan mengumpulkan ${maleMvpSource.points} poin sepanjang musim.`,
-      badge: isMaleMvpFromHall ? `MVP W${maleMvpSource.weekNumber} ♂` : `${maleMvpSource.totalMvp}x MVP ♂`,
+      badge: isMaleMvpFromHall ? `MVP W${maleMvpWeek} ♂` : `${maleMvpSource.totalMvp}x MVP ♂`,
       thumbLabel: `MVP ♂`,
       imageUrl: getAvatarUrl(maleMvpSource.gamertag, 'male', maleMvpSource.avatar),
       accentColor: '#22c55e',
       accentLight: '#4ade80',
       division: 'male',
-      mvpWeek: isMaleMvpFromHall ? maleMvpSource.weekNumber : undefined,
+      mvpWeek: maleMvpWeek,
       mvpCount: maleMvpSource.totalMvp,
       metadata: [
         { icon: Award, label: 'MVP', value: `${maleMvpSource.totalMvp}x` },
@@ -298,6 +299,7 @@ function buildHighlights(
   const femaleMvpSource = latestFemaleMvp || femaleMvpFallback;
   if (femaleMvpSource) {
     const isFemaleMvpFromHall = !!latestFemaleMvp;
+    const femaleMvpWeek = isFemaleMvpFromHall ? (femaleMvpSource as MvpHallOfFameEntry).weekNumber : undefined;
     const mvpPlayer = femaleData?.topPlayers?.find(p => p.gamertag === femaleMvpSource.gamertag);
     items.push({
       id: 'mvp-female',
@@ -305,15 +307,15 @@ function buildHighlights(
       title: femaleMvpSource.gamertag,
       subtitle: isFemaleMvpFromHall ? `MVP Terbaru ♀` : 'MVP Terbanyak ♀',
       description: isFemaleMvpFromHall
-        ? `MVP terbaru divisi female di pekan ${femaleMvpSource.weekNumber}! ${femaleMvpSource.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${femaleMvpSource.totalMvp > 1 ? ` — sudah ${femaleMvpSource.totalMvp}x meraih MVP sepanjang musim` : ''}.`
+        ? `MVP terbaru divisi female di pekan ${femaleMvpWeek}! ${femaleMvpSource.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${femaleMvpSource.totalMvp > 1 ? ` — sudah ${femaleMvpSource.totalMvp}x meraih MVP sepanjang musim` : ''}.`
         : `Pemain dengan MVP terbanyak di divisi female! ${femaleMvpSource.gamertag} telah meraih ${femaleMvpSource.totalMvp}x MVP dan mengumpulkan ${femaleMvpSource.points} poin sepanjang musim.`,
-      badge: isFemaleMvpFromHall ? `MVP W${femaleMvpSource.weekNumber} ♀` : `${femaleMvpSource.totalMvp}x MVP ♀`,
+      badge: isFemaleMvpFromHall ? `MVP W${femaleMvpWeek} ♀` : `${femaleMvpSource.totalMvp}x MVP ♀`,
       thumbLabel: `MVP ♀`,
       imageUrl: getAvatarUrl(femaleMvpSource.gamertag, 'female', femaleMvpSource.avatar),
       accentColor: '#ec4899',
       accentLight: '#f472b6',
       division: 'female',
-      mvpWeek: isFemaleMvpFromHall ? femaleMvpSource.weekNumber : undefined,
+      mvpWeek: femaleMvpWeek,
       mvpCount: femaleMvpSource.totalMvp,
       metadata: [
         { icon: Award, label: 'MVP', value: `${femaleMvpSource.totalMvp}x` },

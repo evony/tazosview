@@ -36,7 +36,7 @@ export function LoginPage() {
       }
 
       if (data.success && data.user) {
-        setAdminAuth(true, data.user);
+        setAdminAuth({ isAuthenticated: true, admin: data.user });
       } else {
         setError('Unexpected response');
       }

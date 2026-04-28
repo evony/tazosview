@@ -65,7 +65,7 @@ function TournamentCard({
   onEnterApp,
   onVideoPlay,
 }: {
-  division: typeof DIVISION.male;
+  division: typeof DIVISION.male | typeof DIVISION.female;
   data: StatsData | undefined;
   cmsSections: Record<string, any>;
   cmsSettings?: Record<string, string>;

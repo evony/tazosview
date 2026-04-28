@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { db } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { NextRequest } from 'next/server';

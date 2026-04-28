@@ -50,7 +50,7 @@ export async function GET(request: Request) {
       select: { donorBadgeCount: true, sawerBadgeTier: true },
     });
 
-    const skinsData = activeSkins.map(ps => ({
+    const skinsData: Array<Record<string, any>> = activeSkins.map(ps => ({
       id: ps.id,
       skinId: ps.skinId,
       skinType: ps.skin.type,

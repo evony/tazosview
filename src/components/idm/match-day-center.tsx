@@ -453,7 +453,7 @@ export function MatchDayCenter() {
                   {/* Group matches by round */}
                   {Object.entries(
                     tournamentMatches.reduce((acc: Record<string, typeof tournamentMatches>, m) => {
-                      const round = m.round ?? m.bracketPosition ?? 'Main';
+                      const round = m.round ?? 'Main';
                       if (!acc[round]) acc[round] = [];
                       acc[round].push(m);
                       return acc;
@@ -508,7 +508,7 @@ export function MatchDayCenter() {
                                 </div>
                               </div>
                               {m.mvpPlayer && (
-                                <Crown className="w-3.5 h-3.5 text-yellow-500 shrink-0" title={`MVP: ${m.mvpPlayer.gamertag}`} />
+                                <Crown className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
                               )}
                             </div>
                           );

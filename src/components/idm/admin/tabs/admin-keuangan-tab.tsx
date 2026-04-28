@@ -26,7 +26,7 @@ interface AdminKeuanganTabProps {
   approveDonation: UseMutationResult<any, Error, { id: string; status: 'approved' | 'rejected' }, unknown>;
   deleteDonation: UseMutationResult<any, Error, string, unknown>;
   newDonation: { donorName: string; amount: string; message: string; type: string };
-  setNewDonation: (fn: (prev: { donorName: string; amount: string; message: string; type: string }) => { donorName: string; amount: string; message: string; type: string }) => void;
+  setNewDonation: (fn: ((prev: { donorName: string; amount: string; message: string; type: string }) => { donorName: string; amount: string; message: string; type: string }) | { donorName: string; amount: string; message: string; type: string }) => void;
   paymentForm: Record<string, string>;
   updatePaymentForm: (updates: Partial<Record<string, string>>) => void;
   savePaymentSettingsBatch: UseMutationResult<any, Error, { key: string; value: string; type?: string }[], unknown>;
