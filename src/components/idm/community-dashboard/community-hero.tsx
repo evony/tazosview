@@ -310,7 +310,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           {isRegistrationOpen && (
             <button
               onClick={() => setCurrentView('register')}
-              className="group flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-emerald-500 to-green-400 text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="group flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.35)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Pendaftaran</span>

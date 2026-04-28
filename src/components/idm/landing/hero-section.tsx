@@ -297,15 +297,15 @@ export function HeroSection({
             {/* Pendaftaran — Primary CTA → Registration */}
             <button
               onClick={onRegister}
-              className="btn-press hero-cta-breath group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
+              className="btn-press hero-cta-breath group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-idm-gold-warm/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a14]"
             >
               {/* Glow background */}
-              <div className="absolute -inset-1 rounded-2xl blur-lg opacity-0 group-hover:opacity-60 transition-opacity duration-500" style={{ background: 'rgba(16,185,129,0.25)' }} />
+              <div className="absolute -inset-1 rounded-2xl blur-lg opacity-0 group-hover:opacity-60 transition-opacity duration-500" style={{ background: 'rgba(212,168,83,0.25)' }} />
               <div className="relative flex items-center justify-center gap-2.5 px-7 py-3 rounded-2xl font-bold text-sm tracking-wide uppercase transition-all duration-300"
                 style={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #10b981 100%)',
-                  color: '#ffffff',
-                  boxShadow: '0 4px 20px rgba(16,185,129,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  background: 'linear-gradient(135deg, #d4a853 0%, #e5be4a 50%, #f5d77a 100%)',
+                  color: '#0a0a14',
+                  boxShadow: '0 4px 20px rgba(212,168,83,0.35), inset 0 1px 0 rgba(255,255,255,0.3)',
                 }}
               >
                 <UserPlus className="w-4 h-4" />
