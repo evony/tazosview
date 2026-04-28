@@ -240,6 +240,7 @@ model Account {
   email           String?   @unique  // Optional email for recovery
   phone           String?             // WhatsApp number for recovery
   donorBadgeCount Int       @default(0) // Permanent heart badge count from donations (1-4: small, 5+: big + pulse glow)
+  sawerBadgeTier  String   @default("none") // Highest sawer tier ever achieved: "none" | "bronze" | "silver" | "gold" | "diamond"
   lastLoginAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -257,12 +258,12 @@ model Account {
 
 model Skin {
   id          String   @id @default(cuid())
-  type        String   @unique  // "champion" | "mvp" | "sawer" | "donor"
-  displayName String   // "Gold Crown" | "Platinum Star" | "Diamond Sawer" | "Maroon Heart"
+  type        String   @unique  // "champion" | "mvp" | "sawer_bronze" | "sawer_silver" | "sawer_gold" | "sawer_diamond" | "donor"
+  displayName String   // "Gold Crown" | "Platinum Star" | "Bronze Sawer" | ... | "Diamond Sawer" | "Maroon Heart"
   description String   // What this skin represents
   icon        String   // Emoji: "🥇" | "⭐" | "💎" | "❤️"
   colorClass  String   // Tailwind color classes for rendering (JSON)
-  priority    Int      @default(0)  // Higher = shown first when stacking: sawer=5, champion=4, mvp=3, donor=1
+  priority    Int      @default(0)  // sawer_diamond=5, champion=4, sawer_gold=4, mvp=3, sawer_silver=3, sawer_bronze=2, donor=1
   duration    String   @default("permanent") // "weekly" | "permanent"
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

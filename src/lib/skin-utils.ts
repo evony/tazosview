@@ -58,8 +58,29 @@ export const SKIN_TYPES = {
     priority: 3,
     duration: 'weekly',
   },
-  sawer: {
-    type: 'sawer',
+  sawer_bronze: {
+    type: 'sawer_bronze',
+    icon: '🥉',
+    displayName: 'Bronze Sawer',
+    priority: 2,
+    duration: 'weekly',
+  },
+  sawer_silver: {
+    type: 'sawer_silver',
+    icon: '🥈',
+    displayName: 'Silver Sawer',
+    priority: 3,
+    duration: 'weekly',
+  },
+  sawer_gold: {
+    type: 'sawer_gold',
+    icon: '🥇',
+    displayName: 'Gold Sawer',
+    priority: 4,
+    duration: 'weekly',
+  },
+  sawer_diamond: {
+    type: 'sawer_diamond',
     icon: '💎',
     displayName: 'Diamond Sawer',
     priority: 5,
@@ -97,7 +118,28 @@ export const DEFAULT_SKIN_COLORS: Record<string, SkinColors> = {
     border: '#d1d5db|#9ca3af|#e5e7eb',                           // gray-300 → gray-400 → gray-200 (platinum edge)
     glow: 'rgba(209,213,219,0.4)',
   },
-  sawer: {
+  sawer_bronze: {
+    frame: '#b45309',                                            // amber-700 (bronze)
+    name: '#d97706|#b45309|#f59e0b',                             // amber-600 → amber-700 → amber-500 (warm bronze gradient)
+    badge: 'rgba(180,83,9,0.2)|#f59e0b',                         // amber-700/20 bg | amber-500 text
+    border: '#b45309|#d97706|#f59e0b',                           // amber-700 → amber-600 → amber-500 (bronze edge)
+    glow: 'rgba(180,83,9,0.4)',
+  },
+  sawer_silver: {
+    frame: '#9ca3af',                                            // gray-400 (silver/platinum)
+    name: '#d1d5db|#9ca3af|#e5e7eb',                             // gray-300 → gray-400 → gray-200 (silver shine)
+    badge: 'rgba(156,163,175,0.2)|#d1d5db',                       // gray-400/20 bg | gray-300 text
+    border: '#9ca3af|#6b7280|#d1d5db',                           // gray-400 → gray-500 → gray-300 (silver edge)
+    glow: 'rgba(156,163,175,0.4)',
+  },
+  sawer_gold: {
+    frame: '#facc15',                                            // yellow-400 (gold)
+    name: '#fde047|#facc15|#f59e0b',                             // yellow-300 → yellow-400 → amber-500 (gold shimmer)
+    badge: 'rgba(250,204,21,0.2)|#fde047',                        // yellow-400/20 bg | yellow-300 text
+    border: '#facc15|#eab308|#fde047',                           // yellow-400 → yellow-600 → yellow-300 (gold edge)
+    glow: 'rgba(250,204,21,0.4)',
+  },
+  sawer_diamond: {
     frame: '#22d3ee',                                            // cyan-400 (diamond)
     name: '#67e8f9|#06b6d4|#a5f3fc',                             // cyan-300 → cyan-500 → cyan-200 (diamond shimmer)
     badge: 'rgba(6,182,212,0.2)|#67e8f9',                        // cyan-500/20 bg | cyan-300 text
@@ -275,4 +317,60 @@ export function getDonorBadgeConfig(donorBadgeCount: number): {
  */
 export function shouldShowDonorBadge(donorBadgeCount: number): boolean {
   return donorBadgeCount > 0;
+}
+
+// ============================================
+// SAWER TIER HELPERS
+// Tiered sawer skin system: Bronze, Silver, Gold, Diamond
+// Based on weekly sawer (donation) amount
+// ============================================
+
+/**
+ * Sawer tier definitions, ordered from highest to lowest.
+ */
+export const SAWER_TIERS = [
+  { type: 'sawer_diamond', label: 'Diamond', icon: '💎', minAmount: 200000, color: 'text-cyan-400' },
+  { type: 'sawer_gold', label: 'Gold', icon: '🥇', minAmount: 100000, color: 'text-yellow-400' },
+  { type: 'sawer_silver', label: 'Silver', icon: '🥈', minAmount: 50000, color: 'text-gray-300' },
+  { type: 'sawer_bronze', label: 'Bronze', icon: '🥉', minAmount: 10000, color: 'text-amber-600' },
+] as const;
+
+/**
+ * Determine the sawer tier skin type based on total weekly sawer amount.
+ * Returns the skin type string (e.g. 'sawer_diamond') or null if below threshold.
+ */
+export function getSawerTier(amount: number): string | null {
+  if (amount >= 200000) return 'sawer_diamond';
+  if (amount >= 100000) return 'sawer_gold';
+  if (amount >= 50000) return 'sawer_silver';
+  if (amount >= 10000) return 'sawer_bronze';
+  return null;
+}
+
+/**
+ * Get the sawer badge display config for a permanent tier badge.
+ * Returns null if the tier is invalid.
+ */
+export function getSawerBadgeConfig(tier: string): {
+  icon: string;
+  size: 'sm' | 'md' | 'lg';
+  hasGlow: boolean;
+  label: string;
+} | null {
+  switch (tier) {
+    case 'sawer_diamond':
+    case 'diamond':
+      return { icon: '💎', size: 'lg', hasGlow: true, label: 'Diamond Sawer' };
+    case 'sawer_gold':
+    case 'gold':
+      return { icon: '🥇', size: 'md', hasGlow: false, label: 'Gold Sawer' };
+    case 'sawer_silver':
+    case 'silver':
+      return { icon: '🥈', size: 'sm', hasGlow: false, label: 'Silver Sawer' };
+    case 'sawer_bronze':
+    case 'bronze':
+      return { icon: '🥉', size: 'sm', hasGlow: false, label: 'Bronze Sawer' };
+    default:
+      return null;
+  }
 }

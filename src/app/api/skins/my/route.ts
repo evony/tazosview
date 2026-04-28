@@ -44,10 +44,10 @@ export async function GET(request: Request) {
     // Sort by skin priority desc (highest priority first)
     activeSkins.sort((a, b) => b.skin.priority - a.skin.priority);
 
-    // Get donorBadgeCount from account
+    // Get donorBadgeCount and sawerBadgeTier from account
     const account = await db.account.findUnique({
       where: { id: accountId },
-      select: { donorBadgeCount: true },
+      select: { donorBadgeCount: true, sawerBadgeTier: true },
     });
 
     const skinsData = activeSkins.map(ps => ({
@@ -86,6 +86,38 @@ export async function GET(request: Request) {
         createdAt: new Date(),
         donorBadgeCount,
       });
+    }
+
+    // If player has a sawer badge tier but no active sawer skin, add virtual sawer_badge entry
+    const sawerBadgeTier = account?.sawerBadgeTier ?? 'none';
+    const sawerSkinTypes = ['sawer_bronze', 'sawer_silver', 'sawer_gold', 'sawer_diamond'];
+    const hasActiveSawerSkin = skinsData.some(s => sawerSkinTypes.includes(s.skinType));
+    if (sawerBadgeTier !== 'none' && !hasActiveSawerSkin) {
+      const tierMap: Record<string, { icon: string; label: string; frame: string }> = {
+        bronze: { icon: '🥉', label: 'Bronze Sawer', frame: '#b45309' },
+        silver: { icon: '🥈', label: 'Silver Sawer', frame: '#9ca3af' },
+        gold: { icon: '🥇', label: 'Gold Sawer', frame: '#facc15' },
+        diamond: { icon: '💎', label: 'Diamond Sawer', frame: '#22d3ee' },
+      };
+      const tierInfo = tierMap[sawerBadgeTier];
+      if (tierInfo) {
+        skinsData.push({
+          id: 'virtual-sawer-badge',
+          skinId: '',
+          skinType: 'sawer_badge',
+          displayName: tierInfo.label,
+          description: `Permanent sawer badge (${sawerBadgeTier})`,
+          icon: tierInfo.icon,
+          colorClass: { frame: tierInfo.frame, name: tierInfo.frame, badge: `rgba(255,255,255,0.1)|${tierInfo.frame}`, border: tierInfo.frame, glow: 'transparent' },
+          priority: 0,
+          duration: 'permanent',
+          reason: `Sawer ${sawerBadgeTier}`,
+          awardedBy: null,
+          expiresAt: null,
+          createdAt: new Date(),
+          sawerBadgeTier: `sawer_${sawerBadgeTier}`,
+        });
+      }
     }
 
     return NextResponse.json({

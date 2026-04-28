@@ -91,7 +91,28 @@ const skinThemeConfig: Record<string, {
     swatchBg: 'bg-slate-300',
     lucideIcon: Star,
   },
-  sawer: {
+  sawer_bronze: {
+    accentBg: 'bg-amber-600/10',
+    accentText: 'text-amber-600',
+    accentBorder: 'border-amber-600/25',
+    swatchBg: 'bg-amber-600',
+    lucideIcon: Award,
+  },
+  sawer_silver: {
+    accentBg: 'bg-gray-400/10',
+    accentText: 'text-gray-300',
+    accentBorder: 'border-gray-400/25',
+    swatchBg: 'bg-gray-400',
+    lucideIcon: Award,
+  },
+  sawer_gold: {
+    accentBg: 'bg-yellow-400/10',
+    accentText: 'text-yellow-400',
+    accentBorder: 'border-yellow-400/25',
+    swatchBg: 'bg-yellow-400',
+    lucideIcon: Award,
+  },
+  sawer_diamond: {
     accentBg: 'bg-cyan-500/10',
     accentText: 'text-cyan-400',
     accentBorder: 'border-cyan-500/25',

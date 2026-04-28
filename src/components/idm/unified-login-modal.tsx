@@ -548,8 +548,20 @@ export function UnifiedLoginModal({ open, onOpenChange, defaultTab = 'peserta' }
                           <span className="text-[10px] text-muted-foreground">MVP — <strong className="text-gray-300">Platinum Star ✨</strong> (1 minggu)</span>
                         </div>
                         <div className="flex items-center gap-2">
+                          <span className="text-sm leading-none">🥉</span>
+                          <span className="text-[10px] text-muted-foreground">Sawer Bronze — <strong className="text-amber-600">≥10K</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm leading-none">🥈</span>
+                          <span className="text-[10px] text-muted-foreground">Sawer Silver — <strong className="text-gray-300">≥50K</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm leading-none">🥇</span>
+                          <span className="text-[10px] text-muted-foreground">Sawer Gold — <strong className="text-yellow-400">≥100K</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2">
                           <span className="text-sm leading-none">💎</span>
-                          <span className="text-[10px] text-muted-foreground">Sawer — <strong className="text-cyan-400">Diamond Sawer 💎</strong> (1 minggu)</span>
+                          <span className="text-[10px] text-muted-foreground">Sawer Diamond — <strong className="text-cyan-400">≥200K</strong></span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm leading-none">❤️</span>

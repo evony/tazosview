@@ -502,3 +502,48 @@ Stage Summary:
 - Navigation simplified (3 sub-items → 2 sub-items)
 - Community Dashboard reduced from 12 sections → 8 sections (less overwhelming)
 - mytournament view type removed from store and navigation entirely
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Implement tiered sawer skin system (4 tiers: Bronze/Silver/Gold/Diamond)
+
+Work Log:
+- Read all existing files to understand current single `sawer` skin system
+- Updated `skin-utils.ts`:
+  - Replaced single `sawer` entry in SKIN_TYPES with 4 entries: `sawer_bronze` (P2), `sawer_silver` (P3), `sawer_gold` (P4), `sawer_diamond` (P5)
+  - Replaced single `sawer` entry in DEFAULT_SKIN_COLORS with 4 entries (amber/bronze, gray/silver, yellow/gold, cyan/diamond tones)
+  - Added `SAWER_TIERS` constant array for tier definitions
+  - Added `getSawerTier(amount)` function returning tier type based on thresholds (10K/50K/100K/200K)
+  - Added `getSawerBadgeConfig(tier)` function returning permanent badge info per tier
+- Updated `seed/route.ts`: Replaced single `sawer` seed entry with 4 tiered entries, importing DEFAULT_SKIN_COLORS
+- Updated `admin-skin-panel.tsx`: Replaced single `sawer` entry in skinThemeConfig with 4 entries (amber/gray/yellow/cyan tones with Award/Gem icons)
+- Updated `skin-showcase.tsx`: Updated `MOCK_SKINS.find` reference from 'sawer' to 'sawer_diamond', replaced single sawer HowToGet entry with 4 tiered entries
+- Updated `unified-login-modal.tsx`: Replaced single "Sawer — Diamond Sawer 💎" line with 4 tiered lines (🥉≥10K, 🥈≥50K, 🥇≥100K, 💎≥200K)
+- Updated `prisma/schema.prisma`:
+  - Added `sawerBadgeTier String @default("none")` field to Account model
+  - Updated Skin model type comment to list all 4 sawer tier types
+  - Updated displayName and priority comments
+- Updated `skin-renderer.tsx`:
+  - Added `SawerTierBadge` component (similar to DonorHeartBadge) with tier-specific sizing and glow
+  - Imported `getSawerBadgeConfig` from skin-utils
+  - Added `sawerBadgeTier` to SkinBadgesRowProps
+  - Updated SkinBadgesRow to extract sawerBadgeTier and render SawerTierBadge, filter out sawer_badge virtual entries
+- Updated `api/skins/my/route.ts`: Added sawerBadgeTier to account query, added virtual sawer_badge entry injection when sawerBadgeTier !== 'none' and no active sawer skin
+- Updated `api/skins/player/[accountId]/route.ts`: Same sawer_badge virtual entry logic
+- Created `sawer-auto-award.ts`: Auto-award logic that calculates weekly sawer total, determines tier, removes lower tiers, awards new tier, updates sawerBadgeTier on Account
+- Updated `api/donations/route.ts`: Added auto-award call after weekly donation approval
+- Ran `npx prisma db push` to sync schema
+- Seeded database: deleted old `sawer` skin, created 4 tiered skins
+- Ran ESLint — no errors
+- Checked dev.log — compilation successful, no errors
+
+Stage Summary:
+- Single `sawer` skin replaced with 4 tiered skins: Bronze (P2, ≥10K), Silver (P3, ≥50K), Gold (P4, ≥100K), Diamond (P5, ≥200K)
+- Each tier has distinct color scheme: amber/bronze, gray/silver, yellow/gold, cyan/diamond
+- Permanent `sawerBadgeTier` field on Account stores highest tier ever achieved
+- Virtual `sawer_badge` entry injected when no active sawer skin but sawerBadgeTier is set
+- SawerTierBadge component renders tier badge with appropriate size/glow
+- Auto-award logic triggers on donation approval, replaces lower tiers with higher ones
+- Database seeded with 4 new skins, old `sawer` skin removed
+- All existing champion, mvp, and donor skin functionality preserved

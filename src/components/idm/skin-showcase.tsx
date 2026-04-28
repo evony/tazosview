@@ -252,7 +252,7 @@ export function SkinShowcase({ open, onClose }: SkinShowcaseProps) {
               <SkinBadgesRow skins={[
                 MOCK_SKINS.find(s => s.type === 'champion')!,
                 MOCK_SKINS.find(s => s.type === 'mvp')!,
-                MOCK_SKINS.find(s => s.type === 'sawer')!,
+                MOCK_SKINS.find(s => s.type === 'sawer_diamond')!,
                 { ...MOCK_SKINS.find(s => s.type === 'donor')!, donorBadgeCount: 5 },
               ]} />
             </div>
@@ -298,9 +298,24 @@ function HowToGet({ type }: { type: string }) {
       desc: 'Otomatis diberikan saat admin memilih MVP turnamen',
       auto: true,
     },
-    sawer: {
-      label: '💎 Sawer',
-      desc: 'Diberikan manual oleh admin sebagai penyawer — kontributor prize pool!',
+    sawer_bronze: {
+      label: '🥉 Bronze Sawer',
+      desc: 'Sawer ≥ 10K dalam seminggu',
+      auto: false,
+    },
+    sawer_silver: {
+      label: '🥈 Silver Sawer',
+      desc: 'Sawer ≥ 50K dalam seminggu',
+      auto: false,
+    },
+    sawer_gold: {
+      label: '🥇 Gold Sawer',
+      desc: 'Sawer ≥ 100K dalam seminggu',
+      auto: false,
+    },
+    sawer_diamond: {
+      label: '💎 Diamond Sawer',
+      desc: 'Sawer ≥ 200K dalam seminggu — tier tertinggi!',
       auto: false,
     },
     donor: {

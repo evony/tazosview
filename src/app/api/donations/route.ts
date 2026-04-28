@@ -149,6 +149,17 @@ export async function PATCH(request: Request) {
       data: { status },
     });
 
+    // Auto-award sawer skin when a weekly donation is approved
+    if (status === 'approved' && donation.type === 'weekly') {
+      try {
+        const { autoAwardSawerSkin } = await import('@/lib/sawer-auto-award');
+        await autoAwardSawerSkin(donation.donorName);
+      } catch (awardError) {
+        console.warn('[SAWER_AUTO_AWARD] Failed:', awardError);
+        // Don't fail the approval if auto-award fails
+      }
+    }
+
     // Trigger Pusher real-time event so marquee updates instantly for all users
     try {
       const { getPusher, PUSHER_CHANNELS, PUSHER_EVENTS } = await import('@/lib/pusher');

@@ -8,6 +8,7 @@ import {
   buildGradient,
   parseColorStops,
   getDonorBadgeConfig,
+  getSawerBadgeConfig,
 } from '@/lib/skin-utils';
 import type { SkinColors } from '@/lib/skin-utils';
 
@@ -34,6 +35,7 @@ interface SkinBadgesRowProps {
     colorClass: string;
     priority: number;
     donorBadgeCount?: number;
+    sawerBadgeTier?: string;
   }>;
 }
 
@@ -83,6 +85,44 @@ function DonorHeartBadge({ donorBadgeCount }: { donorBadgeCount: number }) {
       aria-label={`Heart Badge: ${donorBadgeCount} donations`}
     >
       ❤️
+    </span>
+  );
+}
+
+// ============================================
+// SawerTierBadge — Permanent sawer tier badge
+// Bronze: small, Silver: small, Gold: medium, Diamond: large with glow
+// ============================================
+
+function SawerTierBadge({ tier }: { tier: string }) {
+  const config = getSawerBadgeConfig(tier);
+  if (!config) return null;
+
+  const isDiamond = tier === 'sawer_diamond' || tier === 'diamond';
+  const isGold = tier === 'sawer_gold' || tier === 'gold';
+  const isSilver = tier === 'sawer_silver' || tier === 'silver';
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center justify-center rounded-full',
+        isDiamond ? 'w-7 h-7 text-sm donor-heart-pulse' : isGold ? 'w-6 h-6 text-xs' : 'w-5 h-5 text-[11px]'
+      )}
+      style={{
+        backgroundColor: isDiamond
+          ? 'rgba(34,211,238,0.2)'
+          : isGold
+            ? 'rgba(250,204,21,0.2)'
+            : isSilver
+              ? 'rgba(156,163,175,0.2)'
+              : 'rgba(180,83,9,0.2)',
+        ...(isDiamond ? { boxShadow: '0 0 8px rgba(34,211,238,0.4), 0 0 16px rgba(34,211,238,0.2)' } : {}),
+      }}
+      title={config.label}
+      role="img"
+      aria-label={`Sawer Badge: ${config.label}`}
+    >
+      {config.icon}
     </span>
   );
 }
@@ -165,8 +205,16 @@ export function SkinBadgesRow({ skins }: SkinBadgesRowProps) {
     }
   }
 
-  // Filter out the virtual donor_badge entry (we render the heart badge separately)
-  const displaySkins = sorted.filter(s => s.type !== 'donor_badge');
+  // Extract sawerBadgeTier from sawer_badge virtual entry
+  let sawerBadgeTier: string | undefined;
+  for (const skin of sorted) {
+    if (skin.type === 'sawer_badge' && skin.sawerBadgeTier) {
+      sawerBadgeTier = skin.sawerBadgeTier;
+    }
+  }
+
+  // Filter out the virtual donor_badge and sawer_badge entries (we render them separately)
+  const displaySkins = sorted.filter(s => s.type !== 'donor_badge' && s.type !== 'sawer_badge');
 
   return (
     <div className="inline-flex items-center gap-1" role="group" aria-label="Player skins">
@@ -188,6 +236,8 @@ export function SkinBadgesRow({ skins }: SkinBadgesRowProps) {
       })}
       {/* Permanent donor heart badge — always visible if donorBadgeCount > 0 */}
       {donorBadgeCount > 0 && <DonorHeartBadge donorBadgeCount={donorBadgeCount} />}
+      {/* Permanent sawer tier badge — always visible if sawerBadgeTier is set */}
+      {sawerBadgeTier && <SawerTierBadge tier={sawerBadgeTier} />}
     </div>
   );
 }
