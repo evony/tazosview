@@ -6,7 +6,7 @@ import Image from 'next/image';
 import {
   Shield, Users, Music, Trophy, Gift, Plus,
   Crown, X, Loader2, Clock, MapPin, Phone, Globe, Camera, Pencil, Trash2, Search,
-  LayoutDashboard, Sliders, Flame, CheckCircle2, XCircle, Wallet, Save, ArrowRight, Calendar, Star,
+  LayoutDashboard, Sliders, Flame, CheckCircle2, XCircle, Wallet, Save, ArrowRight, Calendar, Star, BookOpen,
   UserPlus, MessageCircle, FileText
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,6 +33,7 @@ import { AdminSponsorPanel } from './admin-sponsor-panel';
 import { AdminAchievementPanel } from './admin-achievement-panel';
 import { AdminSkinPanel } from './admin-skin-panel';
 import { AdminSettingsPanel } from './admin-settings-panel';
+import { AdminDivisionContentTab } from './admin/tabs/admin-division-content-tab';
 import { AdminManagement } from './admin-management';
 import { AdminSeasonPanel } from './admin-season-panel';
 import { useState } from 'react';
@@ -443,7 +444,7 @@ export function AdminPanel() {
   const categoryTabMap: Record<string, string[]> = {
     dashboard: ['dashboard'],
     tournament: ['pemain', 'season-tarkam', 'turnamen', 'keuangan'],
-    konten: ['konten'],
+    konten: ['konten', 'konten-divisi'],
     league: ['liga-season', 'liga-club', 'liga-poin', 'liga-skor'],
     system: ['sponsor', 'achievement', 'pengaturan'],
   };
@@ -618,6 +619,7 @@ export function AdminPanel() {
                 sponsor: { icon: Flame, label: 'Sponsor' },
                 achievement: { icon: Trophy, label: 'Achievement' },
                 konten: { icon: Globe, label: 'Konten' },
+                'konten-divisi': { icon: BookOpen, label: 'Divisi' },
                 keuangan: { icon: Gift, label: 'Keuangan', count: donationCount || undefined },
                 pengaturan: { icon: Sliders, label: 'Pengaturan' },
               };
@@ -693,6 +695,7 @@ export function AdminPanel() {
                 sponsor: { icon: Flame, label: 'Sponsor' },
                 achievement: { icon: Trophy, label: 'Achievement' },
                 konten: { icon: Globe, label: 'Konten' },
+                'konten-divisi': { icon: BookOpen, label: 'Divisi' },
                 keuangan: { icon: Gift, label: 'Keuangan', count: donationCount || undefined },
                 pengaturan: { icon: Sliders, label: 'Pengaturan' },
               };
@@ -908,6 +911,11 @@ export function AdminPanel() {
           <div className="space-y-4">
             <CmsPanel />
           </div>
+        </TabsContent>
+
+        {/* ====== KONTEN DIVISI TAB ====== */}
+        <TabsContent value="konten-divisi" className="admin-tab-enter">
+          <AdminDivisionContentTab />
         </TabsContent>
 
         {/* ====== SEASON TARKAM TAB ====== */}

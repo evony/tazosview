@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Trophy, Swords, Scale, Calendar, Shield, HelpCircle,
+  Trophy, Swords, Scale,
   Save, Loader2, BookOpen, Plus, Trash2, GripVertical,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -141,63 +140,8 @@ function RuleSectionEditor({
   );
 }
 
-/* ─── FAQ Item editor ─── */
-function FaqItemEditor({
-  item,
-  index,
-  onChange,
-  onRemove,
-}: {
-  item: { question: string; answer: string };
-  index: number;
-  onChange: (index: number, item: { question: string; answer: string }) => void;
-  onRemove: (index: number) => void;
-}) {
-  return (
-    <div className="p-3 rounded-xl border border-border/30 bg-muted/10 space-y-2 group relative">
-      <Button
-        size="sm"
-        variant="ghost"
-        className="absolute top-2 right-2 h-6 w-6 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={() => onRemove(index)}
-      >
-        <Trash2 className="w-3 h-3" />
-      </Button>
-      <div>
-        <Label className="text-[10px] font-semibold text-muted-foreground">Pertanyaan</Label>
-        <Input
-          value={item.question}
-          onChange={(e) => onChange(index, { ...item, question: e.target.value })}
-          className="text-xs h-8"
-          placeholder="Contoh: Bagaimana cara mendaftar?"
-        />
-      </div>
-      <div>
-        <Label className="text-[10px] font-semibold text-muted-foreground">Jawaban</Label>
-        <Textarea
-          value={item.answer}
-          onChange={(e) => onChange(index, { ...item, answer: e.target.value })}
-          className="text-xs min-h-[50px]"
-          placeholder="Jawaban pertanyaan..."
-        />
-      </div>
-    </div>
-  );
-}
-
 /* ─── Parse JSON items from CMS setting string ─── */
 function parseItems(value: string | undefined, fallback: { label: string; value: string; highlight: boolean }[]): { label: string; value: string; highlight: boolean }[] {
-  if (!value) return fallback;
-  try {
-    const parsed = JSON.parse(value);
-    if (Array.isArray(parsed)) return parsed;
-    return fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function parseFaqs(value: string | undefined, fallback: { question: string; answer: string }[]): { question: string; answer: string }[] {
   if (!value) return fallback;
   try {
     const parsed = JSON.parse(value);
@@ -230,7 +174,7 @@ export function AdminDivisionContentTab() {
     setFormState(prev => ({ ...settingsMap, ...prev, ...updates }) as Record<string, string>);
   };
 
-  /* ── Default fallback data (matches current hardcoded LeagueView) ── */
+  /* ── Default fallback data ── */
   const defaults = {
     peraturan_subtitle: 'Panduan lengkap format turnamen, sistem poin, dan peraturan pertandingan Tarkam IDM.',
     peraturan_poin_title: 'Sistem Poin Tarkam',
@@ -259,34 +203,12 @@ export function AdminDivisionContentTab() {
       { label: 'MVP Dipilih', value: 'Oleh Organizer', highlight: false },
       { label: 'Hasil Diumumkan', value: 'Real-time', highlight: true },
     ]),
-    peraturan_season_title: 'Peraturan Season',
-    peraturan_season_items: JSON.stringify([
-      { label: 'Season Baru', value: 'Setelah Tournament Selesai', highlight: false },
-      { label: 'Poin Reset', value: 'Setiap Season Baru', highlight: true },
-      { label: 'Season Champion', value: '#1 di Akhir Season', highlight: true },
-      { label: 'MVP Hall of Fame', value: 'Tercatat Selamanya', highlight: false },
-      { label: 'Streak', value: 'Reset Setiap Season', highlight: false },
-    ]),
-    peraturan_division_male_day: 'Sabtu',
-    peraturan_division_female_day: 'Minggu',
-    peraturan_faqs: JSON.stringify([
-      { question: 'Bagaimana cara mendaftar turnamen?', answer: 'Klik tombol \'Daftar\' di halaman Home atau kunjungi halaman pendaftaran. Pilih divisi (Male/Female), isi formulir, dan lakukan pembayaran sesuai instruksi. Setelah disetujui oleh admin, Anda akan masuk ke bracket turnamen.' },
-      { question: 'Apa itu sistem poin Tarkam?', answer: 'Tarkam menggunakan sistem poin akumulatif. Setiap kemenangan bernilai +3 poin, kekalahan +1 poin, dan tidak hadir 0 poin. Bonus poin diberikan untuk MVP pekan (+2) dan streak kemenangan (+1). Poin direset setiap season baru.' },
-      { question: 'Kapan pertandingan dimulai?', answer: 'Turnamen diadakan setiap minggu. Divisi Male biasanya pada hari Sabtu dan Female pada hari Minggu. Cek halaman Komunitas untuk jadwal terbaru dan countdown timer.' },
-      { question: 'Berapa lama satu turnamen berlangsung?', answer: 'Satu putaran turnamen biasanya berlangsung 2-4 jam. Match berjalan back-to-back, bahkan bisa paralel demi efisiensi waktu. Pastikan Anda standby dan siap ketika nama Anda dipanggil.' },
-      { question: 'Bagaimana cara menjadi MVP?', answer: 'MVP dipilih oleh organizer berdasarkan performa terbaik di setiap tournament. Faktor penilaian termasuk skill, konsistensi, dan sportivitas. MVP mendapat bonus +2 poin dan tercatat di MVP Hall of Fame.' },
-      { question: 'Apa itu Season Champion?', answer: 'Season Champion adalah pemain yang berada di peringkat #1 saat season ditutup. Season berakhir ketika organizer menutup season tersebut. Champion mendapat penghargaan khusus dan tercatat di halaman Season Champion.' },
-      { question: 'Apakah poin direset setiap season?', answer: 'Ya, semua poin dan streak direset setiap season baru dimulai. Namun, pencapaian seperti MVP Hall of Fame dan Season Champion tetap tercatat secara permanen.' },
-      { question: 'Bagaimana jika saya terlambat atau tidak hadir?', answer: 'Jika Anda tidak hadir atau terlambat saat nama dipanggil, akan dianggap walkout dan mendapat 0 poin. Pastikan Anda hadir tepat waktu sesuai jadwal yang diumumkan.' },
-    ]),
   };
 
   /* ── Parsed items from form/CMS ── */
   const poinItems = parseItems(form.peraturan_poin_items, parseItems(defaults.peraturan_poin_items, []));
   const formatItems = parseItems(form.peraturan_format_items, parseItems(defaults.peraturan_format_items, []));
   const matchItems = parseItems(form.peraturan_match_items, parseItems(defaults.peraturan_match_items, []));
-  const seasonItems = parseItems(form.peraturan_season_items, parseItems(defaults.peraturan_season_items, []));
-  const faqItems = parseFaqs(form.peraturan_faqs, parseFaqs(defaults.peraturan_faqs, []));
 
   /* ── Batch save mutation ── */
   const saveMutation = useMutation({
@@ -319,11 +241,6 @@ export function AdminDivisionContentTab() {
       { key: 'peraturan_format_items', value: form.peraturan_format_items || defaults.peraturan_format_items, type: 'json' },
       { key: 'peraturan_match_title', value: form.peraturan_match_title || defaults.peraturan_match_title, type: 'text' },
       { key: 'peraturan_match_items', value: form.peraturan_match_items || defaults.peraturan_match_items, type: 'json' },
-      { key: 'peraturan_season_title', value: form.peraturan_season_title || defaults.peraturan_season_title, type: 'text' },
-      { key: 'peraturan_season_items', value: form.peraturan_season_items || defaults.peraturan_season_items, type: 'json' },
-      { key: 'peraturan_division_male_day', value: form.peraturan_division_male_day || defaults.peraturan_division_male_day, type: 'text' },
-      { key: 'peraturan_division_female_day', value: form.peraturan_division_female_day || defaults.peraturan_division_female_day, type: 'text' },
-      { key: 'peraturan_faqs', value: form.peraturan_faqs || defaults.peraturan_faqs, type: 'json' },
     ]);
   };
 
@@ -372,7 +289,7 @@ export function AdminDivisionContentTab() {
       </div>
 
       <p className="text-[10px] text-muted-foreground">
-        Kelola konten halaman Peraturan di Division Dashboard. Perubahan langsung terlihat setelah simpan. Klik "Reset Default" untuk mengembalikan ke nilai bawaan.
+        Kelola konten halaman Peraturan di Division Dashboard. Perubahan langsung terlihat setelah simpan. Klik &quot;Reset Default&quot; untuk mengembalikan ke nilai bawaan.
       </p>
 
       {/* ── Subtitle / Deskripsi ── */}
@@ -389,7 +306,7 @@ export function AdminDivisionContentTab() {
               className="text-sm min-h-[50px]"
               placeholder={defaults.peraturan_subtitle}
             />
-            <p className="text-[9px] text-muted-foreground/60 mt-0.5">Teks deskripsi di bawah judul "Peraturan & Format"</p>
+            <p className="text-[9px] text-muted-foreground/60 mt-0.5">Teks deskripsi di bawah judul &quot;Peraturan &amp; Format&quot;</p>
           </div>
         </CardContent>
       </Card>
@@ -423,94 +340,6 @@ export function AdminDivisionContentTab() {
         onTitleChange={(title) => updateForm({ peraturan_match_title: title })}
         onItemsChange={(items) => updateForm({ peraturan_match_items: JSON.stringify(items) })}
       />
-
-      {/* ── Peraturan Season ── */}
-      <RuleSectionEditor
-        title={form.peraturan_season_title || defaults.peraturan_season_title}
-        sectionKey="season"
-        icon={Calendar}
-        items={seasonItems}
-        onTitleChange={(title) => updateForm({ peraturan_season_title: title })}
-        onItemsChange={(items) => updateForm({ peraturan_season_items: JSON.stringify(items) })}
-      />
-
-      {/* ── Division Info ── */}
-      <Card className="border border-border/50">
-        <CardContent className="p-4 space-y-3">
-          <h3 className="text-sm font-bold flex items-center gap-2">
-            <Shield className="w-4 h-4 text-idm-gold-warm" /> Info Divisi
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Hari Pertandingan Male</Label>
-              <Input
-                value={form.peraturan_division_male_day || ''}
-                onChange={(e) => updateForm({ peraturan_division_male_day: e.target.value })}
-                className="text-sm"
-                placeholder="Sabtu"
-              />
-            </div>
-            <div>
-              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Hari Pertandingan Female</Label>
-              <Input
-                value={form.peraturan_division_female_day || ''}
-                onChange={(e) => updateForm({ peraturan_division_female_day: e.target.value })}
-                className="text-sm"
-                placeholder="Minggu"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ── FAQ ── */}
-      <Card className="border border-border/50">
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-idm-gold-warm" /> Pertanyaan Umum (FAQ)
-              <Badge className="text-[8px] border-0 bg-idm-gold-warm/10 text-idm-gold-warm">{faqItems.length} item</Badge>
-            </h3>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-[10px] h-7"
-              onClick={() => {
-                const updated = [...faqItems, { question: '', answer: '' }];
-                updateForm({ peraturan_faqs: JSON.stringify(updated) });
-              }}
-            >
-              <Plus className="w-3 h-3 mr-1" /> Tambah FAQ
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            {faqItems.map((item, i) => (
-              <FaqItemEditor
-                key={i}
-                item={item}
-                index={i}
-                onChange={(index, updated) => {
-                  const items = [...faqItems];
-                  items[index] = updated;
-                  updateForm({ peraturan_faqs: JSON.stringify(items) });
-                }}
-                onRemove={(index) => {
-                  const items = faqItems.filter((_, i) => i !== index);
-                  updateForm({ peraturan_faqs: JSON.stringify(items) });
-                }}
-              />
-            ))}
-          </div>
-
-          {faqItems.length === 0 && (
-            <div className="py-6 text-center border border-dashed border-border/30 rounded-xl">
-              <HelpCircle className="w-6 h-6 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-[10px] text-muted-foreground">Belum ada FAQ. Klik "Tambah FAQ" untuk menambahkan.</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* ── Bottom Save Bar ── */}
       <div className="sticky bottom-0 bg-background/95 border-t border-border/50 p-3 -mx-4 -mb-4 rounded-b-xl flex items-center justify-between z-20">

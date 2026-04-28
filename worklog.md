@@ -651,3 +651,29 @@ Stage Summary:
 - `bun run lint` passed with no errors
 - Dev server compiles successfully, no errors in dev.log
 - All existing functionality preserved — badges are additive-only, no logic changed
+---
+Task ID: 1
+Agent: Main Agent
+Task: Simplify AdminDivisionContentTab CMS and wire to admin panel + update LeagueView to fetch from CMS
+
+Work Log:
+- Removed Peraturan Season section from AdminDivisionContentTab CMS
+- Removed Info Divisi (Male/Female day) section from AdminDivisionContentTab CMS
+- Removed FAQ section from AdminDivisionContentTab CMS
+- Cleaned up unused imports (Calendar, Shield, HelpCircle, Separator, FaqItemEditor, parseFaqs)
+- Reduced save handler from 12 keys to 7 keys (subtitle + 3 sections × title+items)
+- Added AdminDivisionContentTab import to admin-panel.tsx
+- Added konten-divisi to categoryTabMap konten category
+- Added konten-divisi tab config entry in both mobile and desktop nav
+- Added TabsContent for konten-divisi rendering AdminDivisionContentTab
+- Added BookOpen icon to lucide imports
+- Updated LeagueView to fetch peraturan from CMS settings API instead of hardcoded
+- Removed Peraturan Season, Divisi info, and FAQ from LeagueView display (matching CMS)
+- Added loading state with spinner for LeagueView
+
+Stage Summary:
+- CMS now only has 3 rule sections: Sistem Poin, Format Turnamen, Peraturan Pertandingan
+- Admin panel Konten category now has 2 sub-tabs: Konten (CMS Landing) and Divisi (Peraturan)
+- LeagueView (division dashboard Info tab) now reads from CMS settings API
+- All data falls back to defaults if no CMS settings are saved
+
