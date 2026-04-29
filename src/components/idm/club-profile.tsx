@@ -318,8 +318,15 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
       >
           {/* ── Header Banner ── */}
           <div className="relative h-[32rem]">
-            {/* Unified club banner — prefer unified API data (always fresh), fall back to prop, then static fallback */}
-            <Image src={unifiedData?.bannerImage || club.bannerImage || '/bg-section.jpg'} alt="" fill sizes="100vw" className="absolute inset-0 object-cover" aria-hidden="true" />
+  // FIX: Jangan render bg-section.jpg sebagai fallback
+  {(() => {
+  const bannerSrc = unifiedData?.bannerImage || club.bannerImage;
+  return bannerSrc ? (
+    <Image src={bannerSrc} alt="" fill sizes="100vw" className="absolute inset-0 object-cover transition-opacity duration-500" aria-hidden="true" />
+  ) : (
+    <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/50 to-background" aria-hidden="true" />
+  );
+})()}
 
             {/* Gold gradient overlay — unified club uses league gold */}
             <div className="absolute inset-0 bg-gradient-to-br from-background/70 via-background/40 to-background/80" />
