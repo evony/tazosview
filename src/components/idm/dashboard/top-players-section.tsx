@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 import {
-  Users, Trophy, Crown, Award,
+  Users, Trophy, Crown, Award, TrendingUp, Flame, BarChart3,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { PlayerCard } from '../player-card';
@@ -29,7 +29,7 @@ export function TopPlayersSection({ data, division, setSelectedPlayer }: TopPlay
   const loggedInPlayerId = playerAuth.isAuthenticated && playerAuth.account ? playerAuth.account.player.id : null;
   const loggedInSkins = playerAuth.isAuthenticated && playerAuth.account ? playerAuth.account.skins : undefined;
 
-  const [topPlayerTab, setTopPlayerTab] = useState<'top3' | 'champion' | 'mvp'>('top3');
+  const [topPlayerTab, setTopPlayerTab] = useState<'top3' | 'topform' | 'champion' | 'mvp'>('top3');
   const [selectedChampionWeek, setSelectedChampionWeek] = useState<number>(1);
   const [selectedMvpWeek, setSelectedMvpWeek] = useState<number>(1);
 
@@ -63,6 +63,19 @@ export function TopPlayersSection({ data, division, setSelectedPlayer }: TopPlay
           </button>
           <button
             role="tab"
+            aria-selected={topPlayerTab === 'topform'}
+            onClick={() => setTopPlayerTab('topform')}
+            className={`relative px-3 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+              topPlayerTab === 'topform'
+                ? `border-current ${dt.text}`
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <TrendingUp className="w-3 h-3 mr-1 inline" />
+            Top Form
+          </button>
+          <button
+            role="tab"
             aria-selected={topPlayerTab === 'champion'}
             onClick={() => setTopPlayerTab('champion')}
             className={`relative px-3 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
@@ -72,7 +85,7 @@ export function TopPlayersSection({ data, division, setSelectedPlayer }: TopPlay
             }`}
           >
             <Crown className="w-3 h-3 mr-1 inline" />
-            Juara Pekan Ini
+            Juara
           </button>
           <button
             role="tab"
@@ -119,6 +132,89 @@ export function TopPlayersSection({ data, division, setSelectedPlayer }: TopPlay
                   message="Belum ada peserta terdaftar"
                   hint="Peserta akan muncul setelah pendaftaran"
                 />
+              )}
+            </>
+          )}
+
+          {/* Top Form Tab — Weekly Best Performer */}
+          {topPlayerTab === 'topform' && (
+            <>
+              {data.weeklyTopPerformers?.length > 0 ? (
+                (() => {
+                  const topPerformer = data.weeklyTopPerformers[0];
+                  return (
+                    <div className="space-y-3">
+                      {/* Top Form banner */}
+                      <div className={`flex items-center gap-3 p-3 rounded-xl ${dt.bgSubtle} ${dt.border}`}>
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shrink-0">
+                          <TrendingUp className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-amber-400 truncate">{topPerformer.gamertag}</p>
+                          <p className="text-[10px] text-muted-foreground">Week {topPerformer.weekNumber} • Composite {topPerformer.compositeScore}</p>
+                        </div>
+                        <Badge className="bg-amber-500/15 text-amber-500 border-0 text-[9px]">🔥 TOP FORM</Badge>
+                      </div>
+                      {/* Player Card */}
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                        <div>
+                          <PlayerCard
+                            gamertag={topPerformer.gamertag}
+                            avatar={topPerformer.avatar}
+                            tier={topPerformer.tier}
+                            points={topPerformer.points}
+                            totalWins={topPerformer.weeklyWins}
+                            totalMvp={0}
+                            streak={topPerformer.streak}
+                            rank={1}
+                            skins={skinMap[topPerformer.id]}
+                            onClick={() => setSelectedPlayer({
+                              ...topPerformer,
+                              name: topPerformer.gamertag,
+                              totalWins: topPerformer.weeklyWins,
+                              totalMvp: 0,
+                              maxStreak: topPerformer.streak,
+                              matches: topPerformer.weeklyMatches,
+                              club: topPerformer.club ? { id: '', name: topPerformer.club } : undefined,
+                              division: undefined,
+                            })}
+                          />
+                        </div>
+                        {/* Composite Score Breakdown */}
+                        <div className={`col-span-2 flex flex-col justify-center gap-2 p-3 rounded-xl ${dt.bgSubtle} ${dt.border}`}>
+                          <div className="flex items-center gap-2">
+                            <BarChart3 className="w-4 h-4 text-amber-400" />
+                            <span className="text-sm font-bold text-amber-400">{topPerformer.compositeScore}</span>
+                            <span className="text-[9px] text-muted-foreground">COMPOSITE</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className={`p-2 rounded-lg ${dt.bgSubtle} ${dt.borderSubtle} text-center`}>
+                              <p className={`text-sm font-bold ${dt.neonText}`}>+{topPerformer.weeklyPointsGained}</p>
+                              <p className="text-[9px] text-muted-foreground">+Pts</p>
+                            </div>
+                            <div className={`p-2 rounded-lg ${dt.bgSubtle} ${dt.borderSubtle} text-center`}>
+                              <p className={`text-sm font-bold ${dt.neonText}`}>{topPerformer.weeklyWinRate}%</p>
+                              <p className="text-[9px] text-muted-foreground">Win%</p>
+                            </div>
+                            <div className={`p-2 rounded-lg ${dt.bgSubtle} ${dt.borderSubtle} text-center`}>
+                              <div className="flex items-center justify-center gap-0.5">
+                                <Flame className="w-3 h-3 text-orange-400" />
+                                <p className={`text-sm font-bold ${dt.neonText}`}>{topPerformer.streak}</p>
+                              </div>
+                              <p className="text-[9px] text-muted-foreground">Streak</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className={`p-6 rounded-xl ${dt.bgSubtle} ${dt.border} text-center`}>
+                  <TrendingUp className={`w-8 h-8 mx-auto mb-2 opacity-30 text-amber-500`} />
+                  <p className="text-sm text-muted-foreground">Belum ada Top Form</p>
+                  <p className="text-[10px] text-muted-foreground/80 mt-1">Pemain dengan performa terbaik minggu ini akan muncul di sini</p>
+                </div>
               )}
             </>
           )}
