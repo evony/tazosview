@@ -225,7 +225,7 @@ export function PlayerProfile({ player, onClose, rank, skinMap }: PlayerProfileP
         onClick={(e) => e.stopPropagation()}
       >
           {/* ═══ HERO BANNER — Full Avatar Card Style ═══ */}
-          <div className="relative h-[580px] overflow-hidden">
+            <div className="relative h-[450px] sm:h-[490px] md:h-[580px] overflow-hidden">
             {/* Full AI-generated avatar as background */}
             <Image src={avatarSrc} alt={player.gamertag} fill sizes="150px" className="absolute inset-0 object-cover object-[center_25%]" />
 
