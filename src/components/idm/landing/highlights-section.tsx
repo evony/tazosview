@@ -1767,15 +1767,15 @@ export function HighlightsSection({
             </div>
 
             {/* Progress dots */}
-            <div className="flex items-center justify-center gap-1.5 mt-3">
+            <div className="flex items-center justify-center gap-1 mt-3">
               {highlights.map((item, idx) => (
                 <button
                   key={item.id}
                   onClick={() => handleThumbClick(idx)}
-                  className={`rounded-full transition-all duration-300 cursor-pointer ${idx === activeIdx ? 'w-2.5 h-2.5' : 'w-1.5 h-1.5 hover:w-2 hover:h-2'}`}
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${idx === activeIdx ? 'w-1.5 h-1.5' : 'w-1 h-1 hover:w-1.5 hover:h-1.5'}`}
                   style={{
                     backgroundColor: idx === activeIdx ? item.accentColor : 'rgba(255,255,255,0.25)',
-                    boxShadow: idx === activeIdx ? `0 0 8px ${hexToRgba(item.accentColor, 0.5)}` : 'none',
+                    boxShadow: idx === activeIdx ? `0 0 5px ${hexToRgba(item.accentColor, 0.5)}` : 'none',
                   }}
                   aria-label={`Go to highlight ${idx + 1}`}
                 />
