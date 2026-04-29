@@ -8,6 +8,9 @@ import { requireAdmin } from '@/lib/api-auth';
  * Returns all PlayerSkin records with account + player details
  */
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const authResult = await requireAdmin(request);
   if (authResult instanceof NextResponse) return authResult;
 
@@ -78,12 +81,12 @@ export async function GET(request: Request) {
       count: holders.length,
       activeCount: holders.filter((h) => !h.isExpired).length,
       holders,
-    });
+    }, { headers });
   } catch (error) {
     console.error('List skin holders error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch skin holders' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

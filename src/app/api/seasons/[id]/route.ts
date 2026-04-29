@@ -7,6 +7,9 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { id } = await params;
   const season = await db.season.findUnique({
     where: { id },
@@ -27,7 +30,7 @@ export async function GET(
   });
 
   if (!season) {
-    return NextResponse.json({ error: 'Season not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Season not found' }, { headers,  status: 404 });
   }
 
   // For tarkam seasons, fetch unique players from tournament participations
@@ -102,7 +105,7 @@ export async function GET(
     response.availableProfiles = availableProfiles;
   }
 
-  return NextResponse.json(response);
+  return NextResponse.json(response, { headers });
 }
 
 // PUT /api/seasons/[id] — Update season (status, championClubId, endDate, name)

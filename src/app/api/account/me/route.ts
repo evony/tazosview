@@ -5,10 +5,13 @@ import { db } from '@/lib/db';
 const PLAYER_SESSION_COOKIE = 'idm-player-session';
 
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const cookieHeader = request.headers.get('cookie');
     if (!cookieHeader) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json({ error: 'Not authenticated' }, { headers,  status: 401 });
     }
 
     const cookies = Object.fromEntries(
@@ -20,13 +23,13 @@ export async function GET(request: NextRequest) {
 
     const token = cookies[PLAYER_SESSION_COOKIE];
     if (!token) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json({ error: 'Not authenticated' }, { headers,  status: 401 });
     }
 
     const decodedToken = decodeURIComponent(token);
     const session = verifySessionToken(decodedToken);
     if (!session || session.role !== 'player') {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json({ error: 'Not authenticated' }, { headers,  status: 401 });
     }
 
     // Get full account data with player info
@@ -71,7 +74,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!account) {
-      return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Account not found' }, { headers,  status: 404 });
     }
 
     // Get the current club from membership (now on ClubProfile)
@@ -115,8 +118,8 @@ export async function GET(request: NextRequest) {
           club: currentProfile ? { id: currentProfile.id, name: currentProfile.name, logo: currentProfile.logo } : null,
         },
       },
-    });
+    }, { headers });
   } catch {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { headers,  status: 500 });
   }
 }

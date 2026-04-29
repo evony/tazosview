@@ -10,17 +10,20 @@ export const dynamic = 'force-dynamic';
 // Admin mutations that affect standings/scores call revalidateTag('league-data').
 
 const STATS_CACHE_HEADERS = {
-  'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, max-age=0',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Surrogate-Key': 'league-data',
   'Vary': 'Accept-Encoding',
 };
 
 const STATS_CACHE_HEADERS_SHORT = {
-  'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=15, max-age=0',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Surrogate-Key': 'league-data',
 };
 
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
   const { searchParams } = new URL(request.url);
   const division = searchParams.get('division') || 'male';
@@ -541,6 +544,6 @@ export async function GET(request: Request) {
   });
   } catch (error) {
     console.error('[GET /api/stats]', error);
-    return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch stats' }, { headers,  status: 500 });
   }
 }

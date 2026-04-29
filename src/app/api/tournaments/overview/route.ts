@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 // GET /api/tournaments/overview?division=male
 // Returns tournament overview for the division: active tournament status, recent results, upcoming matches, top players
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const division = searchParams.get('division') || 'male';
 
@@ -85,7 +88,7 @@ export async function GET(request: Request) {
         playerCount,
         clubCount,
         message: 'Belum ada tournament untuk divisi ini',
-      });
+      }, { headers });
     }
 
     const t = latestTournament;
@@ -279,10 +282,10 @@ export async function GET(request: Request) {
       topTeams,
       topParticipants,
       registeredParticipants,
-    });
+    }, { headers });
   } catch (e: unknown) {
     const error = e as Error;
     console.error('Tournament overview error:', error);
-    return NextResponse.json({ error: 'Gagal mengambil overview tournament' }, { status: 500 });
+    return NextResponse.json({ error: 'Gagal mengambil overview tournament' }, { headers,  status: 500 });
   }
 }

@@ -7,6 +7,9 @@ import { db } from '@/lib/db';
  * Returns all active skins ordered by priority desc
  */
 export async function GET() {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const skins = await db.skin.findMany({
       where: { isActive: true },
@@ -26,12 +29,12 @@ export async function GET() {
         duration: skin.duration,
         isActive: skin.isActive,
       })),
-    });
+    }, { headers });
   } catch (error) {
     console.error('List skins error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch skins' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

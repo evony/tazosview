@@ -103,6 +103,9 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { id: clubId } = await params;
 
   const club = await db.club.findUnique({
@@ -110,7 +113,7 @@ export async function GET(
     include: { profile: true },
   });
   if (!club) {
-    return NextResponse.json({ error: 'Club tidak ditemukan' }, { status: 404 });
+    return NextResponse.json({ error: 'Club tidak ditemukan' }, { headers,  status: 404 });
   }
 
   // Get active members from the ClubProfile (persistent, not per-season)
@@ -122,7 +125,7 @@ export async function GET(
     orderBy: [{ role: 'desc' }, { player: { gamertag: 'asc' } }],
   });
 
-  return NextResponse.json(members);
+  return NextResponse.json(members, { headers });
 }
 
 // DELETE /api/clubs/[id]/members — Remove member from club (set leftAt on ClubProfile membership)

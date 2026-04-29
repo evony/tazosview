@@ -3,6 +3,9 @@ import { db } from '@/lib/db';
 
 // GET - List banners by placement
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const placement = searchParams.get('placement');
@@ -31,10 +34,10 @@ export async function GET(request: NextRequest) {
       orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }],
     });
 
-    return NextResponse.json({ banners });
+    return NextResponse.json({ banners }, { headers });
   } catch (error) {
     console.error('Error fetching banners:', error);
-    return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch banners' }, { headers,  status: 500 });
   }
 }
 

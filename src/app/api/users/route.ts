@@ -3,6 +3,9 @@ import { db } from '@/lib/db';
 
 // User listing - maps to Player/Account in our schema
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const division = searchParams.get('division');
@@ -34,7 +37,7 @@ export async function GET(request: NextRequest) {
         success: true,
         data: admins.map(a => ({ ...a, name: a.username, type: 'admin' })),
         pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-      });
+      }, { headers });
     }
 
     // Otherwise query Players
@@ -77,12 +80,12 @@ export async function GET(request: NextRequest) {
       success: true,
       data: players.map(p => ({ ...p, type: 'player' })),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get users error:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan server' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

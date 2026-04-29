@@ -8,6 +8,9 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { id } = await params;
   const club = await db.club.findUnique({
     where: { id },
@@ -26,7 +29,7 @@ export async function GET(
       awayMatches: { include: { club1: { include: { profile: { select: { name: true, logo: true } } } } }, orderBy: { week: 'asc' }, take: 5 },
     },
   });
-  if (!club) return NextResponse.json({ error: 'Club not found' }, { status: 404 });
+  if (!club) return NextResponse.json({ error: 'Club not found' }, { headers,  status: 404 });
 
   // Flatten for frontend compatibility
   const flat = {
@@ -59,7 +62,7 @@ export async function GET(
     _count: { members: club.profile.members.length },
   };
 
-  return NextResponse.json(flat);
+  return NextResponse.json(flat, { headers });
 }
 
 // PUT /api/clubs/[id] — Edit club (name, logo, banner → all on ClubProfile now)

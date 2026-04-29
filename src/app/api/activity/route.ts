@@ -137,7 +137,7 @@ export async function GET() {
     { activities: limited },
     {
       headers: {
-        'Cache-Control': 'no-store, max-age=0',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
       },
     }
   );

@@ -7,6 +7,9 @@ import { requireSuperAdmin, requireAdmin } from '@/lib/api-auth';
  * GET /api/admins - List all admins (super_admin only)
  */
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const result = await requireSuperAdmin(request);
   if (result instanceof NextResponse) return result;
 
@@ -22,12 +25,12 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ admins });
+    return NextResponse.json({ admins }, { headers });
   } catch (error) {
     console.error('List admins error:', error);
     return NextResponse.json(
       { error: 'Gagal mengambil daftar admin' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

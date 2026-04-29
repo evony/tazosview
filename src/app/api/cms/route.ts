@@ -3,14 +3,17 @@ import { requireAdmin } from '@/lib/api-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const settings = await db.cmsSetting.findMany();
     const result: Record<string, string> = {};
     for (const s of settings) result[s.key] = s.value;
-    return NextResponse.json({ settings: result });
+    return NextResponse.json({ settings: result }, { headers });
   } catch (error) {
     console.error('CMS settings error:', error);
-    return NextResponse.json({ settings: {} });
+    return NextResponse.json({ settings: {} }, { headers });
   }
 }
 

@@ -46,7 +46,7 @@ export async function GET(request: Request) {
     });
 
     const response = NextResponse.json({ streaks: streakData });
-    response.headers.set('Cache-Control', 's-maxage=10, stale-while-revalidate=30, max-age=0');
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     response.headers.set('Surrogate-Key', 'league-data');
     return response;
   } catch (e: unknown) {

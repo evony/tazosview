@@ -4,11 +4,14 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const CACHE_HEADERS = {
-  'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, max-age=0',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Surrogate-Key': 'league-data',
 };
 
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const division = searchParams.get('division') || 'male';
 

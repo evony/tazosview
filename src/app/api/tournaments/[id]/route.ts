@@ -213,6 +213,9 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { id } = await params;
   const tournament = await db.tournament.findUnique({
     where: { id },
@@ -246,10 +249,10 @@ export async function GET(
   });
 
   if (!tournament) {
-    return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Tournament not found' }, { headers,  status: 404 });
   }
 
-  return NextResponse.json(tournament);
+  return NextResponse.json(tournament, { headers });
 }
 
 export async function PUT(

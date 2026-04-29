@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = request.nextUrl;
   const player1Id = searchParams.get('player1')?.trim() || '';
   const player2Id = searchParams.get('player2')?.trim() || '';
@@ -9,14 +12,14 @@ export async function GET(request: NextRequest) {
   if (!player1Id || !player2Id) {
     return NextResponse.json(
       { error: 'Both player1 and player2 query params are required' },
-      { status: 400 }
+      { headers,  status: 400 }
     );
   }
 
   if (player1Id === player2Id) {
     return NextResponse.json(
       { error: 'Cannot compare a player with themselves' },
-      { status: 400 }
+      { headers,  status: 400 }
     );
   }
 
@@ -73,14 +76,14 @@ export async function GET(request: NextRequest) {
   if (!p1) {
     return NextResponse.json(
       { error: `Player with id ${player1Id} not found` },
-      { status: 404 }
+      { headers,  status: 404 }
     );
   }
 
   if (!p2) {
     return NextResponse.json(
       { error: `Player with id ${player2Id} not found` },
-      { status: 404 }
+      { headers,  status: 404 }
     );
   }
 
@@ -137,5 +140,5 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     player1: transformPlayer(p1),
     player2: transformPlayer(p2),
-  });
+  }, { headers });
 }

@@ -6,17 +6,20 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const LEAGUE_CACHE_HEADERS = {
-  'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, max-age=0',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Surrogate-Key': 'league-data',
   'Vary': 'Accept-Encoding',
 };
 
 const LEAGUE_CACHE_HEADERS_SHORT = {
-  'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=15, max-age=0',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Surrogate-Key': 'league-data',
 };
 
 export async function GET() {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
   // Get all Tarkam seasons (active + completed) — exclude Liga seasons
   const seasons = await withDbRetry(() => db.season.findMany({

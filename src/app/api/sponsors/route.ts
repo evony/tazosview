@@ -3,6 +3,9 @@ import { db } from '@/lib/db';
 
 // GET - List all sponsors
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const tier = searchParams.get('tier');
@@ -29,10 +32,10 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    return NextResponse.json({ sponsors });
+    return NextResponse.json({ sponsors }, { headers });
   } catch (error) {
     console.error('Error fetching sponsors:', error);
-    return NextResponse.json({ error: 'Failed to fetch sponsors' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch sponsors' }, { headers,  status: 500 });
   }
 }
 

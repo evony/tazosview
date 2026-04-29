@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 // CDN caching: 10s edge cache, 30s stale-while-revalidate
 const LEADERBOARD_CACHE_HEADERS = {
-  'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, max-age=0',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Surrogate-Key': 'league-data',
   'Vary': 'Accept-Encoding',
 };
@@ -38,6 +38,9 @@ interface LeaderboardClub {
  * for the active season of each division (not lifetime Player.points).
  */
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type') || 'tarkam'; // "tarkam" | "liga"
 

@@ -6,6 +6,9 @@ import { BotStatus } from '@prisma/client';
 
 // GET /api/whatsapp/bot - Get bot status
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const bot = await db.whatsAppBot.findFirst();
 
@@ -13,7 +16,7 @@ export async function GET(request: NextRequest) {
       return Response.json({
         success: false,
         error: 'Bot not configured'
-      }, { status: 404 });
+      }, { headers,  status: 404 });
     }
 
     return Response.json({
@@ -27,12 +30,12 @@ export async function GET(request: NextRequest) {
         messagesReceived: bot.messagesReceived,
         autoReply: bot.autoReply
       }
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get WhatsApp bot status error:', error);
     return Response.json(
       { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

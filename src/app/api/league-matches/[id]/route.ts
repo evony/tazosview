@@ -5,6 +5,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { id } = await params;
 
   const match = await db.leagueMatch.findUnique({
@@ -66,7 +69,7 @@ export async function GET(
   });
 
   if (!match) {
-    return NextResponse.json({ error: 'Match not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Match not found' }, { headers,  status: 404 });
   }
 
   // Try to find MVP player from tournament matches for this week
@@ -139,5 +142,5 @@ export async function GET(
     },
   };
 
-  return NextResponse.json(result);
+  return NextResponse.json(result, { headers });
 }

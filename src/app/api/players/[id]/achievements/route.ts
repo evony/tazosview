@@ -6,6 +6,9 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { id } = await params;
 
   try {
@@ -16,7 +19,7 @@ export async function GET(
     });
 
     if (!player) {
-      return NextResponse.json({ error: 'Player not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Player not found' }, { headers,  status: 404 });
     }
 
     // Get player achievements
@@ -67,10 +70,10 @@ export async function GET(
         earned: achievements.length,
         remaining: allAchievements.length - achievements.length,
       },
-    });
+    }, { headers });
   } catch (e: unknown) {
     const error = e as Error;
     console.error('Get player achievements error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { headers,  status: 500 });
   }
 }

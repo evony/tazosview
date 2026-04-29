@@ -83,12 +83,15 @@ export async function POST(request: NextRequest) {
 
 // GET - Get player achievements
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const playerId = searchParams.get('playerId');
 
     if (!playerId) {
-      return NextResponse.json({ error: 'Player ID is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Player ID is required' }, { headers,  status: 400 });
     }
 
     const achievements = await prisma.playerAchievement.findMany({
@@ -100,9 +103,9 @@ export async function GET(request: NextRequest) {
       orderBy: { earnedAt: 'desc' },
     });
 
-    return NextResponse.json({ achievements });
+    return NextResponse.json({ achievements }, { headers });
   } catch (error) {
     console.error('Error fetching player achievements:', error);
-    return NextResponse.json({ error: 'Failed to fetch achievements' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch achievements' }, { headers,  status: 500 });
   }
 }

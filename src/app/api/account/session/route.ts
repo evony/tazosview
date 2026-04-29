@@ -5,10 +5,13 @@ import { db } from '@/lib/db';
 const PLAYER_SESSION_COOKIE = 'idm-player-session';
 
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const cookieHeader = request.headers.get('cookie');
     if (!cookieHeader) {
-      return NextResponse.json({ authenticated: false });
+      return NextResponse.json({ authenticated: false }, { headers });
     }
 
     // Parse cookie
@@ -21,13 +24,13 @@ export async function GET(request: NextRequest) {
 
     const token = cookies[PLAYER_SESSION_COOKIE];
     if (!token) {
-      return NextResponse.json({ authenticated: false });
+      return NextResponse.json({ authenticated: false }, { headers });
     }
 
     const decodedToken = decodeURIComponent(token);
     const session = verifySessionToken(decodedToken);
     if (!session || session.role !== 'player') {
-      return NextResponse.json({ authenticated: false });
+      return NextResponse.json({ authenticated: false }, { headers });
     }
 
     // Get account data
@@ -54,7 +57,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!account) {
-      return NextResponse.json({ authenticated: false });
+      return NextResponse.json({ authenticated: false }, { headers });
     }
 
     // Get active skins for the player
@@ -109,8 +112,8 @@ export async function GET(request: NextRequest) {
         skins: skinsData,
         player: account.player,
       },
-    });
+    }, { headers });
   } catch {
-    return NextResponse.json({ authenticated: false });
+    return NextResponse.json({ authenticated: false }, { headers });
   }
 }

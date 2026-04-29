@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
   return new NextResponse(svg, {
     headers: {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
     },
   });
 }

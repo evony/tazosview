@@ -152,6 +152,9 @@ export async function POST(request: Request) {
  * Useful for generating a sync payload from SQLite to push to Neon.
  */
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const authResult = await requireSuperAdmin(request);
   if (authResult instanceof NextResponse) return authResult;
 
@@ -201,11 +204,11 @@ export async function GET(request: Request) {
         totalAvatars: playerAvatars.length,
         totalChampions: seasonChampions.length,
       },
-    });
+    }, { headers });
   } catch (e: unknown) {
     const error = e as Error;
     console.error('[/api/sync GET] Error:', error);
-    return NextResponse.json({ error: getSafeErrorMessage(e) }, { status: 500 });
+    return NextResponse.json({ error: getSafeErrorMessage(e) }, { headers,  status: 500 });
   }
 }
 

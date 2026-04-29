@@ -199,7 +199,7 @@ export async function GET() {
 
   return NextResponse.json({ items: feedItems.slice(0, 30) }, {
     headers: {
-      'Cache-Control': 'no-store, max-age=0',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
     },
   });
 }

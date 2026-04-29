@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 
 // GET /api/admin/audit-logs — Fetch audit logs with pagination
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const admin = await requireAdmin(request);
   if (admin instanceof NextResponse) return admin;
 
@@ -27,5 +30,5 @@ export async function GET(request: Request) {
     db.auditLog.count({ where }),
   ]);
 
-  return NextResponse.json({ logs, total, limit, offset });
+  return NextResponse.json({ logs, total, limit, offset }, { headers });
 }

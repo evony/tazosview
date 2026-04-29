@@ -3,6 +3,9 @@ import { db } from '@/lib/db';
 
 // GET - List all achievements
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -28,10 +31,10 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    return NextResponse.json({ achievements });
+    return NextResponse.json({ achievements }, { headers });
   } catch (error) {
     console.error('Error fetching achievements:', error);
-    return NextResponse.json({ error: 'Failed to fetch achievements' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch achievements' }, { headers,  status: 500 });
   }
 }
 

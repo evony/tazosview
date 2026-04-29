@@ -30,6 +30,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { id } = await params;
   const player = await db.player.findUnique({
     where: { id },
@@ -44,10 +47,10 @@ export async function GET(
   });
 
   if (!player) {
-    return NextResponse.json({ error: 'Player not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Player not found' }, { headers,  status: 404 });
   }
 
-  return NextResponse.json(player);
+  return NextResponse.json(player, { headers });
 }
 
 export async function PUT(

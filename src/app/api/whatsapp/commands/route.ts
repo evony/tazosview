@@ -6,6 +6,9 @@ import { UserRole } from '@prisma/client';
 
 // GET /api/whatsapp/commands - List WhatsApp commands
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const commands = await db.whatsAppCommand.findMany({
       orderBy: { command: 'asc' }
@@ -14,12 +17,12 @@ export async function GET(request: NextRequest) {
     return Response.json({
       success: true,
       data: commands
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get WhatsApp commands error:', error);
     return Response.json(
       { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

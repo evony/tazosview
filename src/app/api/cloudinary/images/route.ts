@@ -12,6 +12,9 @@ const API_SECRET = process.env.CLOUDINARY_API_SECRET;
  * Requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET env vars.
  */
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const authResult = await requireAdmin(request);
   if (authResult instanceof NextResponse) return authResult;
 
@@ -23,7 +26,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || 'upload';
 
     if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
-      return NextResponse.json({ error: 'Cloudinary not configured — set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env' }, { status: 500 });
+      return NextResponse.json({ error: 'Cloudinary not configured — set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env' }, { headers,  status: 500 });
     }
 
     // Build URL for Cloudinary Admin API
@@ -49,7 +52,7 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       const error = await response.text();
       console.error('Cloudinary API error:', error);
-      return NextResponse.json({ error: 'Failed to fetch from Cloudinary' }, { status: response.status });
+      return NextResponse.json({ error: 'Failed to fetch from Cloudinary' }, { headers,  status: response.status });
     }
 
     const data = await response.json();
@@ -69,10 +72,10 @@ export async function GET(request: NextRequest) {
       images,
       next_cursor: data.next_cursor || null,
       rate_limit_remaining: response.headers.get('x-featureratelimit-remaining'),
-    });
+    }, { headers });
   } catch (error) {
     console.error('Cloudinary fetch error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { headers,  status: 500 });
   }
 }
 

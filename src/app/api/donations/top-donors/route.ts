@@ -2,6 +2,9 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     // Get top 5 donors grouped by name, with their latest donation details
     const topDonors = await db.donation.groupBy({
@@ -57,11 +60,11 @@ export async function GET() {
         totalDonors: uniqueDonors.length,
         totalDonations: totals._count.id || 0,
       },
-    });
+    }, { headers });
   } catch {
     return NextResponse.json(
       { donors: [], summary: { totalAmount: 0, totalDonors: 0, totalDonations: 0 } },
-      { status: 200 }
+      { headers,  status: 200 }
     );
   }
 }

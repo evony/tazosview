@@ -45,7 +45,7 @@ export async function GET() {
       liveNow,
     }, {
       headers: {
-        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, max-age=0',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
         'Surrogate-Key': 'league-data',
       },
     });

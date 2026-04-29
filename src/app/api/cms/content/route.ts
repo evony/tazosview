@@ -34,6 +34,6 @@ export async function GET() {
 
   return NextResponse.json(
     { settings: settingsMap, sections: sectionsMap },
-    { headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30' } }
+    { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } }
   );
 }

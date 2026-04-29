@@ -9,7 +9,7 @@ export async function GET() {
     include: { cards: { orderBy: { order: 'asc' } } },
   });
   return NextResponse.json(sections, {
-    headers: { 'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10' },
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
   });
 }
 

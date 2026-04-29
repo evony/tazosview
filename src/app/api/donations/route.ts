@@ -75,6 +75,9 @@ export async function POST(request: Request) {
 
 // GET /api/donations — List donations (public: only approved; admin: all or filtered)
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type'); // "weekly" | "season"
@@ -120,10 +123,10 @@ export async function GET(request: Request) {
         amount: total._sum.amount || 0,
         count: total._count,
       },
-    });
+    }, { headers });
   } catch (error) {
     console.error('[DONATIONS_GET]', error);
-    return NextResponse.json({ error: 'Terjadi kesalahan' }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan' }, { headers,  status: 500 });
   }
 }
 

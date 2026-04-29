@@ -13,6 +13,9 @@ import { db } from '@/lib/db';
  * When seasonId is not provided, falls back to lifetime Player.points.
  */
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const division = searchParams.get('division');
@@ -30,7 +33,7 @@ export async function GET(request: NextRequest) {
       if (!season) {
         return NextResponse.json(
           { success: false, error: 'Season tidak ditemukan' },
-          { status: 404 }
+          { headers,  status: 404 }
         );
       }
 
@@ -103,7 +106,7 @@ export async function GET(request: NextRequest) {
           division: divisionFilter,
           mode: 'per-season',
         },
-      });
+      }, { headers });
     }
 
     // ===== LIFETIME LEADERBOARD (default / fallback) =====
@@ -152,12 +155,12 @@ export async function GET(request: NextRequest) {
         division: division || null,
         mode: 'lifetime',
       },
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get leaderboard error:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan server' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

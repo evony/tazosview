@@ -2,6 +2,9 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get('limit') || '10');
 
@@ -18,5 +21,5 @@ export async function GET(request: Request) {
     donorName: d.donorName,
     totalAmount: d._sum.amount,
     donationCount: d._count.id,
-  })));
+  })), { headers });
 }

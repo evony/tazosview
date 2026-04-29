@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 const CACHE_HEADERS = {
-  'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, max-age=0',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Surrogate-Key': 'league-data',
 };
 
@@ -12,6 +12,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { id } = await params;
 
@@ -32,7 +35,7 @@ export async function GET(
     });
 
     if (!player) {
-      return NextResponse.json({ error: 'Player not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Player not found' }, { headers,  status: 404 });
     }
 
     const clubMembership = player.clubMembers[0];
@@ -219,7 +222,7 @@ export async function GET(
     console.error('[API /players/[id]/matches] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch player matches' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

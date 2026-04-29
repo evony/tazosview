@@ -530,6 +530,9 @@ async function createParticipationForTournament(playerId: string, division: stri
 
 // GET - Check for duplicate names (for real-time validation)
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const name = searchParams.get('name');
   const city = searchParams.get('city');
@@ -537,7 +540,7 @@ export async function GET(request: Request) {
   const division = searchParams.get('division');
 
   if (!name || !name.trim()) {
-    return NextResponse.json({ exists: false, similar: [], isBlocked: false });
+    return NextResponse.json({ exists: false, similar: [], isBlocked: false }, { headers });
   }
 
   const allPlayers = await db.player.findMany({
@@ -585,7 +588,7 @@ export async function GET(request: Request) {
     alreadyInTournament: result.alreadyInTournament,
     reRegisterPlayerId: result.reRegisterPlayerId,
     message: result.message,
-  });
+  }, { headers });
 }
 
 export async function POST(request: Request) {

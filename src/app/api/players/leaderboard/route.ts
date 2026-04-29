@@ -10,6 +10,9 @@ import { NextResponse } from 'next/server';
  *   limit: number — max results (default 50)
  */
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const division = searchParams.get('division');
   const seasonId = searchParams.get('seasonId');
@@ -73,7 +76,7 @@ export async function GET(request: Request) {
       .slice(0, limit)
       .map((p, idx) => ({ rank: idx + 1, ...p }));
 
-    return NextResponse.json(leaderboard);
+    return NextResponse.json(leaderboard, { headers });
   }
 
   // ===== LIFETIME LEADERBOARD (fallback) =====
@@ -113,5 +116,5 @@ export async function GET(request: Request) {
     club: (p.clubMembers as unknown as { profile: { name: string } }[] | undefined)?.[0]?.profile?.name || null,
   }));
 
-  return NextResponse.json(leaderboard);
+  return NextResponse.json(leaderboard, { headers });
 }

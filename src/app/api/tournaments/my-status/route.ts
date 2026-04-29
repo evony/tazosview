@@ -5,13 +5,16 @@ import { NextResponse } from 'next/server';
 // Find a player's tournament status: team, matches, opponent, alive status
 // Supports completed tournaments with final results and prize info
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const name = searchParams.get('name');
   const gamertag = searchParams.get('gamertag');
   const division = searchParams.get('division');
 
   if (!name && !gamertag) {
-    return NextResponse.json({ error: 'Parameter name atau gamertag wajib diisi' }, { status: 400 });
+    return NextResponse.json({ error: 'Parameter name atau gamertag wajib diisi' }, { headers,  status: 400 });
   }
 
   try {
@@ -51,7 +54,7 @@ export async function GET(request: Request) {
     });
 
     if (!player) {
-      return NextResponse.json({ found: false, message: 'Pemain tidak ditemukan' });
+      return NextResponse.json({ found: false, message: 'Pemain tidak ditemukan' }, { headers });
     }
 
     // Step 2: Find the active or completed tournament (filtered by player's division)
@@ -124,7 +127,7 @@ export async function GET(request: Request) {
         message: latestTournament
           ? `Tournament terakhir (${latestTournament.name}) status: ${latestTournament.status}`
           : 'Belum ada tournament untuk division ini',
-      });
+      }, { headers });
     }
 
     const isCompleted = activeTournament.status === 'completed';
@@ -168,7 +171,7 @@ export async function GET(request: Request) {
         message: participation
           ? `Anda terdaftar tapi belum masuk tim. Status: ${participation.status}`
           : 'Anda belum terdaftar di tournament ini',
-      });
+      }, { headers });
     }
 
     // Step 3b: Fetch participation data for prize/rank info (especially for completed tournaments)
@@ -356,10 +359,10 @@ export async function GET(request: Request) {
       };
     }
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers });
   } catch (e: unknown) {
     const error = e as Error;
     console.error('My-status error:', error);
-    return NextResponse.json({ error: 'Gagal mengambil status tournament' }, { status: 500 });
+    return NextResponse.json({ error: 'Gagal mengambil status tournament' }, { headers,  status: 500 });
   }
 }

@@ -6,6 +6,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { id } = await params;
 
@@ -33,10 +36,10 @@ export async function GET(
       sponsors: tournamentSponsors,
       sponsoredPrizes,
       presentedBy: presentedBy?.sponsor || null,
-    });
+    }, { headers });
   } catch (error) {
     console.error('Error fetching tournament sponsors:', error);
-    return NextResponse.json({ error: 'Failed to fetch tournament sponsors' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch tournament sponsors' }, { headers,  status: 500 });
   }
 }
 

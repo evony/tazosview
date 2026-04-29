@@ -13,7 +13,7 @@ export async function GET() {
     map[s.key] = s.value;
   }
   return NextResponse.json({ settings, map }, {
-    headers: { 'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10' },
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
   });
 }
 

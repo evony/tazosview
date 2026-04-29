@@ -139,7 +139,7 @@ export async function GET(request: Request) {
       { liveCount, nextMatch, recentResults: limitedResults },
       {
         headers: {
-          'Cache-Control': 'no-store, max-age=0',
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
         },
       }
     );

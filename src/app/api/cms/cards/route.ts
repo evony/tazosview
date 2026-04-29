@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   });
 
   return NextResponse.json(cards, {
-    headers: { 'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10' },
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
   });
 }
 

@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/teams - List teams
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const tournamentId = searchParams.get('tournamentId');
@@ -40,12 +43,12 @@ export async function GET(request: NextRequest) {
         total,
         totalPages: Math.ceil(total / limit),
       },
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get teams error:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan server' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

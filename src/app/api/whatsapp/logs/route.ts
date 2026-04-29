@@ -5,13 +5,16 @@ import { NextRequest } from 'next/server';
 
 // GET /api/whatsapp/logs - Get bot logs
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const currentUser = await getSession(request);
     
     if (!currentUser || !['SUPER_ADMIN', 'ADMIN', 'MODERATOR'].includes(currentUser.role)) {
       return Response.json(
         { success: false, error: 'Forbidden' },
-        { status: 403 }
+        { headers,  status: 403 }
       );
     }
 
@@ -26,12 +29,12 @@ export async function GET(request: NextRequest) {
     return Response.json({
       success: true,
       data: logs
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get WhatsApp logs error:', error);
     return Response.json(
       { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

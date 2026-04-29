@@ -9,6 +9,9 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ playerId: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { playerId } = await params;
 
   const player = await db.player.findUnique({
@@ -22,7 +25,7 @@ export async function GET(
   });
 
   if (!player) {
-    return NextResponse.json({ error: 'Player not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Player not found' }, { headers,  status: 404 });
   }
 
   // Query PlayerPoint separately to avoid Prisma client caching issues
@@ -57,5 +60,5 @@ export async function GET(
     pointRecords,
     breakdown,
     tournamentHistory: player.participations,
-  });
+  }, { headers });
 }

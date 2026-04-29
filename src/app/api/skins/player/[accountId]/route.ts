@@ -10,13 +10,16 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ accountId: string }> }
 ) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { accountId } = await params;
 
     if (!accountId) {
       return NextResponse.json(
         { error: 'accountId diperlukan' },
-        { status: 400 }
+        { headers,  status: 400 }
       );
     }
 
@@ -33,7 +36,7 @@ export async function GET(
     if (!account) {
       return NextResponse.json(
         { error: 'Akun tidak ditemukan' },
-        { status: 404 }
+        { headers,  status: 404 }
       );
     }
 
@@ -126,12 +129,12 @@ export async function GET(
       count: skinsData.length,
       donorBadgeCount: account.donorBadgeCount,
       skins: skinsData,
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get player skins error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch player skins' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

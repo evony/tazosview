@@ -4,11 +4,14 @@ import { db } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 const CACHE_HEADERS = {
-  'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30, max-age=0',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Surrogate-Key': 'league-data',
 };
 
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const clubId = searchParams.get('clubId');
@@ -17,7 +20,7 @@ export async function GET(request: NextRequest) {
     if (!clubId) {
       return NextResponse.json(
         { error: 'clubId query parameter is required' },
-        { status: 400 }
+        { headers,  status: 400 }
       );
     }
 
@@ -28,7 +31,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!club) {
-      return NextResponse.json({ error: 'Club not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Club not found' }, { headers,  status: 404 });
     }
 
     // Use provided seasonId or fall back to the club's seasonId
@@ -91,7 +94,7 @@ export async function GET(request: NextRequest) {
     console.error('[API /league-matches/club] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch club schedule' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

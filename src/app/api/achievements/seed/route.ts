@@ -209,6 +209,9 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const achievements = await db.achievement.findMany({
       where: { isActive: true },
@@ -228,9 +231,9 @@ export async function GET() {
         criteria: JSON.parse(a.criteria),
         rewardPoints: a.rewardPoints,
       })),
-    });
+    }, { headers });
   } catch (e: unknown) {
     const error = e as Error;
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { headers,  status: 500 });
   }
 }

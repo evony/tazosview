@@ -3,6 +3,9 @@ import { db } from '@/lib/db';
 
 // Admin user management - works with Admin model
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
@@ -32,12 +35,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: admins,
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get admins error:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan server' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

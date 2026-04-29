@@ -10,6 +10,9 @@ import { NextResponse } from 'next/server';
  *   detail: "full" — include point breakdown per player
  */
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
   const { searchParams } = new URL(request.url);
   const division = searchParams.get('division');
@@ -74,10 +77,10 @@ export async function GET(request: Request) {
   return NextResponse.json({
     rankings,
     tierSummary,
-  });
+  }, { headers });
   } catch (error) {
     console.error('[GET /api/rankings]', error);
-    return NextResponse.json({ error: 'Failed to fetch rankings' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch rankings' }, { headers,  status: 500 });
   }
 }
 

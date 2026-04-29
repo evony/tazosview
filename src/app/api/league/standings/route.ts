@@ -4,6 +4,9 @@ import { db } from '@/lib/db';
 import { Division } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const seasonId = searchParams.get('seasonId');
@@ -52,12 +55,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: rankedStandings,
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get standings error:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan server' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

@@ -4,6 +4,9 @@ import { SEASON_TOTAL_WEEKS } from '@/lib/constants';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const division = searchParams.get('division');
   const seasonId = searchParams.get('seasonId');
@@ -29,7 +32,7 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json(tournaments);
+  return NextResponse.json(tournaments, { headers });
 }
 
 export async function POST(request: Request) {

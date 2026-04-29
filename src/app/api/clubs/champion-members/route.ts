@@ -11,11 +11,14 @@ import { NextResponse } from 'next/server';
  * from both male and female divisions are automatically included.
  */
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const clubId = searchParams.get('clubId');
 
   if (!clubId) {
-    return NextResponse.json({ error: 'clubId is required' }, { status: 400 });
+    return NextResponse.json({ error: 'clubId is required' }, { headers,  status: 400 });
   }
 
   // Try to find as ClubProfile first, then as Club
@@ -38,7 +41,7 @@ export async function GET(request: Request) {
     });
 
     if (!club) {
-      return NextResponse.json({ error: 'Club tidak ditemukan' }, { status: 404 });
+      return NextResponse.json({ error: 'Club tidak ditemukan' }, { headers,  status: 404 });
     }
 
     profileId = club.profileId;
@@ -82,5 +85,5 @@ export async function GET(request: Request) {
       role: m.role,
       profileId,
     })),
-  });
+  }, { headers });
 }

@@ -9,6 +9,9 @@ import { requirePlayer } from '@/lib/api-auth';
  * Returns skins sorted by priority desc with skin details
  */
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const authResult = await requirePlayer(request);
   if (authResult instanceof NextResponse) return authResult;
 
@@ -125,12 +128,12 @@ export async function GET(request: Request) {
       expiredRemoved: expiredIds.length,
       donorBadgeCount,
       skins: skinsData,
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get my skins error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch skins' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

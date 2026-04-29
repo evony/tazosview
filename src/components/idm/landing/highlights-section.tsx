@@ -14,16 +14,13 @@ import type { StatsData, TopPlayer, SeasonInfo, MvpHallOfFameEntry } from '@/typ
 
 /* ═══════════════════════════════════════════════════════════════
    TARKAM IDM — HIGHLIGHTS SECTION (PUNCAK PRESTASI)
-   Interactive thumbnail selector with featured card transitions
-   Asymmetric 5-column grid with 3D perspective hover
-
-   Includes "Puncak Prestasi" items (purely Tarkam — no Liga concept):
-   - #1 Tarkam Male / Female (current ranking leaders)
-   - #1 Club Tarkam (combined member tarkam points)
-   - Streak Male / Female (longest win streak)
-   - MVP Terbaru Male / Female (latest weekly MVP per division)
-
-   NOTE: Season Champions are shown in a dedicated SeasonChampionSection.
+   Duo Champion Card Layout — Male + Female in one card
+   
+   4 Highlight Categories:
+   1. Juwara #1 — #1 Tarkam Male + Female (duo avatar)
+   2. Klub Terkuat — #1 Club Tarkam (solo)
+   3. Streak Terpanjang — Male + Female streak (duo avatar)
+   4. MVP Terbaru — Male + Female MVP (duo avatar)
    ═══════════════════════════════════════════════════════════════ */
 
 interface HighlightsSectionProps {
@@ -36,31 +33,51 @@ interface HighlightsSectionProps {
   setSelectedPlayer: (player: any) => void;
 }
 
+/* ─── Duo Player Data ─── */
+interface DuoPlayer {
+  gamertag: string;
+  imageUrl?: string;
+  tier?: string;
+  points: number;
+  totalWins: number;
+  streak: number;
+  totalMvp?: number;
+  mvpWeek?: number;
+  player: TopPlayer & { division?: string };
+  isEmpty?: boolean;
+}
+
 /* ─── Highlight Item Type ─── */
 interface HighlightItem {
   id: string;
-  type: 'rank1-male' | 'rank1-female' | 'rank1-club' | 'streak-male' | 'streak-female' | 'mvp-male' | 'mvp-female';
+  type: 'rank1' | 'rank1-club' | 'streak' | 'mvp';
   title: string;
   subtitle: string;
   description: string;
   badge: string;
   /** Short 2-3 word label for thumbnail */
   thumbLabel: string;
-  imageUrl?: string;
+  /** Primary accent color */
   accentColor: string;
   accentLight: string;
-  division?: 'male' | 'female';
-  metadata: { icon: typeof Calendar; label: string; value: string }[];
-  player?: TopPlayer & { division?: string };
+  /** Duo player data (for rank1, streak, mvp) */
+  isDuo?: boolean;
+  male?: DuoPlayer;
+  female?: DuoPlayer;
+  maleAccent: string;
+  femaleAccent: string;
+  maleAccentLight: string;
+  femaleAccentLight: string;
+  /** Solo data (for club) */
+  imageUrl?: string;
   clubName?: string;
   clubLogo?: string | null;
-  /** Season number for season-related types */
-  seasonNumber?: number;
-  /** Whether this is an empty/placeholder item */
+  /** Shared metadata rows for detail panel */
+  metadata: { icon: typeof Calendar; label: string; value: string }[];
+  /** Whether both sides are empty */
   isEmpty?: boolean;
-  /** MVP week number for MVP types */
+  /** MVP week number */
   mvpWeek?: number;
-  /** Total MVP count for MVP types */
   mvpCount?: number;
 }
 
@@ -100,99 +117,67 @@ function buildHighlights(
   const items: HighlightItem[] = [];
 
   /* ═══════════════════════════════════════════════════════════
-     PRIORITY ORDER (by importance):
-     1. #1 Tarkam Male — current #1 ranked male player
-     2. #1 Tarkam Female — current #1 ranked female player
-     3. #1 Club Tarkam — top club by combined member tarkam points
-     4. Streak Male — male player with longest win streak
-     5. Streak Female — female player with longest win streak
-     6. MVP Terbaru Male — latest weekly MVP in male division
-     7. MVP Terbaru Female — latest weekly MVP in female division
-     
-     Each category ALWAYS gets an item — either real data or an empty placeholder.
+     4 DUO/SOLO HIGHLIGHT CATEGORIES:
+     1. Juwara #1 — Male #1 + Female #1 (duo)
+     2. Klub Terkuat — #1 Club (solo)
+     3. Streak Terpanjang — Male + Female streak (duo)
+     4. MVP Terbaru — Male + Female MVP (duo)
      ═══════════════════════════════════════════════════════════ */
 
-  // ─── 1. #1 Tarkam Male — current #1 ranked male player ───
-  const topMalePlayer = maleData?.topPlayers?.[0];
-  if (topMalePlayer) {
-    items.push({
-      id: 'rank1-male',
-      type: 'rank1-male',
-      title: topMalePlayer.gamertag,
-      subtitle: '#1 Tarkam Male',
-      description: `Pemimpin klasemen tarkam divisi male dengan ${topMalePlayer.points} poin dan ${topMalePlayer.totalWins} kemenangan. ${topMalePlayer.gamertag} menunjukkan konsistensi luar biasa di setiap pertandingan Tarkam${topMalePlayer.streak >= 2 ? ` dengan streak ${topMalePlayer.streak} kemenangan berturut-turut` : ''}.`,
-      badge: '#1 TARKAM MALE',
-      thumbLabel: '#1 Male',
-      imageUrl: getAvatarUrl(topMalePlayer.gamertag, 'male', topMalePlayer.avatar),
-      accentColor: '#06b6d4',
-      accentLight: '#22d3ee',
-      division: 'male',
-      metadata: [
-        { icon: Medal, label: 'Tier', value: topMalePlayer.tier || '—' },
-        { icon: Trophy, label: 'Points', value: `${topMalePlayer.points}` },
-        { icon: Eye, label: 'Wins', value: `${topMalePlayer.totalWins}` },
-        { icon: Flame, label: 'Streak', value: `${topMalePlayer.streak}W` },
-      ],
-      player: { ...topMalePlayer, division: 'male' },
-    });
-  } else {
-    items.push({
-      id: 'rank1-male-empty',
-      type: 'rank1-male',
-      title: 'Belum Ada Data',
-      subtitle: '#1 Tarkam Male',
-      description: 'Pemimpin klasemen divisi male akan muncul di sini setelah pertandingan dimulai.',
-      badge: '#1 TARKAM MALE',
-      thumbLabel: '#1 Male',
-      accentColor: '#06b6d4',
-      accentLight: '#22d3ee',
-      division: 'male',
-      isEmpty: true,
-      metadata: [],
-    });
-  }
+  // ─── 1. Juwara #1 — Male #1 + Female #1 ───
+  const topMale = maleData?.topPlayers?.[0];
+  const topFemale = femaleData?.topPlayers?.[0];
+  const rank1IsEmpty = !topMale && !topFemale;
 
-  // ─── 2. #1 Tarkam Female — current #1 ranked female player ───
-  const topFemalePlayer = femaleData?.topPlayers?.[0];
-  if (topFemalePlayer) {
-    items.push({
-      id: 'rank1-female',
-      type: 'rank1-female',
-      title: topFemalePlayer.gamertag,
-      subtitle: '#1 Tarkam Female',
-      description: `Pemimpin klasemen tarkam divisi female dengan ${topFemalePlayer.points} poin dan ${topFemalePlayer.totalWins} kemenangan. ${topFemalePlayer.gamertag} menunjukkan grace dan skill yang memukau di setiap pertandingan Tarkam${topFemalePlayer.streak >= 2 ? ` dengan streak ${topFemalePlayer.streak} kemenangan berturut-turut` : ''}.`,
-      badge: '#1 TARKAM FEMALE',
-      thumbLabel: '#1 Female',
-      imageUrl: getAvatarUrl(topFemalePlayer.gamertag, 'female', topFemalePlayer.avatar),
-      accentColor: '#a855f7',
-      accentLight: '#c084fc',
-      division: 'female',
-      metadata: [
-        { icon: Medal, label: 'Tier', value: topFemalePlayer.tier || '—' },
-        { icon: Trophy, label: 'Points', value: `${topFemalePlayer.points}` },
-        { icon: Eye, label: 'Wins', value: `${topFemalePlayer.totalWins}` },
-        { icon: Flame, label: 'Streak', value: `${topFemalePlayer.streak}W` },
-      ],
-      player: { ...topFemalePlayer, division: 'female' },
-    });
-  } else {
-    items.push({
-      id: 'rank1-female-empty',
-      type: 'rank1-female',
-      title: 'Belum Ada Data',
-      subtitle: '#1 Tarkam Female',
-      description: 'Pemimpin klasemen divisi female akan muncul di sini setelah pertandingan dimulai.',
-      badge: '#1 TARKAM FEMALE',
-      thumbLabel: '#1 Female',
-      accentColor: '#a855f7',
-      accentLight: '#c084fc',
-      division: 'female',
-      isEmpty: true,
-      metadata: [],
-    });
-  }
+  items.push({
+    id: 'rank1',
+    type: 'rank1',
+    title: topMale && topFemale ? `${topMale.gamertag} & ${topFemale.gamertag}` : topMale ? topMale.gamertag : topFemale ? topFemale.gamertag : 'Belum Ada Data',
+    subtitle: 'Juwara #1 Tarkam',
+    description: topMale && topFemale
+      ? `Pemimpin klasemen tarkam dari kedua divisi! ${topMale.gamertag} mendominasi divisi male dengan ${topMale.points} poin, sementara ${topFemale.gamertag} memimpin divisi female dengan ${topFemale.points} poin. Dua pemain terbaik Tarkam IDM saat ini.`
+      : topMale
+        ? `Pemimpin klasemen tarkam divisi male dengan ${topMale.points} poin dan ${topMale.totalWins} kemenangan.`
+        : topFemale
+          ? `Pemimpin klasemen tarkam divisi female dengan ${topFemale.points} poin dan ${topFemale.totalWins} kemenangan.`
+          : 'Pemimpin klasemen akan muncul di sini setelah pertandingan dimulai.',
+    badge: '#1 TARKAM',
+    thumbLabel: '#1 Tarkam',
+    accentColor: '#06b6d4',
+    accentLight: '#22d3ee',
+    isDuo: true,
+    male: topMale ? {
+      gamertag: topMale.gamertag,
+      imageUrl: getAvatarUrl(topMale.gamertag, 'male', topMale.avatar),
+      tier: topMale.tier,
+      points: topMale.points,
+      totalWins: topMale.totalWins,
+      streak: topMale.streak,
+      player: { ...topMale, division: 'male' },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    female: topFemale ? {
+      gamertag: topFemale.gamertag,
+      imageUrl: getAvatarUrl(topFemale.gamertag, 'female', topFemale.avatar),
+      tier: topFemale.tier,
+      points: topFemale.points,
+      totalWins: topFemale.totalWins,
+      streak: topFemale.streak,
+      player: { ...topFemale, division: 'female' },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    maleAccent: '#06b6d4',
+    femaleAccent: '#a855f7',
+    maleAccentLight: '#22d3ee',
+    femaleAccentLight: '#c084fc',
+    isEmpty: rank1IsEmpty,
+    metadata: [
+      ...(topMale ? [{ icon: Medal, label: 'Tier ♂', value: topMale.tier || '—' }] : []),
+      ...(topMale ? [{ icon: Trophy, label: 'Points ♂', value: `${topMale.points}` }] : []),
+      ...(topFemale ? [{ icon: Medal, label: 'Tier ♀', value: topFemale.tier || '—' }] : []),
+      ...(topFemale ? [{ icon: Trophy, label: 'Points ♀', value: `${topFemale.points}` }] : []),
+    ],
+  });
 
-  // ─── 3. #1 Club Tarkam — top club by COMBINED tarkam points of members ───
+  // ─── 2. Klub Terkuat — #1 Club ───
   let topClub = leagueData?.stats?.topClub || null;
   if (!topClub && leagueData?.clubs?.length > 0) {
     const sortedClubs = [...leagueData.clubs].sort((a: any, b: any) => {
@@ -215,16 +200,20 @@ function buildHighlights(
       type: 'rank1-club',
       title: topClub.name,
       subtitle: '#1 Club Tarkam',
-      description: `Klub terkuat di Tarkam IDM dengan ${totalClubMembers} anggota (${maleCount} male, ${femaleCount} female) dan ${combinedTarkamPoints.toLocaleString()} combined tarkam points. Klub ini menggabungkan kekuatan kedua divisi untuk mendominasi tarkam.`,
+      description: `Klub terkuat di Tarkam IDM dengan ${totalClubMembers} anggota (${maleCount} male, ${femaleCount} female) dan ${combinedTarkamPoints.toLocaleString()} combined tarkam points.`,
       badge: '#1 CLUB TARKAM',
       thumbLabel: '#1 Club',
       accentColor: '#d4a853',
       accentLight: '#f5d77a',
+      maleAccent: '#d4a853',
+      femaleAccent: '#d4a853',
+      maleAccentLight: '#f5d77a',
+      femaleAccentLight: '#f5d77a',
       clubName: topClub.name,
       clubLogo: topClub.logo,
       metadata: [
         { icon: Users, label: 'Members', value: `${totalClubMembers}` },
-        { icon: Trophy, label: 'Combined Points', value: `${combinedTarkamPoints.toLocaleString()}` },
+        { icon: Trophy, label: 'Combined Pts', value: `${combinedTarkamPoints.toLocaleString()}` },
         { icon: Eye, label: 'Wins', value: `${topClub.wins || 0}` },
       ],
     });
@@ -235,198 +224,150 @@ function buildHighlights(
       title: 'Belum Ada Data',
       subtitle: '#1 Club Tarkam',
       description: 'Klub terkuat akan muncul di sini setelah ada klub yang berkompetisi.',
-      badge: '#1 CLUB TARKAM',
+      badge: '#1 CLUB',
       thumbLabel: '#1 Club',
       accentColor: '#d4a853',
       accentLight: '#f5d77a',
+      maleAccent: '#d4a853',
+      femaleAccent: '#d4a853',
+      maleAccentLight: '#f5d77a',
+      femaleAccentLight: '#f5d77a',
       isEmpty: true,
       metadata: [],
     });
   }
 
-  // ─── 4. Streak Male — male player with longest win streak ───
+  // ─── 3. Streak Terpanjang — Male + Female ───
   const malePlayers = maleData?.topPlayers || [];
-  const maleStreakKing = [...malePlayers].sort((a, b) => b.streak - a.streak)[0];
-  if (maleStreakKing && maleStreakKing.streak >= 2) {
-    items.push({
-      id: 'streak-male',
-      type: 'streak-male',
-      title: maleStreakKing.gamertag,
-      subtitle: 'Streak Male',
-      description: `Streak ${maleStreakKing.streak} kemenangan berturut-turut di divisi male! ${maleStreakKing.gamertag} menunjukkan konsistensi luar biasa di setiap pertandingan Tarkam.`,
-      badge: 'STREAK MALE',
-      thumbLabel: 'Streak ♂',
-      imageUrl: getAvatarUrl(maleStreakKing.gamertag, 'male', maleStreakKing.avatar),
-      accentColor: '#f97316',
-      accentLight: '#fb923c',
-      division: 'male',
-      metadata: [
-        { icon: Flame, label: 'Streak', value: `${maleStreakKing.streak}W` },
-        { icon: Trophy, label: 'Points', value: `${maleStreakKing.points}` },
-        { icon: Eye, label: 'Wins', value: `${maleStreakKing.totalWins}` },
-      ],
-      player: { ...maleStreakKing, division: 'male' },
-    });
-  } else {
-    items.push({
-      id: 'streak-male-empty',
-      type: 'streak-male',
-      title: 'Belum Ada Streak',
-      subtitle: 'Streak Male',
-      description: 'Pemain dengan streak kemenangan berturut-turut di divisi male akan muncul di sini. Menangkan 2+ pertandingan berturut-turut untuk memulai streak!',
-      badge: 'STREAK MALE',
-      thumbLabel: 'Streak ♂',
-      accentColor: '#f97316',
-      accentLight: '#fb923c',
-      division: 'male',
-      isEmpty: true,
-      metadata: [],
-    });
-  }
-
-  // ─── 5. Streak Female — female player with longest win streak ───
   const femalePlayers = femaleData?.topPlayers || [];
+  const maleStreakKing = [...malePlayers].sort((a, b) => b.streak - a.streak)[0];
   const femaleStreakKing = [...femalePlayers].sort((a, b) => b.streak - a.streak)[0];
-  if (femaleStreakKing && femaleStreakKing.streak >= 2) {
-    items.push({
-      id: 'streak-female',
-      type: 'streak-female',
-      title: femaleStreakKing.gamertag,
-      subtitle: 'Streak Female',
-      description: `Streak ${femaleStreakKing.streak} kemenangan berturut-turut di divisi female! ${femaleStreakKing.gamertag} menunjukkan dominasi dan ketekunan yang luar biasa di Tarkam.`,
-      badge: 'STREAK FEMALE',
-      thumbLabel: 'Streak ♀',
-      imageUrl: getAvatarUrl(femaleStreakKing.gamertag, 'female', femaleStreakKing.avatar),
-      accentColor: '#ef4444',
-      accentLight: '#f87171',
-      division: 'female',
-      metadata: [
-        { icon: Flame, label: 'Streak', value: `${femaleStreakKing.streak}W` },
-        { icon: Trophy, label: 'Points', value: `${femaleStreakKing.points}` },
-        { icon: Eye, label: 'Wins', value: `${femaleStreakKing.totalWins}` },
-      ],
-      player: { ...femaleStreakKing, division: 'female' },
-    });
-  } else {
-    items.push({
-      id: 'streak-female-empty',
-      type: 'streak-female',
-      title: 'Belum Ada Streak',
-      subtitle: 'Streak Female',
-      description: 'Pemain dengan streak kemenangan berturut-turut di divisi female akan muncul di sini. Menangkan 2+ pertandingan berturut-turut untuk memulai streak!',
-      badge: 'STREAK FEMALE',
-      thumbLabel: 'Streak ♀',
-      accentColor: '#ef4444',
-      accentLight: '#f87171',
-      division: 'female',
-      isEmpty: true,
-      metadata: [],
-    });
-  }
+  const hasMaleStreak = maleStreakKing && maleStreakKing.streak >= 2;
+  const hasFemaleStreak = femaleStreakKing && femaleStreakKing.streak >= 2;
+  const streakIsEmpty = !hasMaleStreak && !hasFemaleStreak;
 
-  // ─── 6. MVP Terbaru Male — latest weekly MVP, or top MVP player as fallback ───
+  items.push({
+    id: 'streak',
+    type: 'streak',
+    title: hasMaleStreak && hasFemaleStreak ? `${maleStreakKing.gamertag} & ${femaleStreakKing.gamertag}` : hasMaleStreak ? maleStreakKing.gamertag : hasFemaleStreak ? femaleStreakKing.gamertag : 'Belum Ada Streak',
+    subtitle: 'Streak Terpanjang',
+    description: hasMaleStreak && hasFemaleStreak
+      ? `Streak ${maleStreakKing.streak}W (${maleStreakKing.gamertag}, ♂) dan ${femaleStreakKing.streak}W (${femaleStreakKing.gamertag}, ♀) — konsistensi luar biasa di kedua divisi!`
+      : hasMaleStreak
+        ? `Streak ${maleStreakKing.streak} kemenangan berturut-turut di divisi male oleh ${maleStreakKing.gamertag}!`
+        : hasFemaleStreak
+          ? `Streak ${femaleStreakKing.streak} kemenangan berturut-turut di divisi female oleh ${femaleStreakKing.gamertag}!`
+          : 'Pemain dengan streak kemenangan berturut-turut akan muncul di sini. Menangkan 2+ pertandingan berturut-turut untuk memulai streak!',
+    badge: 'STREAK',
+    thumbLabel: 'Streak',
+    accentColor: '#f97316',
+    accentLight: '#fb923c',
+    isDuo: true,
+    male: hasMaleStreak ? {
+      gamertag: maleStreakKing.gamertag,
+      imageUrl: getAvatarUrl(maleStreakKing.gamertag, 'male', maleStreakKing.avatar),
+      tier: maleStreakKing.tier,
+      points: maleStreakKing.points,
+      totalWins: maleStreakKing.totalWins,
+      streak: maleStreakKing.streak,
+      player: { ...maleStreakKing, division: 'male' },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    female: hasFemaleStreak ? {
+      gamertag: femaleStreakKing.gamertag,
+      imageUrl: getAvatarUrl(femaleStreakKing.gamertag, 'female', femaleStreakKing.avatar),
+      tier: femaleStreakKing.tier,
+      points: femaleStreakKing.points,
+      totalWins: femaleStreakKing.totalWins,
+      streak: femaleStreakKing.streak,
+      player: { ...femaleStreakKing, division: 'female' },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    maleAccent: '#f97316',
+    femaleAccent: '#ef4444',
+    maleAccentLight: '#fb923c',
+    femaleAccentLight: '#f87171',
+    isEmpty: streakIsEmpty,
+    metadata: [
+      ...(hasMaleStreak ? [{ icon: Flame, label: 'Streak ♂', value: `${maleStreakKing.streak}W` }] : []),
+      ...(hasMaleStreak ? [{ icon: Trophy, label: 'Points ♂', value: `${maleStreakKing.points}` }] : []),
+      ...(hasFemaleStreak ? [{ icon: Flame, label: 'Streak ♀', value: `${femaleStreakKing.streak}W` }] : []),
+      ...(hasFemaleStreak ? [{ icon: Trophy, label: 'Points ♀', value: `${femaleStreakKing.points}` }] : []),
+    ],
+  });
+
+  // ─── 4. MVP Terbaru — Male + Female ───
   const maleMvpList = maleData?.mvpHallOfFame || [];
   const latestMaleMvp = maleMvpList.length > 0 ? maleMvpList[maleMvpList.length - 1] : null;
   const maleMvpFallback = !latestMaleMvp
     ? [...(maleData?.topPlayers || [])].filter(p => p.totalMvp > 0).sort((a, b) => b.totalMvp - a.totalMvp || b.points - a.points)[0] || null
     : null;
   const maleMvpSource = latestMaleMvp || maleMvpFallback;
-  if (maleMvpSource) {
-    const isMaleMvpFromHall = !!latestMaleMvp;
-    const maleMvpWeek = isMaleMvpFromHall ? (maleMvpSource as MvpHallOfFameEntry).weekNumber : undefined;
-    const mvpPlayer = maleData?.topPlayers?.find(p => p.gamertag === maleMvpSource.gamertag);
-    items.push({
-      id: 'mvp-male',
-      type: 'mvp-male',
-      title: maleMvpSource.gamertag,
-      subtitle: isMaleMvpFromHall ? `MVP Terbaru ♂` : 'MVP Terbanyak ♂',
-      description: isMaleMvpFromHall
-        ? `MVP terbaru divisi male di pekan ${maleMvpWeek}! ${maleMvpSource.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${maleMvpSource.totalMvp > 1 ? ` — sudah ${maleMvpSource.totalMvp}x meraih MVP sepanjang musim` : ''}.`
-        : `Pemain dengan MVP terbanyak di divisi male! ${maleMvpSource.gamertag} telah meraih ${maleMvpSource.totalMvp}x MVP dan mengumpulkan ${maleMvpSource.points} poin sepanjang musim.`,
-      badge: isMaleMvpFromHall ? `MVP W${maleMvpWeek} ♂` : `${maleMvpSource.totalMvp}x MVP ♂`,
-      thumbLabel: `MVP ♂`,
-      imageUrl: getAvatarUrl(maleMvpSource.gamertag, 'male', maleMvpSource.avatar),
-      accentColor: '#22c55e',
-      accentLight: '#4ade80',
-      division: 'male',
-      mvpWeek: maleMvpWeek,
-      mvpCount: maleMvpSource.totalMvp,
-      metadata: [
-        { icon: Award, label: 'MVP', value: `${maleMvpSource.totalMvp}x` },
-        { icon: Trophy, label: 'Points', value: `${maleMvpSource.points}` },
-        { icon: Eye, label: 'Wins', value: `${maleMvpSource.totalWins}` },
-        { icon: Flame, label: 'Streak', value: `${maleMvpSource.streak}W` },
-      ],
-      player: mvpPlayer ? { ...mvpPlayer, division: 'male' } : (maleMvpFallback ? { ...maleMvpFallback, division: 'male' } : undefined),
-    });
-  } else {
-    items.push({
-      id: 'mvp-male-empty',
-      type: 'mvp-male',
-      title: 'Belum Ada MVP',
-      subtitle: 'MVP Male',
-      description: 'MVP pekan ini di divisi male akan muncul di sini setelah pertandingan selesai dan pemain terbaik dinobatkan.',
-      badge: 'MVP ♂',
-      thumbLabel: 'MVP ♂',
-      accentColor: '#22c55e',
-      accentLight: '#4ade80',
-      division: 'male',
-      isEmpty: true,
-      metadata: [],
-    });
-  }
 
-  // ─── 7. MVP Terbaru Female — latest weekly MVP, or top MVP player as fallback ───
   const femaleMvpList = femaleData?.mvpHallOfFame || [];
   const latestFemaleMvp = femaleMvpList.length > 0 ? femaleMvpList[femaleMvpList.length - 1] : null;
   const femaleMvpFallback = !latestFemaleMvp
     ? [...(femaleData?.topPlayers || [])].filter(p => p.totalMvp > 0).sort((a, b) => b.totalMvp - a.totalMvp || b.points - a.points)[0] || null
     : null;
   const femaleMvpSource = latestFemaleMvp || femaleMvpFallback;
-  if (femaleMvpSource) {
-    const isFemaleMvpFromHall = !!latestFemaleMvp;
-    const femaleMvpWeek = isFemaleMvpFromHall ? (femaleMvpSource as MvpHallOfFameEntry).weekNumber : undefined;
-    const mvpPlayer = femaleData?.topPlayers?.find(p => p.gamertag === femaleMvpSource.gamertag);
-    items.push({
-      id: 'mvp-female',
-      type: 'mvp-female',
-      title: femaleMvpSource.gamertag,
-      subtitle: isFemaleMvpFromHall ? `MVP Terbaru ♀` : 'MVP Terbanyak ♀',
-      description: isFemaleMvpFromHall
-        ? `MVP terbaru divisi female di pekan ${femaleMvpWeek}! ${femaleMvpSource.gamertag} menunjukkan performa luar biasa dan dinobatkan sebagai pemain terbaik pekan ini${femaleMvpSource.totalMvp > 1 ? ` — sudah ${femaleMvpSource.totalMvp}x meraih MVP sepanjang musim` : ''}.`
-        : `Pemain dengan MVP terbanyak di divisi female! ${femaleMvpSource.gamertag} telah meraih ${femaleMvpSource.totalMvp}x MVP dan mengumpulkan ${femaleMvpSource.points} poin sepanjang musim.`,
-      badge: isFemaleMvpFromHall ? `MVP W${femaleMvpWeek} ♀` : `${femaleMvpSource.totalMvp}x MVP ♀`,
-      thumbLabel: `MVP ♀`,
+
+  const isMaleMvpFromHall = !!latestMaleMvp;
+  const isFemaleMvpFromHall = !!latestFemaleMvp;
+  const maleMvpWeek = isMaleMvpFromHall ? (maleMvpSource as MvpHallOfFameEntry).weekNumber : undefined;
+  const femaleMvpWeek = isFemaleMvpFromHall ? (femaleMvpSource as MvpHallOfFameEntry).weekNumber : undefined;
+  const mvpIsEmpty = !maleMvpSource && !femaleMvpSource;
+
+  items.push({
+    id: 'mvp',
+    type: 'mvp',
+    title: maleMvpSource && femaleMvpSource ? `${maleMvpSource.gamertag} & ${femaleMvpSource.gamertag}` : maleMvpSource ? maleMvpSource.gamertag : femaleMvpSource ? femaleMvpSource.gamertag : 'Belum Ada MVP',
+    subtitle: 'MVP Terbaru',
+    description: maleMvpSource && femaleMvpSource
+      ? `MVP terbaru kedua divisi! ${maleMvpSource.gamertag} (♂${isMaleMvpFromHall ? ` W${maleMvpWeek}` : ''}, ${maleMvpSource.totalMvp}x MVP) dan ${femaleMvpSource.gamertag} (♀${isFemaleMvpFromHall ? ` W${femaleMvpWeek}` : ''}, ${femaleMvpSource.totalMvp}x MVP) — performa luar biasa!`
+      : maleMvpSource
+        ? `MVP terbaru divisi male: ${maleMvpSource.gamertag} dengan ${maleMvpSource.totalMvp}x MVP.`
+        : femaleMvpSource
+          ? `MVP terbaru divisi female: ${femaleMvpSource.gamertag} dengan ${femaleMvpSource.totalMvp}x MVP.`
+          : 'MVP pekan ini akan muncul setelah pertandingan selesai dan pemain terbaik dinobatkan.',
+    badge: 'MVP',
+    thumbLabel: 'MVP',
+    accentColor: '#22c55e',
+    accentLight: '#4ade80',
+    isDuo: true,
+    male: maleMvpSource ? {
+      gamertag: maleMvpSource.gamertag,
+      imageUrl: getAvatarUrl(maleMvpSource.gamertag, 'male', maleMvpSource.avatar),
+      tier: maleMvpSource.tier,
+      points: maleMvpSource.points,
+      totalWins: maleMvpSource.totalWins,
+      streak: maleMvpSource.streak,
+      totalMvp: maleMvpSource.totalMvp,
+      mvpWeek: maleMvpWeek,
+      player: (maleData?.topPlayers?.find(p => p.gamertag === maleMvpSource.gamertag) || maleMvpFallback || maleMvpSource) as TopPlayer & { division?: string },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    female: femaleMvpSource ? {
+      gamertag: femaleMvpSource.gamertag,
       imageUrl: getAvatarUrl(femaleMvpSource.gamertag, 'female', femaleMvpSource.avatar),
-      accentColor: '#ec4899',
-      accentLight: '#f472b6',
-      division: 'female',
+      tier: femaleMvpSource.tier,
+      points: femaleMvpSource.points,
+      totalWins: femaleMvpSource.totalWins,
+      streak: femaleMvpSource.streak,
+      totalMvp: femaleMvpSource.totalMvp,
       mvpWeek: femaleMvpWeek,
-      mvpCount: femaleMvpSource.totalMvp,
-      metadata: [
-        { icon: Award, label: 'MVP', value: `${femaleMvpSource.totalMvp}x` },
-        { icon: Trophy, label: 'Points', value: `${femaleMvpSource.points}` },
-        { icon: Eye, label: 'Wins', value: `${femaleMvpSource.totalWins}` },
-        { icon: Flame, label: 'Streak', value: `${femaleMvpSource.streak}W` },
-      ],
-      player: mvpPlayer ? { ...mvpPlayer, division: 'female' } : (femaleMvpFallback ? { ...femaleMvpFallback, division: 'female' } : undefined),
-    });
-  } else {
-    items.push({
-      id: 'mvp-female-empty',
-      type: 'mvp-female',
-      title: 'Belum Ada MVP',
-      subtitle: 'MVP Female',
-      description: 'MVP pekan ini di divisi female akan muncul di sini setelah pertandingan selesai dan pemain terbaik dinobatkan.',
-      badge: 'MVP ♀',
-      thumbLabel: 'MVP ♀',
-      accentColor: '#ec4899',
-      accentLight: '#f472b6',
-      division: 'female',
-      isEmpty: true,
-      metadata: [],
-    });
-  }
+      player: (femaleData?.topPlayers?.find(p => p.gamertag === femaleMvpSource.gamertag) || femaleMvpFallback || femaleMvpSource) as TopPlayer & { division?: string },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    maleAccent: '#22c55e',
+    femaleAccent: '#ec4899',
+    maleAccentLight: '#4ade80',
+    femaleAccentLight: '#f472b6',
+    isEmpty: mvpIsEmpty,
+    mvpWeek: maleMvpWeek || femaleMvpWeek,
+    mvpCount: (maleMvpSource?.totalMvp || 0) + (femaleMvpSource?.totalMvp || 0),
+    metadata: [
+      ...(maleMvpSource ? [{ icon: Award, label: 'MVP ♂', value: `${maleMvpSource.totalMvp}x` }] : []),
+      ...(maleMvpSource ? [{ icon: Trophy, label: 'Points ♂', value: `${maleMvpSource.points}` }] : []),
+      ...(femaleMvpSource ? [{ icon: Award, label: 'MVP ♀', value: `${femaleMvpSource.totalMvp}x` }] : []),
+      ...(femaleMvpSource ? [{ icon: Trophy, label: 'Points ♀', value: `${femaleMvpSource.points}` }] : []),
+    ],
+  });
 
   return items;
 }
@@ -450,16 +391,13 @@ function ShimmerOverlay({ accentColor, visible }: { accentColor: string; visible
 /* ─── Determine badge icon for featured card ─── */
 function getBadgeIcon(type: HighlightItem['type'], accentLight: string) {
   switch (type) {
-    case 'mvp-male':
-    case 'mvp-female':
+    case 'mvp':
       return <Award className="w-3.5 h-3.5" style={{ color: accentLight }} />;
-    case 'rank1-male':
-    case 'rank1-female':
+    case 'rank1':
       return <Medal className="w-3.5 h-3.5" style={{ color: accentLight }} />;
     case 'rank1-club':
       return <Gem className="w-3.5 h-3.5" style={{ color: accentLight }} />;
-    case 'streak-male':
-    case 'streak-female':
+    case 'streak':
       return <Flame className="w-3.5 h-3.5" style={{ color: accentLight }} />;
     default:
       return <Star className="w-3.5 h-3.5" style={{ color: accentLight }} />;
@@ -469,26 +407,120 @@ function getBadgeIcon(type: HighlightItem['type'], accentLight: string) {
 /* ─── Determine watermark text for featured card ─── */
 function getWatermarkText(type: HighlightItem['type']): string {
   switch (type) {
-    case 'mvp-male':
-    case 'mvp-female':
-      return 'MVP';
-    case 'rank1-male':
-      return '#1 MALE';
-    case 'rank1-female':
-      return '#1 FEMALE';
-    case 'rank1-club':
-      return '#1 CLUB';
-    case 'streak-male':
-    case 'streak-female':
-      return 'STREAK';
-    default:
-      return 'TARKAM';
+    case 'mvp': return 'MVP';
+    case 'rank1': return '#1 TARKAM';
+    case 'rank1-club': return '#1 CLUB';
+    case 'streak': return 'STREAK';
+    default: return 'TARKAM';
   }
 }
 
 /* ─── Determine if this type should show a club logo watermark ─── */
 function isClubType(type: HighlightItem['type']): boolean {
   return type === 'rank1-club';
+}
+
+/* ─── Duo Avatar Half — Full-bleed background for one side of duo card ─── */
+function DuoAvatarHalf({
+  player,
+  accent,
+  accentLight,
+  side,
+  type,
+}: {
+  player: DuoPlayer;
+  accent: string;
+  accentLight: string;
+  side: 'left' | 'right';
+  type: HighlightItem['type'];
+}) {
+  const isEmpty = player.isEmpty;
+  const divisionIcon = side === 'left' ? '♂' : '♀';
+  const divisionLabel = side === 'left' ? 'Male' : 'Female';
+
+  return (
+    <div className="relative flex-1 h-full overflow-hidden">
+      {/* Full-bleed avatar background */}
+      {player.imageUrl && !isEmpty ? (
+        <Image
+          src={player.imageUrl}
+          alt={player.gamertag}
+          fill
+          sizes="30vw"
+          className="object-contain object-center bg-[#0d0d1a]"
+          style={{ 
+            opacity: 0.85,
+            transform: side === 'left' ? 'translateX(8%)' : 'translateX(-8%)', 
+          }}
+        />
+      ) : (
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            background: `linear-gradient(${side === 'left' ? '135' : '225'}deg, ${hexToRgba(accent, 0.15)} 0%, rgba(13,13,26,0.9) 70%)`,
+          }}
+        >
+          <div className="flex flex-col items-center gap-2 opacity-25">
+            {type === 'rank1' ? <Medal className="w-12 h-12" style={{ color: accent }} /> :
+             type === 'streak' ? <Flame className="w-12 h-12" style={{ color: accent }} /> :
+             type === 'mvp' ? <Award className="w-12 h-12" style={{ color: accent }} /> :
+             <Star className="w-12 h-12" style={{ color: accent }} />}
+            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+              {divisionLabel}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Multi-layer overlays for depth */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/20 to-transparent" />
+      {/* Fade toward center divider */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: side === 'left' 
+            ? 'linear-gradient(to left, rgba(13,13,26,0.6) 0%, transparent 25%)'
+            : 'linear-gradient(to right, rgba(13,13,26,0.6) 0%, transparent 25%)',
+        }}
+      />
+      {/* Top fade */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d1a]/40 via-transparent to-transparent" />
+      {/* Accent glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: side === 'left'
+            ? `radial-gradient(ellipse at 30% 70%, ${hexToRgba(accent, 0.08)}, transparent 55%)`
+            : `radial-gradient(ellipse at 70% 70%, ${hexToRgba(accent, 0.08)}, transparent 55%)`,
+        }}
+      />
+
+      {/* Player info at bottom — overlapping the avatar */}
+      {!isEmpty && (
+        <div className="absolute bottom-0 inset-x-0 px-3 pb-3 pt-10 z-10" style={{ background: 'linear-gradient(to top, rgba(13,13,26,0.95) 0%, transparent 100%)' }}>
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-[12px] font-black" style={{ color: accentLight }}>{divisionIcon}</span>
+            <span className="text-base sm:text-lg font-black text-white truncate max-w-[140px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              {player.gamertag}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold" style={{ color: accentLight }}>
+              {player.points}pts
+            </span>
+            <span className="text-[11px] font-bold text-green-400">
+              {player.totalWins}W
+            </span>
+            {player.streak >= 2 && (
+              <span className="text-[11px] font-bold text-orange-400 flex items-center gap-0.5">
+                <Flame className="w-3 h-3" />{player.streak}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ─── Thumbnail Card ─── */
@@ -503,8 +535,6 @@ function ThumbnailCard({
   onClick: () => void;
   index: number;
 }) {
-  const iconColor = isActive ? item.accentLight : item.accentColor;
-  const iconScale = isActive ? 'scale(1.1)' : 'scale(1)';
   const isEmpty = item.isEmpty || false;
 
   return (
@@ -526,68 +556,95 @@ function ThumbnailCard({
           border: isActive ? `2px solid ${item.accentColor}` : `1px solid ${hexToRgba(item.accentColor, 0.2)}`,
         }}
       >
-        {/* Background: image or gradient */}
-        <div className="absolute inset-0">
-          {item.imageUrl ? (
-            <Image
-              src={item.imageUrl}
-              alt={item.title}
-              fill
-              sizes="112px"
-              className="object-contain object-center transition-opacity duration-300 bg-[#0d0d1a]"
-              style={{ opacity: isActive ? 0.7 : 0.35 }}
-            />
-          ) : item.clubName ? (
-            <div className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${hexToRgba(item.accentColor, 0.2)} 0%, rgba(13,13,26,0.9) 70%)` }}>
-              <ClubLogoImage
-                clubName={item.clubName}
-                dbLogo={item.clubLogo}
-                alt={item.clubName}
-                width={48}
-                height={48}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover"
-                style={{ opacity: isActive ? 1 : 0.5 }}
-              />
+        {item.isDuo ? (
+          /* Duo thumbnail: split left/right with different colors */
+          <div className="absolute inset-0 flex">
+            {/* Male side */}
+            <div className="relative w-1/2 h-full overflow-hidden" style={{ background: `linear-gradient(135deg, ${hexToRgba(item.maleAccent, 0.25)} 0%, rgba(13,13,26,0.9) 70%)` }}>
+              {item.male?.imageUrl && !item.male.isEmpty ? (
+                <Image
+                  src={item.male.imageUrl}
+                  alt={item.male.gamertag}
+                  fill
+                  sizes="56px"
+                  className="object-contain object-center bg-[#0d0d1a]"
+                  style={{ opacity: isActive ? 0.65 : 0.3 }}
+                />
+              ) : null}
+              {/* Dark overlay for inactive */}
+              {!isActive && <div className="absolute inset-0 bg-[#0d0d1a]/50" />}
             </div>
-          ) : (
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `linear-gradient(135deg, ${hexToRgba(item.accentColor, 0.25)} 0%, ${hexToRgba(item.accentColor, 0.05)} 50%, rgba(13,13,26,0.9) 100%)`,
-              }}
-            />
-          )}
-          {/* Dark overlay for inactive */}
-          {!isActive && <div className="absolute inset-0 bg-[#0d0d1a]/50" />}
-          {/* Bottom gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a]/80 via-transparent to-transparent" />
-        </div>
-
-        {/* Center icon */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center transition-all duration-300"
-            style={{
-              backgroundColor: hexToRgba(item.accentColor, isActive ? 0.25 : 0.1),
-              border: `1px solid ${hexToRgba(item.accentColor, isActive ? 0.5 : 0.2)}`,
-              boxShadow: isActive ? `0 0 20px ${hexToRgba(item.accentColor, 0.2)}` : 'none',
-            }}
-          >
-            {item.type === 'rank1-male' || item.type === 'rank1-female' ? (
-              <Medal className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
-            ) : item.type === 'rank1-club' ? (
-              <Gem className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
-            ) : item.type === 'streak-male' || item.type === 'streak-female' ? (
-              <Flame className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
-            ) : item.type === 'mvp-male' || item.type === 'mvp-female' ? (
-              <Award className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
-            ) : (
-              <Trophy className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300" style={{ color: iconColor, transform: iconScale }} />
-            )}
+            {/* Female side */}
+            <div className="relative w-1/2 h-full overflow-hidden" style={{ background: `linear-gradient(225deg, ${hexToRgba(item.femaleAccent, 0.25)} 0%, rgba(13,13,26,0.9) 70%)` }}>
+              {item.female?.imageUrl && !item.female.isEmpty ? (
+                <Image
+                  src={item.female.imageUrl}
+                  alt={item.female.gamertag}
+                  fill
+                  sizes="56px"
+                  className="object-contain object-center bg-[#0d0d1a]"
+                  style={{ opacity: isActive ? 0.65 : 0.3 }}
+                />
+              ) : null}
+              {!isActive && <div className="absolute inset-0 bg-[#0d0d1a]/50" />}
+            </div>
+            {/* Center divider line */}
+            <div className="absolute top-2 bottom-2 left-1/2 w-px" style={{ background: `linear-gradient(to bottom, transparent, ${hexToRgba('#d4a853', isActive ? 0.4 : 0.15)}, transparent)` }} />
+            {/* Division symbols */}
+            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+              <div className="flex items-center gap-0.5">
+                <span className="text-[8px] font-black" style={{ color: isActive ? item.maleAccentLight : 'rgba(255,255,255,0.3)', textShadow: `0 0 4px ${hexToRgba(item.maleAccent, 0.3)}` }}>♂</span>
+                <span className="text-[8px] font-black" style={{ color: isActive ? item.femaleAccentLight : 'rgba(255,255,255,0.3)', textShadow: `0 0 4px ${hexToRgba(item.femaleAccent, 0.3)}` }}>♀</span>
+              </div>
+            </div>
           </div>
-        </div>
+        ) : item.clubName ? (
+          /* Club thumbnail */
+          <div className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${hexToRgba(item.accentColor, 0.2)} 0%, rgba(13,13,26,0.9) 70%)` }}>
+            <ClubLogoImage
+              clubName={item.clubName}
+              dbLogo={item.clubLogo}
+              alt={item.clubName}
+              width={48}
+              height={48}
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover"
+              style={{ opacity: isActive ? 1 : 0.5 }}
+            />
+          </div>
+        ) : (
+          /* Empty/gradient thumbnail */
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${hexToRgba(item.accentColor, 0.25)} 0%, ${hexToRgba(item.accentColor, 0.05)} 50%, rgba(13,13,26,0.9) 100%)`,
+            }}
+          />
+        )}
 
-        {/* Active ring glow animation — CSS-only pulse */}
+        {/* Bottom gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a]/80 via-transparent to-transparent" />
+
+        {/* Center icon overlay for non-duo */}
+        {!item.isDuo && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center transition-all duration-300"
+              style={{
+                backgroundColor: hexToRgba(item.accentColor, isActive ? 0.25 : 0.1),
+                border: `1px solid ${hexToRgba(item.accentColor, isActive ? 0.5 : 0.2)}`,
+                boxShadow: isActive ? `0 0 20px ${hexToRgba(item.accentColor, 0.2)}` : 'none',
+              }}
+            >
+              {item.type === 'rank1-club' ? (
+                <Gem className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: isActive ? item.accentLight : item.accentColor }} />
+              ) : (
+                <Trophy className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: isActive ? item.accentLight : item.accentColor }} />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Active ring glow animation */}
         {isActive && (
           <div
             className="absolute inset-0 rounded-xl pointer-events-none"
@@ -598,8 +655,8 @@ function ThumbnailCard({
           />
         )}
 
-        {/* Streak fire effect for streak types — CSS bounce */}
-        {(item.type === 'streak-male' || item.type === 'streak-female') && (
+        {/* Streak fire effect */}
+        {item.type === 'streak' && (
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 animate-bounce">
               <Flame className="w-4 h-4 text-orange-500" />
@@ -607,20 +664,26 @@ function ThumbnailCard({
           </div>
         )}
 
-        {/* Season champion trophy icon overlay — replaced by SeasonChampionSection */}
-        {/* MVP star icon overlay */}
-        {(item.type === 'mvp-male' || item.type === 'mvp-female') && (
-          <div className="absolute top-1.5 right-1.5 pointer-events-none">
-            <Award className="w-3.5 h-3.5" style={{ color: item.accentLight, filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }} />
-          </div>
-        )}
-
-        {/* Rank #1 overlay for rank1 types */}
-        {(item.type === 'rank1-male' || item.type === 'rank1-female' || item.type === 'rank1-club') && (
+        {/* Rank #1 overlay */}
+        {item.type === 'rank1' && (
           <div className="absolute top-1.5 right-1.5 pointer-events-none">
             <span className="text-[9px] font-black" style={{ color: item.accentLight, textShadow: `0 0 8px ${hexToRgba(item.accentColor, 0.5)}` }}>
               #1
             </span>
+          </div>
+        )}
+        {item.type === 'rank1-club' && (
+          <div className="absolute top-1.5 right-1.5 pointer-events-none">
+            <span className="text-[9px] font-black" style={{ color: item.accentLight, textShadow: `0 0 8px ${hexToRgba(item.accentColor, 0.5)}` }}>
+              #1
+            </span>
+          </div>
+        )}
+
+        {/* MVP star icon overlay */}
+        {item.type === 'mvp' && (
+          <div className="absolute top-1.5 right-1.5 pointer-events-none">
+            <Award className="w-3.5 h-3.5" style={{ color: item.accentLight, filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }} />
           </div>
         )}
       </div>
@@ -653,6 +716,7 @@ export function HighlightsSection({
   const highlightsTitle = cmsSettings?.highlights_title || 'Puncak Prestasi';
   const highlightsSubtitle = cmsSettings?.highlights_subtitle || 'Peringkat #1 tarkam, streak terpanjang, dan MVP terbaru di Tarkam IDM';
   const highlightsVideoUrl = cmsSettings?.highlights_video_url || '';
+
   /* ─── Build highlight items from data ─── */
   const highlights = useMemo(
     () => buildHighlights(maleData, femaleData, leagueData),
@@ -676,10 +740,9 @@ export function HighlightsSection({
   const RESUME_DELAY = 3000;
   const [autoRotateMode, setAutoRotateMode] = useState<'running' | 'paused' | 'resuming'>(highlights.length > 1 ? 'running' : 'paused');
 
-  // Auto-rotation timer — only runs in 'running' mode
+  // Auto-rotation timer
   useEffect(() => {
     if (highlights.length <= 1 || autoRotateMode !== 'running') return;
-
     const timer = setTimeout(() => {
       setActiveIdx(prev => {
         const next = (prev + 1) % highlights.length;
@@ -688,18 +751,13 @@ export function HighlightsSection({
         return next;
       });
     }, AUTO_ROTATE_INTERVAL);
-
     return () => clearTimeout(timer);
   }, [highlights.length, autoRotateMode, activeIdx]);
 
-  // Resume delay timer — when in 'resuming' mode, wait then switch to 'running'
+  // Resume delay timer
   useEffect(() => {
     if (autoRotateMode !== 'resuming') return;
-
-    const timer = setTimeout(() => {
-      setAutoRotateMode('running');
-    }, RESUME_DELAY);
-
+    const timer = setTimeout(() => setAutoRotateMode('running'), RESUME_DELAY);
     return () => clearTimeout(timer);
   }, [autoRotateMode]);
 
@@ -714,14 +772,13 @@ export function HighlightsSection({
       setTimeout(() => setIsTransitioning(false), 800);
       return idx;
     });
-    // Schedule delayed resume of auto-rotation
     setAutoRotateMode('resuming');
   }, []);
 
   /* ─── 3D tilt hook for featured card ─── */
   const { cardRef, handleMouseMove, handleMouseLeave } = use3DTilt(8);
 
-  /* ─── Section ref for accessibility ─── */
+  /* ─── Section ref ─── */
   const sectionRef = useRef<HTMLElement>(null);
 
   /* ─── Thumbnail scroll ref & arrows ─── */
@@ -748,8 +805,7 @@ export function HighlightsSection({
   const scrollThumbs = useCallback((direction: 'left' | 'right') => {
     const el = thumbScrollRef.current;
     if (!el) return;
-    const scrollAmount = direction === 'left' ? -200 : 200;
-    el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    el.scrollBy({ left: direction === 'left' ? -200 : 200, behavior: 'smooth' });
   }, []);
 
   /* ─── Touch/Swipe Handlers ─── */
@@ -762,15 +818,9 @@ export function HighlightsSection({
     const deltaX = e.changedTouches[0].clientX - touchStart.x;
     const deltaY = e.changedTouches[0].clientY - touchStart.y;
     setTouchStart(null);
-
-    // Only handle horizontal swipes (not vertical scrolls)
     if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > Math.abs(deltaX)) return;
-
-    // Schedule delayed resume of auto-rotation
     setAutoRotateMode('resuming');
-
     if (deltaX < 0) {
-      // Swipe left → next
       setActiveIdx(prev => {
         const next = (prev + 1) % highlights.length;
         setIsTransitioning(true);
@@ -778,7 +828,6 @@ export function HighlightsSection({
         return next;
       });
     } else {
-      // Swipe right → prev
       setActiveIdx(prev => {
         const prevIdx = (prev - 1 + highlights.length) % highlights.length;
         setIsTransitioning(true);
@@ -801,8 +850,6 @@ export function HighlightsSection({
     }
   }, [activeIdx]);
 
-  /* ─── Items always exist now (all 7 categories with empty placeholders) ─── */
-
   return (
     <section
       id="highlights"
@@ -815,7 +862,6 @@ export function HighlightsSection({
     >
       {/* ═══ Background Layers ═══ */}
       <div className="absolute inset-0 bg-[#0d0d1a]" />
-      {/* Gold grid overlay */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.018]"
         style={{
@@ -826,21 +872,16 @@ export function HighlightsSection({
           backgroundSize: '50px 50px',
         }}
       />
-      {/* Gold radial spotlight from top center */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at 50% 20%, rgba(212,168,83,0.08) 0%, transparent 55%)',
-        }}
+        style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(212,168,83,0.08) 0%, transparent 55%)' }}
       />
-      {/* Bilateral accent glows - dynamically based on active highlight */}
       <div
         className="absolute inset-0 pointer-events-none transition-all duration-700"
         style={{
-          background: `radial-gradient(ellipse at 15% 50%, ${hexToRgba(active?.accentColor || '#06b6d4', 0.05)} 0%, transparent 45%), radial-gradient(ellipse at 85% 50%, ${hexToRgba(active?.accentColor || '#a855f7', 0.05)} 0%, transparent 45%)`,
+          background: `radial-gradient(ellipse at 15% 50%, ${hexToRgba(active?.accentColor || '#06b6d4', 0.05)} 0%, transparent 45%), radial-gradient(ellipse at 85% 50%, ${hexToRgba(active?.femaleAccent || '#a855f7', 0.05)} 0%, transparent 45%)`,
         }}
       />
-      {/* Top & bottom gold edge glow */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-idm-gold-warm/25 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-idm-gold-warm/15 to-transparent" />
 
@@ -874,24 +915,12 @@ export function HighlightsSection({
                     e.currentTarget.style.boxShadow = 'none';
                     handleMouseLeave();
                   }}
-                  className="perspective-card relative rounded-2xl overflow-hidden border transition-all duration-500 group/featured cursor-pointer"
+                  className="perspective-card relative rounded-2xl overflow-hidden border transition-all duration-500 group/featured"
                   style={{
                     borderColor: hexToRgba(active.accentColor, 0.2),
                     minHeight: '440px',
                     height: '100%',
                     transition: 'transform 0.15s ease-out, border-color 0.3s, box-shadow 0.3s',
-                  }}
-                  role={active.player ? 'button' : undefined}
-                  tabIndex={active.player ? 0 : undefined}
-                  aria-label={active.player ? `View profile: ${active.title}` : undefined}
-                  onClick={() => {
-                    if (active.player) setSelectedPlayer(active.player);
-                  }}
-                  onKeyDown={(e) => {
-                    if ((e.key === 'Enter' || e.key === ' ') && active.player) {
-                      e.preventDefault();
-                      setSelectedPlayer(active.player);
-                    }
                   }}
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
@@ -899,227 +928,318 @@ export function HighlightsSection({
                   {/* Shimmer effect during transition */}
                   <ShimmerOverlay accentColor={active.accentColor} visible={isTransitioning} />
 
-                  {/* Featured Image / Gradient BG */}
-                  {active.imageUrl ? (
-                    <Image
-                      src={active.imageUrl}
-                      alt={active.title}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 60vw"
-                      className="object-contain object-center transition-transform duration-700 group-hover/featured:scale-105 bg-[#0d0d1a]"
-                    />
-                  ) : (
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background: `
-                          linear-gradient(135deg, ${hexToRgba(active.accentColor, 0.12)} 0%, #0d0d1a 30%, ${hexToRgba(active.accentColor, 0.06)} 60%, #0d0d1a 100%)
-                        `,
-                      }}
-                    />
-                  )}
+                  {active.isDuo ? (
+                    /* ═══ DUO FEATURED CARD ═══ */
+                    <>
+                      {/* Dual background gradient — subtle base behind avatars */}
+                      <div className="absolute inset-0">
+                        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${hexToRgba(active.maleAccent, 0.08)} 0%, rgba(13,13,26,0.95) 50%)` }} />
+                        <div className="absolute inset-0" style={{ background: `linear-gradient(225deg, ${hexToRgba(active.femaleAccent, 0.08)} 0%, rgba(13,13,26,0.95) 50%)` }} />
+                      </div>
 
-                  {/* Multi-layer overlays */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/30 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#0d0d1a]/50 via-transparent to-transparent" />
-                  <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: `radial-gradient(ellipse at 80% 70%, ${hexToRgba(active.accentColor, 0.1)}, transparent 60%)`,
-                    }}
-                  />
-
-                  {/* Gold grid texture overlay on card */}
-                  <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.025]"
-                    style={{
-                      backgroundImage: `
-                        linear-gradient(rgba(212,168,83,0.5) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(212,168,83,0.5) 1px, transparent 1px)
-                      `,
-                      backgroundSize: '30px 30px',
-                    }}
-                  />
-
-                  {/* Badge overlay — top right */}
-                  <div className="absolute top-4 right-4 z-20">
-                    <div
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border"
-                      style={{
-                        backgroundColor: hexToRgba(active.accentColor, 0.35),
-                        borderColor: hexToRgba(active.accentColor, 0.4),
-                      }}
-                    >
-                      {getBadgeIcon(active.type, active.accentLight)}
-                      <span
-                        className="text-[10px] font-black uppercase tracking-wider"
-                        style={{ color: active.accentLight }}
-                      >
-                        {active.badge}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Club Logo — for rank1-club type */}
-                  {isClubType(active.type) && active.clubName && (
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
+                      {/* Gold grid texture overlay */}
                       <div
-                        className="w-36 h-36 sm:w-48 sm:h-48 rounded-3xl overflow-hidden opacity-10 group-hover/featured:opacity-15 transition-opacity duration-500"
+                        className="absolute inset-0 pointer-events-none opacity-[0.025]"
                         style={{
-                          filter: `drop-shadow(0 0 40px ${hexToRgba(active.accentColor, 0.3)})`,
+                          backgroundImage: `
+                            linear-gradient(rgba(212,168,83,0.5) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(212,168,83,0.5) 1px, transparent 1px)
+                          `,
+                          backgroundSize: '30px 30px',
                         }}
-                      >
-                        <ClubLogoImage
-                          clubName={active.clubName}
-                          dbLogo={active.clubLogo}
-                          alt={active.clubName}
-                          width={192}
-                          height={192}
-                          className="w-full h-full object-cover"
+                      />
+
+                      {/* Large watermark text */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" aria-hidden="true">
+                        <span
+                          className="text-5xl sm:text-7xl font-black uppercase tracking-widest select-none"
+                          style={{ color: 'rgba(212,168,83,0.03)', WebkitTextStroke: '1px rgba(212,168,83,0.05)' }}
+                        >
+                          {getWatermarkText(active.type)}
+                        </span>
+                      </div>
+
+                      {/* ═══ DUO AVATAR LAYOUT — Full-bleed each side ═══ */}
+                      <div className="absolute inset-0 z-10 flex">
+                        {/* Male side — full-bleed avatar */}
+                        <DuoAvatarHalf
+                          player={active.male!}
+                          accent={active.maleAccent}
+                          accentLight={active.maleAccentLight}
+                          side="left"
+                          type={active.type}
+                        />
+
+                        {/* ═══ Center Divider ═══ */}
+                        <div className="relative flex flex-col items-center justify-center w-6 sm:w-8 shrink-0 z-20">
+                          {/* Vertical gradient line */}
+                          <div className="absolute top-12 bottom-12 w-px" style={{ background: `linear-gradient(to bottom, transparent, ${hexToRgba('#d4a853', 0.4)}, ${hexToRgba('#d4a853', 0.2)}, transparent)` }} />
+                          {/* Center ornament — Crown */}
+                          <div
+                            className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center z-10"
+                            style={{
+                              backgroundColor: 'rgba(13,13,26,0.95)',
+                              border: `1px solid ${hexToRgba('#d4a853', 0.35)}`,
+                              boxShadow: `0 0 16px ${hexToRgba('#d4a853', 0.2)}`,
+                            }}
+                          >
+                            <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d4a853]" />
+                          </div>
+                          {/* Small accent dots above and below */}
+                          <div className="absolute top-10 w-2 h-2 rounded-full" style={{ backgroundColor: hexToRgba(active.maleAccent, 0.5), boxShadow: `0 0 6px ${hexToRgba(active.maleAccent, 0.3)}` }} />
+                          <div className="absolute bottom-10 w-2 h-2 rounded-full" style={{ backgroundColor: hexToRgba(active.femaleAccent, 0.5), boxShadow: `0 0 6px ${hexToRgba(active.femaleAccent, 0.3)}` }} />
+                        </div>
+
+                        {/* Female side — full-bleed avatar */}
+                        <DuoAvatarHalf
+                          player={active.female!}
+                          accent={active.femaleAccent}
+                          accentLight={active.femaleAccentLight}
+                          side="right"
+                          type={active.type}
                         />
                       </div>
-                    </div>
-                  )}
 
-                  {/* MVP Award overlay — CSS float animation */}
-                  {(active.type === 'mvp-male' || active.type === 'mvp-female') && (
-                    <div className="absolute top-4 left-4 z-20 pointer-events-none">
-                      <div className="animate-float-subtle">
-                        <Award className="w-8 h-8 drop-shadow-[0_0_12px_rgba(34,197,94,0.4)]" style={{ color: active.accentLight }} />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Rank #1 badge overlay for rank1 types — CSS pulse animation */}
-                  {(active.type === 'rank1-male' || active.type === 'rank1-female') && (
-                    <div className="absolute top-4 left-4 z-20 pointer-events-none">
-                      <div
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
-                        style={{
-                          backgroundColor: hexToRgba(active.accentColor, 0.3),
-                          border: `1px solid ${hexToRgba(active.accentColor, 0.4)}`,
-                          animation: 'pulse-glow 2s ease-in-out infinite',
-                        }}
-                      >
-                        <Medal className="w-4 h-4" style={{ color: active.accentLight }} />
-                        <span className="text-[11px] font-black" style={{ color: active.accentLight }}>
-                          PERINGKAT #1
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Rank #1 Club badge overlay — CSS pulse animation */}
-                  {active.type === 'rank1-club' && (
-                    <div className="absolute top-4 left-4 z-20 pointer-events-none">
-                      <div
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
-                        style={{
-                          backgroundColor: hexToRgba('#d4a853', 0.3),
-                          border: '1px solid rgba(212,168,83,0.4)',
-                          animation: 'pulse-glow 2s ease-in-out infinite',
-                        }}
-                      >
-                        <Gem className="w-4 h-4 text-idm-gold-warm" />
-                        <span className="text-[11px] font-black text-idm-gold-warm">
-                          #1 CLUB TARKAM
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Streak fire effects for streak types — CSS animation */}
-                  {(active.type.includes('streak')) && (
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                      {[...Array(5)].map((_, i) => (
+                      {/* Badge overlay — top right */}
+                      <div className="absolute top-4 right-4 z-20">
                         <div
-                          key={i}
-                          className="absolute"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border"
                           style={{
-                            left: `${20 + i * 15}%`,
-                            bottom: '10%',
-                            width: 3,
-                            height: 3,
-                            borderRadius: '50%',
-                            background: `radial-gradient(circle, ${hexToRgba('#f97316', 0.6)} 0%, transparent 70%)`,
-                            animation: `streak-particle ${1.5 + i * 0.3}s ease-out ${i * 0.4}s infinite`,
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Large watermark text */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" aria-hidden="true">
-                    <span
-                      className="text-6xl sm:text-8xl font-black uppercase tracking-widest select-none"
-                      style={{
-                        color: 'rgba(212,168,83,0.03)',
-                        WebkitTextStroke: '1px rgba(212,168,83,0.05)',
-                      }}
-                    >
-                      {getWatermarkText(active.type)}
-                    </span>
-                  </div>
-
-                  {/* Bottom info bar on featured card */}
-                  <div className="absolute bottom-0 inset-x-0 p-5 sm:p-7 z-10">
-                    <div
-                      className="h-px w-full mb-4"
-                      style={{
-                        background: `linear-gradient(to right, ${hexToRgba(active.accentColor, 0.4)}, transparent 60%)`,
-                      }}
-                    />
-                    <div className="flex items-center gap-3 mb-2">
-                      <div
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0"
-                        style={{
-                          backgroundColor: hexToRgba(active.accentColor, 0.2),
-                          border: `1px solid ${hexToRgba(active.accentColor, 0.3)}`,
-                          boxShadow: `0 0 20px ${hexToRgba(active.accentColor, 0.1)}`,
-                        }}
-                      >
-                        {isClubType(active.type) && active.clubName ? (
-                          <ClubLogoImage
-                            clubName={active.clubName}
-                            dbLogo={active.clubLogo}
-                            alt={active.clubName}
-                            width={48}
-                            height={48}
-                            className="w-7 h-7 sm:w-8 sm:h-8 rounded object-cover"
-                          />
-                        ) : active.type === 'rank1-male' || active.type === 'rank1-female' ? (
-                          <Medal className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
-                        ) : active.type === 'mvp-male' || active.type === 'mvp-female' ? (
-                          <Award className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
-                        ) : active.type === 'rank1-club' ? (
-                          <Gem className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
-                        ) : active.type.includes('streak') ? (
-                          <Flame className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
-                        ) : (
-                          <Star className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active.accentLight }}>
-                          {active.subtitle}
-                        </p>
-                        <h3
-                          className="text-2xl sm:text-4xl font-black text-white leading-tight truncate"
-                          style={{
-                            textShadow: '0 2px 12px rgba(0,0,0,0.8)',
+                            background: `linear-gradient(135deg, ${hexToRgba(active.maleAccent, 0.3)}, ${hexToRgba(active.femaleAccent, 0.3)})`,
+                            borderColor: hexToRgba(active.accentColor, 0.4),
                           }}
                         >
-                          {active.title}
-                        </h3>
+                          {getBadgeIcon(active.type, active.accentLight)}
+                          <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: active.accentLight }}>
+                            {active.badge}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* ═══ Swipe Navigation Arrows — visible on mobile, hover on desktop ═══ */}
+                      {/* Rank #1 / MVP / Streak badge overlay — top left */}
+                      <div className="absolute top-4 left-4 z-20 pointer-events-none">
+                        <div
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
+                          style={{
+                            background: `linear-gradient(135deg, ${hexToRgba(active.maleAccent, 0.25)}, ${hexToRgba(active.femaleAccent, 0.25)})`,
+                            border: `1px solid ${hexToRgba('#d4a853', 0.3)}`,
+                            animation: 'pulse-glow 2s ease-in-out infinite',
+                          }}
+                        >
+                          {active.type === 'rank1' && <Medal className="w-4 h-4 text-[#d4a853]" />}
+                          {active.type === 'streak' && <Flame className="w-4 h-4 text-[#d4a853]" />}
+                          {active.type === 'mvp' && <Award className="w-4 h-4 text-[#d4a853]" />}
+                          <span className="text-[11px] font-black text-[#d4a853]">
+                            {active.type === 'rank1' ? 'PERINGKAT #1' : active.type === 'streak' ? 'STREAK TERPANJANG' : 'MVP TERBARU'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Streak fire effects */}
+                      {active.type === 'streak' && (
+                        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                          {[...Array(5)].map((_, i) => (
+                            <div
+                              key={i}
+                              className="absolute"
+                              style={{
+                                left: `${20 + i * 15}%`,
+                                bottom: '10%',
+                                width: 3,
+                                height: 3,
+                                borderRadius: '50%',
+                                background: `radial-gradient(circle, ${hexToRgba('#f97316', 0.6)} 0%, transparent 70%)`,
+                                animation: `streak-particle ${1.5 + i * 0.3}s ease-out ${i * 0.4}s infinite`,
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Bottom info bar */}
+                      <div className="absolute bottom-0 inset-x-0 p-5 sm:p-7 z-10">
+                        <div
+                          className="h-px w-full mb-3"
+                          style={{ background: `linear-gradient(to right, ${hexToRgba(active.maleAccent, 0.3)}, ${hexToRgba('#d4a853', 0.2)}, ${hexToRgba(active.femaleAccent, 0.3)})` }}
+                        />
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0"
+                            style={{
+                              background: `linear-gradient(135deg, ${hexToRgba(active.maleAccent, 0.2)}, ${hexToRgba(active.femaleAccent, 0.2)})`,
+                              border: `1px solid ${hexToRgba('#d4a853', 0.25)}`,
+                              boxShadow: `0 0 20px ${hexToRgba('#d4a853', 0.1)}`,
+                            }}
+                          >
+                            {active.type === 'rank1' ? <Medal className="w-5 h-5 sm:w-6 sm:h-6 text-[#d4a853]" /> :
+                             active.type === 'streak' ? <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-[#d4a853]" /> :
+                             active.type === 'mvp' ? <Award className="w-5 h-5 sm:w-6 sm:h-6 text-[#d4a853]" /> :
+                             <Star className="w-5 h-5 sm:w-6 sm:h-6 text-[#d4a853]" />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-[#d4a853]">
+                              {active.subtitle}
+                            </p>
+                            <h3
+                              className="text-xl sm:text-2xl font-black text-white leading-tight truncate"
+                              style={{ textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}
+                            >
+                              {active.title}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    /* ═══ SOLO FEATURED CARD (Club) ═══ */
+                    <>
+                      {/* Featured Image / Gradient BG */}
+                      {active.imageUrl ? (
+                        <Image
+                          src={active.imageUrl}
+                          alt={active.title}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 60vw"
+                          className="object-contain object-center transition-transform duration-700 group-hover/featured:scale-105 bg-[#0d0d1a]"
+                        />
+                      ) : (
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            background: `linear-gradient(135deg, ${hexToRgba(active.accentColor, 0.12)} 0%, #0d0d1a 30%, ${hexToRgba(active.accentColor, 0.06)} 60%, #0d0d1a 100%)`,
+                          }}
+                        />
+                      )}
+
+                      {/* Multi-layer overlays */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/30 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#0d0d1a]/50 via-transparent to-transparent" />
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{ background: `radial-gradient(ellipse at 80% 70%, ${hexToRgba(active.accentColor, 0.1)}, transparent 60%)` }}
+                      />
+
+                      {/* Gold grid texture overlay */}
+                      <div
+                        className="absolute inset-0 pointer-events-none opacity-[0.025]"
+                        style={{
+                          backgroundImage: `
+                            linear-gradient(rgba(212,168,83,0.5) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(212,168,83,0.5) 1px, transparent 1px)
+                          `,
+                          backgroundSize: '30px 30px',
+                        }}
+                      />
+
+                      {/* Badge overlay — top right */}
+                      <div className="absolute top-4 right-4 z-20">
+                        <div
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border"
+                          style={{
+                            backgroundColor: hexToRgba(active.accentColor, 0.35),
+                            borderColor: hexToRgba(active.accentColor, 0.4),
+                          }}
+                        >
+                          {getBadgeIcon(active.type, active.accentLight)}
+                          <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: active.accentLight }}>
+                            {active.badge}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Club Logo watermark */}
+                      {isClubType(active.type) && active.clubName && (
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
+                          <div
+                            className="w-36 h-36 sm:w-48 sm:h-48 rounded-3xl overflow-hidden opacity-10 group-hover/featured:opacity-15 transition-opacity duration-500"
+                            style={{ filter: `drop-shadow(0 0 40px ${hexToRgba(active.accentColor, 0.3)})` }}
+                          >
+                            <ClubLogoImage
+                              clubName={active.clubName}
+                              dbLogo={active.clubLogo}
+                              alt={active.clubName}
+                              width={192}
+                              height={192}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* #1 Club badge overlay */}
+                      {active.type === 'rank1-club' && (
+                        <div className="absolute top-4 left-4 z-20 pointer-events-none">
+                          <div
+                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
+                            style={{
+                              backgroundColor: hexToRgba('#d4a853', 0.3),
+                              border: '1px solid rgba(212,168,83,0.4)',
+                              animation: 'pulse-glow 2s ease-in-out infinite',
+                            }}
+                          >
+                            <Gem className="w-4 h-4 text-idm-gold-warm" />
+                            <span className="text-[11px] font-black text-idm-gold-warm">#1 CLUB TARKAM</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Large watermark text */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" aria-hidden="true">
+                        <span
+                          className="text-6xl sm:text-8xl font-black uppercase tracking-widest select-none"
+                          style={{ color: 'rgba(212,168,83,0.03)', WebkitTextStroke: '1px rgba(212,168,83,0.05)' }}
+                        >
+                          {getWatermarkText(active.type)}
+                        </span>
+                      </div>
+
+                      {/* Bottom info bar on featured card */}
+                      <div className="absolute bottom-0 inset-x-0 p-5 sm:p-7 z-10">
+                        <div
+                          className="h-px w-full mb-4"
+                          style={{ background: `linear-gradient(to right, ${hexToRgba(active.accentColor, 0.4)}, transparent 60%)` }}
+                        />
+                        <div className="flex items-center gap-3 mb-2">
+                          <div
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0"
+                            style={{
+                              backgroundColor: hexToRgba(active.accentColor, 0.2),
+                              border: `1px solid ${hexToRgba(active.accentColor, 0.3)}`,
+                              boxShadow: `0 0 20px ${hexToRgba(active.accentColor, 0.1)}`,
+                            }}
+                          >
+                            {isClubType(active.type) && active.clubName ? (
+                              <ClubLogoImage
+                                clubName={active.clubName}
+                                dbLogo={active.clubLogo}
+                                alt={active.clubName}
+                                width={48}
+                                height={48}
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded object-cover"
+                              />
+                            ) : (
+                              <Star className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: active.accentLight }} />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active.accentLight }}>
+                              {active.subtitle}
+                            </p>
+                            <h3
+                              className="text-2xl sm:text-4xl font-black text-white leading-tight truncate"
+                              style={{ textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}
+                            >
+                              {active.title}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* ═══ Swipe Navigation Arrows ═══ */}
                   {highlights.length > 1 && (
                     <>
-                      {/* Left arrow — swipe to previous */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1150,7 +1270,6 @@ export function HighlightsSection({
                         <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: active.accentLight }} />
                       </button>
 
-                      {/* Right arrow — swipe to next */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1181,7 +1300,7 @@ export function HighlightsSection({
                         <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: active.accentLight }} />
                       </button>
 
-                      {/* Mobile swipe hint text — only visible on mobile, fades out after a few seconds */}
+                      {/* Mobile swipe hint */}
                       <div
                         className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 md:hidden swipe-hint-text"
                         aria-hidden="true"
@@ -1195,9 +1314,7 @@ export function HighlightsSection({
                           }}
                         >
                           <ChevronLeft className="w-3 h-3" style={{ color: active.accentLight, animation: 'swipe-hint-left 1.5s ease-in-out infinite' }} />
-                          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active.accentLight }}>
-                            Geser
-                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active.accentLight }}>Geser</span>
                           <ChevronRight className="w-3 h-3" style={{ color: active.accentLight, animation: 'swipe-hint-right 1.5s ease-in-out infinite' }} />
                         </div>
                       </div>
@@ -1223,7 +1340,9 @@ export function HighlightsSection({
                   <div
                     className="h-1 shrink-0"
                     style={{
-                      background: `linear-gradient(to right, transparent, ${active.accentColor}, transparent)`,
+                      background: active.isDuo
+                        ? `linear-gradient(to right, ${active.maleAccent}, ${hexToRgba('#d4a853', 0.5)}, ${active.femaleAccent})`
+                        : `linear-gradient(to right, transparent, ${active.accentColor}, transparent)`,
                     }}
                   />
 
@@ -1232,9 +1351,7 @@ export function HighlightsSection({
                     <div className="flex items-center gap-3 mb-5">
                       <div
                         className="h-px flex-1"
-                        style={{
-                          background: `linear-gradient(to right, transparent, ${hexToRgba(active.accentColor, 0.3)})`,
-                        }}
+                        style={{ background: `linear-gradient(to right, transparent, ${hexToRgba(active.accentColor, 0.3)})` }}
                       />
                       <div
                         className="flex items-center gap-2 px-3 py-1 rounded-full border"
@@ -1248,9 +1365,7 @@ export function HighlightsSection({
                       </div>
                       <div
                         className="h-px flex-1"
-                        style={{
-                          background: `linear-gradient(to left, transparent, ${hexToRgba(active.accentColor, 0.3)})`,
-                        }}
+                        style={{ background: `linear-gradient(to left, transparent, ${hexToRgba(active.accentColor, 0.3)})` }}
                       />
                     </div>
 
@@ -1272,16 +1387,16 @@ export function HighlightsSection({
                       {active.subtitle}
                     </p>
 
-                    {/* Metadata rows — only show for non-empty items */}
+                    {/* Metadata — empty state or data */}
                     {active.isEmpty ? (
                       <div className="flex flex-col items-center justify-center py-6 text-center">
                         <div
                           className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
                           style={{ backgroundColor: hexToRgba(active.accentColor, 0.1), border: `1px solid ${hexToRgba(active.accentColor, 0.15)}` }}
                         >
-                          {active.type === 'streak-male' || active.type === 'streak-female' ? (
+                          {active.type === 'streak' ? (
                             <Flame className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
-                          ) : active.type === 'mvp-male' || active.type === 'mvp-female' ? (
+                          ) : active.type === 'mvp' ? (
                             <Award className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
                           ) : (
                             <Medal className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
@@ -1292,101 +1407,204 @@ export function HighlightsSection({
                       </div>
                     ) : (
                     <>
-                    <div className="space-y-3 mb-5">
-                      {active.metadata.map((meta, i) => {
-                        const MetaIcon = meta.icon;
-                        return (
-                          <div
-                            key={`${meta.label}-${i}`}
-                            className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors duration-200 hover:bg-white/[0.03]"
+                      {/* Duo stats layout — two columns for male/female */}
+                      {active.isDuo && !active.isEmpty ? (
+                        <div className="grid grid-cols-2 gap-3 mb-5">
+                          {/* Male stats column */}
+                          <div>
+                            <div className="flex items-center gap-1.5 mb-2.5">
+                              <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ backgroundColor: hexToRgba(active.maleAccent, 0.15) }}>
+                                <span className="text-[9px] font-black" style={{ color: active.maleAccentLight }}>♂</span>
+                              </div>
+                              <span className="text-[11px] font-bold text-white truncate">{active.male?.gamertag || '—'}</span>
+                            </div>
+                            <div className="space-y-2">
+                              {active.male && !active.male.isEmpty && (
+                                <>
+                                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Tier</span>
+                                    <span className="text-[11px] font-bold text-white">{active.male.tier || '—'}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Points</span>
+                                    <span className="text-[11px] font-bold" style={{ color: active.maleAccentLight }}>{active.male.points}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Wins</span>
+                                    <span className="text-[11px] font-bold text-white">{active.male.totalWins}</span>
+                                  </div>
+                                  {active.type === 'streak' && active.male.streak >= 2 && (
+                                    <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Streak</span>
+                                      <span className="text-[11px] font-bold text-orange-400">{active.male.streak}W</span>
+                                    </div>
+                                  )}
+                                  {active.type === 'mvp' && active.male.totalMvp && (
+                                    <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">MVP</span>
+                                      <span className="text-[11px] font-bold" style={{ color: active.maleAccentLight }}>{active.male.totalMvp}x</span>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Female stats column */}
+                          <div>
+                            <div className="flex items-center gap-1.5 mb-2.5">
+                              <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ backgroundColor: hexToRgba(active.femaleAccent, 0.15) }}>
+                                <span className="text-[9px] font-black" style={{ color: active.femaleAccentLight }}>♀</span>
+                              </div>
+                              <span className="text-[11px] font-bold text-white truncate">{active.female?.gamertag || '—'}</span>
+                            </div>
+                            <div className="space-y-2">
+                              {active.female && !active.female.isEmpty && (
+                                <>
+                                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Tier</span>
+                                    <span className="text-[11px] font-bold text-white">{active.female.tier || '—'}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Points</span>
+                                    <span className="text-[11px] font-bold" style={{ color: active.femaleAccentLight }}>{active.female.points}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Wins</span>
+                                    <span className="text-[11px] font-bold text-white">{active.female.totalWins}</span>
+                                  </div>
+                                  {active.type === 'streak' && active.female.streak >= 2 && (
+                                    <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Streak</span>
+                                      <span className="text-[11px] font-bold text-orange-400">{active.female.streak}W</span>
+                                    </div>
+                                  )}
+                                  {active.type === 'mvp' && active.female.totalMvp && (
+                                    <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">MVP</span>
+                                      <span className="text-[11px] font-bold" style={{ color: active.femaleAccentLight }}>{active.female.totalMvp}x</span>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Solo stats layout (for club) */
+                        <div className="space-y-3 mb-5">
+                          {active.metadata.map((meta, i) => {
+                            const MetaIcon = meta.icon;
+                            return (
+                              <div
+                                key={`${meta.label}-${i}`}
+                                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors duration-200 hover:bg-white/[0.03]"
+                                style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}
+                              >
+                                <div
+                                  className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                                  style={{ backgroundColor: hexToRgba(active.accentColor, 0.12) }}
+                                >
+                                  <MetaIcon className="w-3.5 h-3.5" style={{ color: active.accentColor }} />
+                                </div>
+                                <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">{meta.label}</span>
+                                <span className="ml-auto text-sm font-bold text-white">{meta.value}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Separator */}
+                      <div
+                        className="h-px mb-5"
+                        style={{ background: `linear-gradient(to right, transparent, ${hexToRgba(active.accentColor, 0.2)}, transparent)` }}
+                      />
+
+                      {/* Description */}
+                      <p className="text-[13px] text-[#a09880] leading-relaxed mb-6 flex-1">
+                        {active.description}
+                      </p>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-3 mt-auto">
+                        {active.isDuo && !active.isEmpty && (
+                          <>
+                            {active.male && !active.male.isEmpty && active.male.player?.gamertag && (
+                              <button
+                                onClick={() => {
+                                  if (active.male?.player?.gamertag) setSelectedPlayer({ ...active.male.player, division: 'male' });
+                                }}
+                                className="tap-scale flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
+                                style={{
+                                  backgroundColor: hexToRgba(active.maleAccent, 0.15),
+                                  color: active.maleAccentLight,
+                                  border: `1px solid ${hexToRgba(active.maleAccent, 0.3)}`,
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = hexToRgba(active.maleAccent, 0.25);
+                                  e.currentTarget.style.boxShadow = `0 0 20px ${hexToRgba(active.maleAccent, 0.15)}`;
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = hexToRgba(active.maleAccent, 0.15);
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>♂ Detail</span>
+                              </button>
+                            )}
+                            {active.female && !active.female.isEmpty && active.female.player?.gamertag && (
+                              <button
+                                onClick={() => {
+                                  if (active.female?.player?.gamertag) setSelectedPlayer({ ...active.female.player, division: 'female' });
+                                }}
+                                className="tap-scale flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
+                                style={{
+                                  backgroundColor: hexToRgba(active.femaleAccent, 0.15),
+                                  color: active.femaleAccentLight,
+                                  border: `1px solid ${hexToRgba(active.femaleAccent, 0.3)}`,
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = hexToRgba(active.femaleAccent, 0.25);
+                                  e.currentTarget.style.boxShadow = `0 0 20px ${hexToRgba(active.femaleAccent, 0.15)}`;
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = hexToRgba(active.femaleAccent, 0.15);
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>♀ Detail</span>
+                              </button>
+                            )}
+                          </>
+                        )}
+                        {!active.isDuo && onVideoPlay && highlightsVideoUrl && (
+                          <button
+                            onClick={() => {
+                              onVideoPlay(highlightsVideoUrl, `${active.title} — Tarkam IDM Highlight`);
+                            }}
+                            className="tap-scale flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
                             style={{
-                              backgroundColor: 'rgba(255,255,255,0.015)',
+                              backgroundColor: 'rgba(255,255,255,0.05)',
+                              color: '#f5f0e8',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)';
+                              e.currentTarget.style.borderColor = hexToRgba(active.accentColor, 0.3);
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
                             }}
                           >
-                            <div
-                              className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                              style={{
-                                backgroundColor: hexToRgba(active.accentColor, 0.12),
-                              }}
-                            >
-                              <MetaIcon className="w-3.5 h-3.5" style={{ color: active.accentColor }} />
-                            </div>
-                            <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
-                              {meta.label}
-                            </span>
-                            <span className="ml-auto text-sm font-bold text-white">
-                              {meta.value}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Separator */}
-                    <div
-                      className="h-px mb-5"
-                      style={{
-                        background: `linear-gradient(to right, transparent, ${hexToRgba(active.accentColor, 0.2)}, transparent)`,
-                      }}
-                    />
-
-                    {/* Description */}
-                    <p className="text-[13px] text-[#a09880] leading-relaxed mb-6 flex-1">
-                      {active.description}
-                    </p>
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-3 mt-auto">
-                      {active.player && !active.isEmpty && (
-                        <button
-                          onClick={() => setSelectedPlayer(active.player)}
-                          className="tap-scale flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
-                          style={{
-                            backgroundColor: hexToRgba(active.accentColor, 0.15),
-                            color: active.accentLight,
-                            border: `1px solid ${hexToRgba(active.accentColor, 0.3)}`,
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = hexToRgba(active.accentColor, 0.25);
-                            e.currentTarget.style.boxShadow = `0 0 20px ${hexToRgba(active.accentColor, 0.15)}`;
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = hexToRgba(active.accentColor, 0.15);
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span>Lihat Detail</span>
-                        </button>
-                      )}
-                      {onVideoPlay && highlightsVideoUrl && (
-                        <button
-                          onClick={() => {
-                            onVideoPlay(
-                              highlightsVideoUrl,
-                              `${active.title} — Tarkam IDM Highlight`
-                            );
-                          }}
-                          className="tap-scale flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
-                          style={{
-                            backgroundColor: 'rgba(255,255,255,0.05)',
-                            color: '#f5f0e8',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)';
-                            e.currentTarget.style.borderColor = hexToRgba(active.accentColor, 0.3);
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                          }}
-                        >
-                          <Play className="w-4 h-4" />
-                          <span>Tonton Video</span>
-                        </button>
-                      )}
-                    </div>
+                            <Play className="w-4 h-4" />
+                            <span>Tonton Video</span>
+                          </button>
+                        )}
+                      </div>
                     </>
                     )}
                   </div>
@@ -1396,24 +1614,17 @@ export function HighlightsSection({
           </div>
         )}
 
-        {/* ═══ Thumbnail Selector Row (BELOW the featured card) ═══ */}
+        {/* ═══ Thumbnail Selector Row ═══ */}
         {highlights.length > 1 && (
           <div className="mt-6 sm:mt-8">
-            {/* Section label + counter */}
             <div className="flex items-center gap-3 mb-4">
               <ChevronRight className="w-4 h-4 text-idm-gold-warm/60" />
-              <span className="text-[11px] font-bold text-idm-gold-warm/60 uppercase tracking-widest">
-                Pilih Highlight
-              </span>
+              <span className="text-[11px] font-bold text-idm-gold-warm/60 uppercase tracking-widest">Pilih Highlight</span>
               <div className="h-px flex-1 bg-gradient-to-r from-idm-gold-warm/10 to-transparent" />
-              <span className="text-[11px] font-medium text-muted-foreground/40 tabular-nums">
-                {activeIdx + 1} / {highlights.length}
-              </span>
+              <span className="text-[11px] font-medium text-muted-foreground/40 tabular-nums">{activeIdx + 1} / {highlights.length}</span>
             </div>
 
-            {/* Scrollable thumbnails with nav arrows */}
             <div className="relative group/scroll">
-              {/* Left arrow */}
               {canScrollLeft && (
                 <button
                   onClick={() => scrollThumbs('left')}
@@ -1423,8 +1634,6 @@ export function HighlightsSection({
                   <ChevronLeft className="w-4 h-4 text-idm-gold-warm" />
                 </button>
               )}
-
-              {/* Right arrow */}
               {canScrollRight && (
                 <button
                   onClick={() => scrollThumbs('right')}
@@ -1434,18 +1643,9 @@ export function HighlightsSection({
                   <ChevronRight className="w-4 h-4 text-idm-gold-warm" />
                 </button>
               )}
+              {canScrollLeft && <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 z-10 pointer-events-none bg-gradient-to-r from-[#0d0d1a] to-transparent" />}
+              {canScrollRight && <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-12 z-10 pointer-events-none bg-gradient-to-l from-[#0d0d1a] to-transparent" />}
 
-              {/* Left fade mask */}
-              {canScrollLeft && (
-                <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 z-10 pointer-events-none bg-gradient-to-r from-[#0d0d1a] to-transparent" />
-              )}
-
-              {/* Right fade mask */}
-              {canScrollRight && (
-                <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-12 z-10 pointer-events-none bg-gradient-to-l from-[#0d0d1a] to-transparent" />
-              )}
-
-              {/* Scrollable container */}
               <div
                 ref={thumbScrollRef}
                 className="flex items-start gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none"
@@ -1463,17 +1663,13 @@ export function HighlightsSection({
               </div>
             </div>
 
-            {/* Progress dots indicator */}
+            {/* Progress dots */}
             <div className="flex items-center justify-center gap-1.5 mt-3">
               {highlights.map((item, idx) => (
                 <button
                   key={item.id}
                   onClick={() => handleThumbClick(idx)}
-                  className={`rounded-full transition-all duration-300 cursor-pointer ${
-                    idx === activeIdx
-                      ? 'w-2.5 h-2.5'
-                      : 'w-1.5 h-1.5 hover:w-2 hover:h-2'
-                  }`}
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${idx === activeIdx ? 'w-2.5 h-2.5' : 'w-1.5 h-1.5 hover:w-2 hover:h-2'}`}
                   style={{
                     backgroundColor: idx === activeIdx ? item.accentColor : 'rgba(255,255,255,0.25)',
                     boxShadow: idx === activeIdx ? `0 0 8px ${hexToRgba(item.accentColor, 0.5)}` : 'none',
@@ -1486,7 +1682,7 @@ export function HighlightsSection({
         )}
       </div>
 
-      {/* ═══ Decorative ambient particles — CSS-only animation ═══ */}
+      {/* ═══ Decorative ambient particles ═══ */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         {[...Array(8)].map((_, i) => (
           <div

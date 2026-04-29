@@ -6,6 +6,9 @@ const VALID_CATEGORIES = ['ava', 'item', 'char', 'jasa', 'dll'];
 
 // GET /api/marketplace — List marketplace items (public: approved only, admin: all)
 export async function GET(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -55,12 +58,12 @@ export async function GET(request: NextRequest) {
       take: 50,
     });
 
-    return NextResponse.json({ items });
+    return NextResponse.json({ items }, { headers });
   } catch (error) {
     console.error('Error fetching marketplace items:', error);
     return NextResponse.json(
       { error: 'Failed to fetch marketplace items' },
-      { status: 500 }
+      { headers,  status: 500 }
     );
   }
 }

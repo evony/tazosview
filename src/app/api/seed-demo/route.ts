@@ -5,8 +5,11 @@ import { NextResponse } from 'next/server';
 
 // ─── GET: Return current data stats ───
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Endpoint tidak tersedia di production' }, { status: 403 });
+    return NextResponse.json({ error: 'Endpoint tidak tersedia di production' }, { headers,  status: 403 });
   }
   const authResult = await requireSuperAdmin(request);
   if (authResult instanceof NextResponse) return authResult;
@@ -55,11 +58,11 @@ export async function GET(request: Request) {
         clubs: clubCount,
         seasons: seasonCount,
       },
-    });
+    }, { headers });
   } catch (e: unknown) {
     const error = e as Error;
     console.error('Seed-demo GET error:', error);
-    return NextResponse.json({ error: getSafeErrorMessage(e) }, { status: 500 });
+    return NextResponse.json({ error: getSafeErrorMessage(e) }, { headers,  status: 500 });
   }
 }
 

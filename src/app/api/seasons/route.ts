@@ -3,6 +3,9 @@ import { requireAdmin } from '@/lib/api-auth';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const division = searchParams.get('division');
 
@@ -17,7 +20,7 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json(seasons);
+  return NextResponse.json(seasons, { headers });
 }
 
 export async function POST(request: Request) {

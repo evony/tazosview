@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 export async function GET(request: Request) {
+  const headers = new Headers();
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   const { searchParams } = new URL(request.url);
   const seasonId = searchParams.get('seasonId');
   const division = searchParams.get('division');
@@ -58,7 +61,7 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers });
   }
 
   // ── Original mode: filter by seasonId or division ──
@@ -75,7 +78,7 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json(clubs);
+  return NextResponse.json(clubs, { headers });
 }
 
 export async function POST(request: Request) {
