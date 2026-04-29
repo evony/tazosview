@@ -317,7 +317,7 @@ export function ClubProfile({ club, onClose, rank, onPlayerClick }: ClubProfileP
         onClick={(e) => e.stopPropagation()}
       >
           {/* ── Header Banner ── */}
-          <div className="relative h-[32rem]">
+          <div className="relative h-56 sm:h-64 md:h-[32rem]">
   // FIX: Jangan render bg-section.jpg sebagai fallback
   {(() => {
   const bannerSrc = unifiedData?.bannerImage || club.bannerImage;
