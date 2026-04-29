@@ -393,67 +393,41 @@ export function CommunityDashboard() {
   });
 
 
-  // Fetch male stats
-  const { data: maleData, isLoading: isMaleLoading } = useQuery<StatsData>({
-    queryKey: ['stats', 'male'],
-    queryFn: async () => {
-      const res = await fetch('/api/stats?division=male');
-      return res.json();
-    },
-    staleTime: 15000,
-    refetchInterval: 30000,
-    refetchOnWindowFocus: true,
-  });
+  // Male stats
+const { data: maleData } = useQuery<StatsData>({
+  queryKey: ['stats', 'male'],
+  queryFn: async () => {
+    const res = await fetch('/api/stats?division=male');
+    return res.json();
+  },
+  staleTime: 2 * 60 * 1000,       // 2 menit (dari 15 detik)
+  refetchInterval: false,          // matikan auto-refetch
+  refetchOnWindowFocus: false,     // matikan refetch on focus
+});
 
-  // Fetch female stats
-  const { data: femaleData, isLoading: isFemaleLoading } = useQuery<StatsData>({
-    queryKey: ['stats', 'female'],
-    queryFn: async () => {
-      const res = await fetch('/api/stats?division=female');
-      return res.json();
-    },
-    staleTime: 15000,
-    refetchInterval: 30000,
-    refetchOnWindowFocus: true,
-  });
+  // Female stats
+const { data: femaleData } = useQuery<StatsData>({
+  queryKey: ['stats', 'female'],
+  queryFn: async () => {
+    const res = await fetch('/api/stats?division=female');
+    return res.json();
+  },
+  staleTime: 2 * 60 * 1000,       // 2 menit
+  refetchInterval: false,
+  refetchOnWindowFocus: false,
+});
 
-  // Fetch league data (now returns Tarkam data)
-  const { data: leagueData, isLoading: isLeagueLoading } = useQuery<{
-    hasData: boolean;
-    stats?: { totalClubs: number; totalMatches: number; completedMatches: number; liveMatches: number };
-    clubs?: Array<{
-      id: string;
-      name: string;
-      logo?: string | null;
-      wins: number;
-      losses: number;
-      points: number;
-      malePoints: number;
-      femalePoints: number;
-      gameDiff: number;
-      memberCount: number;
-      maleMemberCount: number;
-      femaleMemberCount: number;
-    }>;
-    tarkamChampion?: {
-      id: string;
-      name: string;
-      logo?: string | null;
-      seasonNumber: number;
-      malePoints: number;
-      femalePoints: number;
-      totalPoints: number;
-    } | null;
-  }>({
-    queryKey: ['league-community'],
-    queryFn: async () => {
-      const res = await fetch('/api/league');
-      return res.json();
-    },
-    staleTime: 15000,
-    refetchInterval: 30000,
-    refetchOnWindowFocus: true,
-  });
+  // League data
+const { data: leagueData } = useQuery({
+  queryKey: ['league-community'],
+  queryFn: async () => {
+    const res = await fetch('/api/league');
+    return res.json();
+  },
+  staleTime: 2 * 60 * 1000,       // 2 menit
+  refetchInterval: false,
+  refetchOnWindowFocus: false,
+});
 
   const isLoading = isMaleLoading || isFemaleLoading || isLeagueLoading;
 
