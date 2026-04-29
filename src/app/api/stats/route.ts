@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   const season = allSeasons[0];
 
   if (!season) {
-    return NextResponse.json({ hasData: false, division, allSeasons: [], weeklyChampions: [] }, {
+    return NextResponse.json({ hasData: false, division, allSeasons: [], weeklyChampions: [], weeklyTopPerformers: [] }, {
       headers: STATS_CACHE_HEADERS_SHORT,
     });
   }
@@ -513,6 +513,143 @@ export async function GET(request: Request) {
     ...m, club1: { id: m.club1?.id, name: m.club1?.profile?.name, logo: m.club1?.profile?.logo }, club2: { id: m.club2?.id, name: m.club2?.profile?.name, logo: m.club2?.profile?.logo },
   }));
 
+  // ═══ Compute Weekly Top Performers — "Bintang Minggu Ini" ═══
+  // Composite score: points gained this week (40%), win rate (25%),
+  // streak (15%), tournament winner bonus (10%), tier underdog bonus (10%)
+  // Tie-break: lower tier wins (S=3, A=2, B=1 — lower = better underdog)
+  let weeklyTopPerformers: any[] = [];
+
+  // Find the latest tournament for the active season (completed or in-progress)
+  const latestTournament = [...tournaments]
+    .filter(t => t.seasonId === activeSeasonId)
+    .sort((a, b) => b.weekNumber - a.weekNumber)[0];
+
+  if (latestTournament) {
+    // Query PlayerPoint records for this tournament to get per-player points gained this week
+    const [weeklyPointsRaw, weeklyParticipations] = await Promise.all([
+      db.playerPoint.groupBy({
+        by: ['playerId'],
+        where: { tournamentId: latestTournament.id },
+        _sum: { amount: true },
+      }),
+      db.participation.findMany({
+        where: { tournamentId: latestTournament.id, status: 'approved' },
+        include: { player: true },
+      }),
+    ]);
+
+    // Build map: playerId → points gained this week
+    const weeklyPointsMap = new Map(
+      weeklyPointsRaw.map((wp: { playerId: string; _sum: { amount: number | null } }) => [wp.playerId, wp._sum.amount || 0])
+    );
+
+    // Build map: playerId → participation data
+    const weeklyPartMap = new Map(
+      weeklyParticipations.map((p: any) => [p.playerId, p])
+    );
+
+    // Build map: playerId → player from topPlayers (has season points, tier, streak, etc.)
+    const topPlayersMap = new Map(
+      topPlayers.map((p: any) => [p.id, p])
+    );
+
+    // Collect all players who earned points this week
+    const candidates: any[] = [];
+    for (const [playerId, weeklyPts] of weeklyPointsMap) {
+      const player = topPlayersMap.get(playerId);
+      if (!player) continue;
+
+      const part = weeklyPartMap.get(playerId);
+      const isWinner = part?.isWinner ?? false;
+      const isMvp = part?.isMvp ?? false;
+
+      candidates.push({
+        id: player.id,
+        gamertag: player.gamertag,
+        avatar: player.avatar,
+        tier: player.tier || 'B',
+        points: player.seasonPoints ?? player.points ?? 0,
+        weeklyPointsGained: weeklyPts,
+        weeklyWins: isWinner ? 1 : 0,
+        weeklyMatches: 1, // Each participation = 1 tournament this week
+        weeklyWinRate: isWinner ? 100 : 0,
+        streak: player.streak ?? 0,
+        club: player.clubMembers?.[0]?.profile?.name ?? null,
+      });
+    }
+
+    // Also include players who participated but may not have PlayerPoint records yet
+    for (const [playerId, part] of weeklyPartMap) {
+      if (weeklyPointsMap.has(playerId)) continue; // Already processed
+      const player = topPlayersMap.get(playerId);
+      if (!player) continue;
+
+      candidates.push({
+        id: player.id,
+        gamertag: player.gamertag,
+        avatar: player.avatar,
+        tier: player.tier || 'B',
+        points: player.seasonPoints ?? player.points ?? 0,
+        weeklyPointsGained: part.pointsEarned ?? 0,
+        weeklyWins: part.isWinner ? 1 : 0,
+        weeklyMatches: 1,
+        weeklyWinRate: part.isWinner ? 100 : 0,
+        streak: player.streak ?? 0,
+        club: player.clubMembers?.[0]?.profile?.name ?? null,
+      });
+    }
+
+    // ═══ Compute Composite Score ═══
+    // Normalize each factor to 0-100 scale, then apply weights
+    if (candidates.length > 0) {
+      const maxWeeklyPts = Math.max(...candidates.map(c => c.weeklyPointsGained), 1);
+      const maxStreak = Math.max(...candidates.map(c => c.streak), 1);
+
+      // Tier underdog score: B=100, A=50, S=0 (lower tier = higher score)
+      const tierScore = (tier: string) => {
+        const t = tier.toUpperCase();
+        if (t === 'B') return 100;
+        if (t === 'A') return 50;
+        return 0; // S tier
+      };
+
+      for (const c of candidates) {
+        const pointsNorm = (c.weeklyPointsGained / maxWeeklyPts) * 100;
+        const winRateScore = c.weeklyWinRate; // Already 0-100
+        const streakNorm = (c.streak / maxStreak) * 100;
+        const winnerBonus = c.weeklyWins > 0 ? 100 : 0;
+        const underdogScore = tierScore(c.tier);
+
+        c.compositeScore = Math.round(
+          pointsNorm * 0.40 +      // Points gained (40%)
+          winRateScore * 0.25 +     // Win rate (25%)
+          streakNorm * 0.15 +       // Streak momentum (15%)
+          winnerBonus * 0.10 +      // Tournament winner bonus (10%)
+          underdogScore * 0.10      // Tier underdog bonus (10%)
+        );
+      }
+
+      // Sort by composite score DESC, then tie-break: lower tier first (B < A < S)
+      const tierRank = (tier: string) => {
+        const t = tier.toUpperCase();
+        if (t === 'B') return 1; // Best underdog — wins tie
+        if (t === 'A') return 2;
+        return 3; // S — loses tie
+      };
+
+      candidates.sort((a, b) => {
+        if (b.compositeScore !== a.compositeScore) return b.compositeScore - a.compositeScore;
+        return tierRank(a.tier) - tierRank(b.tier); // Lower tier wins on tie
+      });
+
+      weeklyTopPerformers = candidates.slice(0, 5).map(c => ({
+        ...c,
+        division: division as 'male' | 'female',
+        weekNumber: latestTournament.weekNumber,
+      }));
+    }
+  }
+
   return NextResponse.json({
     hasData: true,
     division,
@@ -539,6 +676,7 @@ export async function GET(request: Request) {
       completedWeeks,
       percentage: SEASON_TOTAL_WEEKS > 0 ? Math.round((completedWeeks / SEASON_TOTAL_WEEKS) * 100) : 0,
     },
+    weeklyTopPerformers,
   }, {
     headers: STATS_CACHE_HEADERS,
   });

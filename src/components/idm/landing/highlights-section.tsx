@@ -10,17 +10,18 @@ import {
 import { SectionHeader, AnimatedSection } from './shared';
 import { ClubLogoImage } from '@/components/idm/club-logo-image';
 import { getAvatarUrl, hexToRgba } from '@/lib/utils';
-import type { StatsData, TopPlayer, SeasonInfo, MvpHallOfFameEntry } from '@/types/stats';
+import type { StatsData, TopPlayer, SeasonInfo, MvpHallOfFameEntry, WeeklyPerformer } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════════════
    TARKAM IDM — HIGHLIGHTS SECTION (PUNCAK PRESTASI)
    Duo Champion Card Layout — Male + Female in one card
    
-   4 Highlight Categories:
+   5 Highlight Categories:
    1. Juwara #1 — #1 Tarkam Male + Female (duo avatar)
-   2. Klub Terkuat — #1 Club Tarkam (solo)
-   3. Streak Terpanjang — Male + Female streak (duo avatar)
+   2. Performa Terbaik — Weekly Top Performer Male + Female (duo avatar)
+   3. Klub Terkuat — #1 Club Tarkam (solo)
    4. MVP Terbaru — Male + Female MVP (duo avatar)
+   5. Streak Terpanjang — Male + Female streak (duo avatar)
    ═══════════════════════════════════════════════════════════════ */
 
 interface HighlightsSectionProps {
@@ -43,6 +44,7 @@ interface DuoPlayer {
   streak: number;
   totalMvp?: number;
   mvpWeek?: number;
+  weeklyPointsGained?: number;
   player: TopPlayer & { division?: string };
   isEmpty?: boolean;
 }
@@ -50,7 +52,7 @@ interface DuoPlayer {
 /* ─── Highlight Item Type ─── */
 interface HighlightItem {
   id: string;
-  type: 'rank1' | 'rank1-club' | 'streak' | 'mvp';
+  type: 'rank1' | 'performance' | 'rank1-club' | 'streak' | 'mvp';
   title: string;
   subtitle: string;
   description: string;
@@ -79,6 +81,10 @@ interface HighlightItem {
   /** MVP week number */
   mvpWeek?: number;
   mvpCount?: number;
+  /** Performance week number */
+  weekNumber?: number;
+  /** Weekly points gained (for performance tab) */
+  weeklyPointsGained?: number;
 }
 
 /* ─── 3D Tilt Card Hook ─── */
@@ -117,11 +123,12 @@ function buildHighlights(
   const items: HighlightItem[] = [];
 
   /* ═══════════════════════════════════════════════════════════
-     4 DUO/SOLO HIGHLIGHT CATEGORIES:
+     5 DUO/SOLO HIGHLIGHT CATEGORIES:
      1. Juwara #1 — Male #1 + Female #1 (duo)
-     2. Klub Terkuat — #1 Club (solo)
-     3. Streak Terpanjang — Male + Female streak (duo)
+     2. Performa Terbaik — Weekly Top Performer Male + Female (duo)
+     3. Klub Terkuat — #1 Club (solo)
      4. MVP Terbaru — Male + Female MVP (duo)
+     5. Streak Terpanjang — Male + Female streak (duo)
      ═══════════════════════════════════════════════════════════ */
 
   // ─── 1. Juwara #1 — Male #1 + Female #1 ───
@@ -177,7 +184,68 @@ function buildHighlights(
     ],
   });
 
-  // ─── 2. Klub Terkuat — #1 Club ───
+  // ─── 2. Performa Terbaik — Weekly Top Performer Male + Female ───
+  const topMalePerformer: WeeklyPerformer | undefined = maleData?.weeklyTopPerformers?.[0];
+  const topFemalePerformer: WeeklyPerformer | undefined = femaleData?.weeklyTopPerformers?.[0];
+  const performanceIsEmpty = !topMalePerformer && !topFemalePerformer;
+
+  items.push({
+    id: 'performance',
+    type: 'performance',
+    title: topMalePerformer && topFemalePerformer
+      ? `${topMalePerformer.gamertag} & ${topFemalePerformer.gamertag}`
+      : topMalePerformer ? topMalePerformer.gamertag
+      : topFemalePerformer ? topFemalePerformer.gamertag
+      : 'Belum Ada Data',
+    subtitle: 'Performa Terbaik Minggu Ini',
+    description: topMalePerformer && topFemalePerformer
+      ? `Bintang minggu ini! ${topMalePerformer.gamertag} (♂) mencetak +${topMalePerformer.weeklyPointsGained} poin minggu ini dengan composite score ${topMalePerformer.compositeScore}, sementara ${topFemalePerformer.gamertag} (♀) mencetak +${topFemalePerformer.weeklyPointsGained} poin dengan composite score ${topFemalePerformer.compositeScore}. Tier: ${topMalePerformer.tier} & ${topFemalePerformer.tier}.`
+      : topMalePerformer
+        ? `Bintang minggu ini divisi male! ${topMalePerformer.gamertag} mencetak +${topMalePerformer.weeklyPointsGained} poin minggu ini dengan composite score ${topMalePerformer.compositeScore}. Tier: ${topMalePerformer.tier}.`
+        : topFemalePerformer
+          ? `Bintang minggu ini divisi female! ${topFemalePerformer.gamertag} mencetak +${topFemalePerformer.weeklyPointsGained} poin minggu ini dengan composite score ${topFemalePerformer.compositeScore}. Tier: ${topFemalePerformer.tier}.`
+          : 'Pemain dengan performa terbaik minggu ini akan muncul di sini setelah pertandingan selesai.',
+    badge: 'BINTANG MINGGU INI',
+    thumbLabel: 'Performa',
+    accentColor: '#eab308',
+    accentLight: '#facc15',
+    isDuo: true,
+    male: topMalePerformer ? {
+      gamertag: topMalePerformer.gamertag,
+      imageUrl: getAvatarUrl(topMalePerformer.gamertag, 'male', topMalePerformer.avatar),
+      tier: topMalePerformer.tier,
+      points: topMalePerformer.points,
+      totalWins: topMalePerformer.weeklyWins,
+      streak: topMalePerformer.streak,
+      weeklyPointsGained: topMalePerformer.weeklyPointsGained,
+      player: { ...topMalePerformer, division: 'male', name: topMalePerformer.gamertag, totalWins: topMalePerformer.weeklyWins, totalMvp: 0, maxStreak: topMalePerformer.streak, matches: topMalePerformer.weeklyMatches } as TopPlayer & { division?: string },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    female: topFemalePerformer ? {
+      gamertag: topFemalePerformer.gamertag,
+      imageUrl: getAvatarUrl(topFemalePerformer.gamertag, 'female', topFemalePerformer.avatar),
+      tier: topFemalePerformer.tier,
+      points: topFemalePerformer.points,
+      totalWins: topFemalePerformer.weeklyWins,
+      streak: topFemalePerformer.streak,
+      weeklyPointsGained: topFemalePerformer.weeklyPointsGained,
+      player: { ...topFemalePerformer, division: 'female', name: topFemalePerformer.gamertag, totalWins: topFemalePerformer.weeklyWins, totalMvp: 0, maxStreak: topFemalePerformer.streak, matches: topFemalePerformer.weeklyMatches } as TopPlayer & { division?: string },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    maleAccent: '#eab308',
+    femaleAccent: '#f97316',
+    maleAccentLight: '#facc15',
+    femaleAccentLight: '#fb923c',
+    isEmpty: performanceIsEmpty,
+    weekNumber: topMalePerformer?.weekNumber || topFemalePerformer?.weekNumber,
+    metadata: [
+      ...(topMalePerformer || topFemalePerformer ? [{ icon: BarChart3, label: 'Composite Score', value: `${topMalePerformer?.compositeScore ?? topFemalePerformer?.compositeScore ?? 0}` }] : []),
+      ...(topMalePerformer ? [{ icon: TrendingUp, label: 'Weekly Pts ♂', value: `+${topMalePerformer.weeklyPointsGained}` }] : []),
+      ...(topFemalePerformer ? [{ icon: TrendingUp, label: 'Weekly Pts ♀', value: `+${topFemalePerformer.weeklyPointsGained}` }] : []),
+      ...(topMalePerformer ? [{ icon: Flame, label: 'Streak ♂', value: `${topMalePerformer.streak}W` }] : []),
+      ...(topFemalePerformer ? [{ icon: Flame, label: 'Streak ♀', value: `${topFemalePerformer.streak}W` }] : []),
+    ],
+  });
+
+  // ─── 3. Klub Terkuat — #1 Club ───
   let topClub = leagueData?.stats?.topClub || null;
   if (!topClub && leagueData?.clubs?.length > 0) {
     const sortedClubs = [...leagueData.clubs].sort((a: any, b: any) => {
@@ -236,63 +304,6 @@ function buildHighlights(
       metadata: [],
     });
   }
-
-  // ─── 3. Streak Terpanjang — Male + Female ───
-  const malePlayers = maleData?.topPlayers || [];
-  const femalePlayers = femaleData?.topPlayers || [];
-  const maleStreakKing = [...malePlayers].sort((a, b) => b.streak - a.streak)[0];
-  const femaleStreakKing = [...femalePlayers].sort((a, b) => b.streak - a.streak)[0];
-  const hasMaleStreak = maleStreakKing && maleStreakKing.streak >= 2;
-  const hasFemaleStreak = femaleStreakKing && femaleStreakKing.streak >= 2;
-  const streakIsEmpty = !hasMaleStreak && !hasFemaleStreak;
-
-  items.push({
-    id: 'streak',
-    type: 'streak',
-    title: hasMaleStreak && hasFemaleStreak ? `${maleStreakKing.gamertag} & ${femaleStreakKing.gamertag}` : hasMaleStreak ? maleStreakKing.gamertag : hasFemaleStreak ? femaleStreakKing.gamertag : 'Belum Ada Streak',
-    subtitle: 'Streak Terpanjang',
-    description: hasMaleStreak && hasFemaleStreak
-      ? `Streak ${maleStreakKing.streak}W (${maleStreakKing.gamertag}, ♂) dan ${femaleStreakKing.streak}W (${femaleStreakKing.gamertag}, ♀) — konsistensi luar biasa di kedua divisi!`
-      : hasMaleStreak
-        ? `Streak ${maleStreakKing.streak} kemenangan berturut-turut di divisi male oleh ${maleStreakKing.gamertag}!`
-        : hasFemaleStreak
-          ? `Streak ${femaleStreakKing.streak} kemenangan berturut-turut di divisi female oleh ${femaleStreakKing.gamertag}!`
-          : 'Pemain dengan streak kemenangan berturut-turut akan muncul di sini. Menangkan 2+ pertandingan berturut-turut untuk memulai streak!',
-    badge: 'STREAK',
-    thumbLabel: 'Streak',
-    accentColor: '#f97316',
-    accentLight: '#fb923c',
-    isDuo: true,
-    male: hasMaleStreak ? {
-      gamertag: maleStreakKing.gamertag,
-      imageUrl: getAvatarUrl(maleStreakKing.gamertag, 'male', maleStreakKing.avatar),
-      tier: maleStreakKing.tier,
-      points: maleStreakKing.points,
-      totalWins: maleStreakKing.totalWins,
-      streak: maleStreakKing.streak,
-      player: { ...maleStreakKing, division: 'male' },
-    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
-    female: hasFemaleStreak ? {
-      gamertag: femaleStreakKing.gamertag,
-      imageUrl: getAvatarUrl(femaleStreakKing.gamertag, 'female', femaleStreakKing.avatar),
-      tier: femaleStreakKing.tier,
-      points: femaleStreakKing.points,
-      totalWins: femaleStreakKing.totalWins,
-      streak: femaleStreakKing.streak,
-      player: { ...femaleStreakKing, division: 'female' },
-    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
-    maleAccent: '#f97316',
-    femaleAccent: '#ef4444',
-    maleAccentLight: '#fb923c',
-    femaleAccentLight: '#f87171',
-    isEmpty: streakIsEmpty,
-    metadata: [
-      ...(hasMaleStreak ? [{ icon: Flame, label: 'Streak ♂', value: `${maleStreakKing.streak}W` }] : []),
-      ...(hasMaleStreak ? [{ icon: Trophy, label: 'Points ♂', value: `${maleStreakKing.points}` }] : []),
-      ...(hasFemaleStreak ? [{ icon: Flame, label: 'Streak ♀', value: `${femaleStreakKing.streak}W` }] : []),
-      ...(hasFemaleStreak ? [{ icon: Trophy, label: 'Points ♀', value: `${femaleStreakKing.points}` }] : []),
-    ],
-  });
 
   // ─── 4. MVP Terbaru — Male + Female ───
   const maleMvpList = maleData?.mvpHallOfFame || [];
@@ -369,6 +380,63 @@ function buildHighlights(
     ],
   });
 
+  // ─── 5. Streak Terpanjang — Male + Female ───
+  const malePlayers = maleData?.topPlayers || [];
+  const femalePlayers = femaleData?.topPlayers || [];
+  const maleStreakKing = [...malePlayers].sort((a, b) => b.streak - a.streak)[0];
+  const femaleStreakKing = [...femalePlayers].sort((a, b) => b.streak - a.streak)[0];
+  const hasMaleStreak = maleStreakKing && maleStreakKing.streak >= 2;
+  const hasFemaleStreak = femaleStreakKing && femaleStreakKing.streak >= 2;
+  const streakIsEmpty = !hasMaleStreak && !hasFemaleStreak;
+
+  items.push({
+    id: 'streak',
+    type: 'streak',
+    title: hasMaleStreak && hasFemaleStreak ? `${maleStreakKing.gamertag} & ${femaleStreakKing.gamertag}` : hasMaleStreak ? maleStreakKing.gamertag : hasFemaleStreak ? femaleStreakKing.gamertag : 'Belum Ada Streak',
+    subtitle: 'Streak Terpanjang',
+    description: hasMaleStreak && hasFemaleStreak
+      ? `Streak ${maleStreakKing.streak}W (${maleStreakKing.gamertag}, ♂) dan ${femaleStreakKing.streak}W (${femaleStreakKing.gamertag}, ♀) — konsistensi luar biasa di kedua divisi!`
+      : hasMaleStreak
+        ? `Streak ${maleStreakKing.streak} kemenangan berturut-turut di divisi male oleh ${maleStreakKing.gamertag}!`
+        : hasFemaleStreak
+          ? `Streak ${femaleStreakKing.streak} kemenangan berturut-turut di divisi female oleh ${femaleStreakKing.gamertag}!`
+          : 'Pemain dengan streak kemenangan berturut-turut akan muncul di sini. Menangkan 2+ pertandingan berturut-turut untuk memulai streak!',
+    badge: 'STREAK',
+    thumbLabel: 'Streak',
+    accentColor: '#f97316',
+    accentLight: '#fb923c',
+    isDuo: true,
+    male: hasMaleStreak ? {
+      gamertag: maleStreakKing.gamertag,
+      imageUrl: getAvatarUrl(maleStreakKing.gamertag, 'male', maleStreakKing.avatar),
+      tier: maleStreakKing.tier,
+      points: maleStreakKing.points,
+      totalWins: maleStreakKing.totalWins,
+      streak: maleStreakKing.streak,
+      player: { ...maleStreakKing, division: 'male' },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    female: hasFemaleStreak ? {
+      gamertag: femaleStreakKing.gamertag,
+      imageUrl: getAvatarUrl(femaleStreakKing.gamertag, 'female', femaleStreakKing.avatar),
+      tier: femaleStreakKing.tier,
+      points: femaleStreakKing.points,
+      totalWins: femaleStreakKing.totalWins,
+      streak: femaleStreakKing.streak,
+      player: { ...femaleStreakKing, division: 'female' },
+    } : { gamertag: '—', imageUrl: undefined, tier: '—', points: 0, totalWins: 0, streak: 0, player: {} as any, isEmpty: true },
+    maleAccent: '#f97316',
+    femaleAccent: '#ef4444',
+    maleAccentLight: '#fb923c',
+    femaleAccentLight: '#f87171',
+    isEmpty: streakIsEmpty,
+    metadata: [
+      ...(hasMaleStreak ? [{ icon: Flame, label: 'Streak ♂', value: `${maleStreakKing.streak}W` }] : []),
+      ...(hasMaleStreak ? [{ icon: Trophy, label: 'Points ♂', value: `${maleStreakKing.points}` }] : []),
+      ...(hasFemaleStreak ? [{ icon: Flame, label: 'Streak ♀', value: `${femaleStreakKing.streak}W` }] : []),
+      ...(hasFemaleStreak ? [{ icon: Trophy, label: 'Points ♀', value: `${femaleStreakKing.points}` }] : []),
+    ],
+  });
+
   return items;
 }
 
@@ -395,6 +463,8 @@ function getBadgeIcon(type: HighlightItem['type'], accentLight: string) {
       return <Award className="w-3.5 h-3.5" style={{ color: accentLight }} />;
     case 'rank1':
       return <Medal className="w-3.5 h-3.5" style={{ color: accentLight }} />;
+    case 'performance':
+      return <TrendingUp className="w-3.5 h-3.5" style={{ color: accentLight }} />;
     case 'rank1-club':
       return <Gem className="w-3.5 h-3.5" style={{ color: accentLight }} />;
     case 'streak':
@@ -409,6 +479,7 @@ function getWatermarkText(type: HighlightItem['type']): string {
   switch (type) {
     case 'mvp': return 'MVP';
     case 'rank1': return '#1 TARKAM';
+    case 'performance': return 'BINTANG';
     case 'rank1-club': return '#1 CLUB';
     case 'streak': return 'STREAK';
     default: return 'TARKAM';
@@ -461,6 +532,7 @@ function DuoAvatarHalf({
         >
           <div className="flex flex-col items-center gap-3 opacity-30">
             {type === 'rank1' ? <Medal className="w-14 h-14" style={{ color: accent }} /> :
+             type === 'performance' ? <TrendingUp className="w-14 h-14" style={{ color: accent }} /> :
              type === 'streak' ? <Flame className="w-14 h-14" style={{ color: accent }} /> :
              type === 'mvp' ? <Award className="w-14 h-14" style={{ color: accent }} /> :
              <Star className="w-14 h-14" style={{ color: accent }} />}
@@ -511,7 +583,7 @@ function DuoAvatarHalf({
           </div>
           <div className="flex items-center gap-3 ml-8">
             <span className="text-[12px] font-bold" style={{ color: accentLight }}>
-              {player.points}pts
+              {type === 'performance' && player.weeklyPointsGained ? `${player.points}pts (+${player.weeklyPointsGained}W)` : `${player.points}pts`}
             </span>
             <span className="text-[12px] font-bold text-green-400">
               {player.totalWins}W
@@ -689,6 +761,13 @@ function ThumbnailCard({
         {item.type === 'mvp' && (
           <div className="absolute top-1.5 right-1.5 pointer-events-none">
             <Award className="w-3.5 h-3.5" style={{ color: item.accentLight, filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }} />
+          </div>
+        )}
+
+        {/* Performance star/sparkle overlay */}
+        {item.type === 'performance' && (
+          <div className="absolute top-1.5 right-1.5 pointer-events-none">
+            <Star className="w-3.5 h-3.5" style={{ color: item.accentLight, filter: 'drop-shadow(0 0 4px rgba(234,179,8,0.5))' }} />
           </div>
         )}
       </div>
@@ -1024,7 +1103,7 @@ export function HighlightsSection({
                         </div>
                       </div>
 
-                      {/* Rank #1 / MVP / Streak badge overlay — top left */}
+                      {/* Rank #1 / Performance / MVP / Streak badge overlay — top left */}
                       <div className="absolute top-4 left-4 z-20 pointer-events-none">
                         <div
                           className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
@@ -1035,10 +1114,11 @@ export function HighlightsSection({
                           }}
                         >
                           {active.type === 'rank1' && <Medal className="w-4 h-4 text-[#d4a853]" />}
+                          {active.type === 'performance' && <TrendingUp className="w-4 h-4 text-[#d4a853]" />}
                           {active.type === 'streak' && <Flame className="w-4 h-4 text-[#d4a853]" />}
                           {active.type === 'mvp' && <Award className="w-4 h-4 text-[#d4a853]" />}
                           <span className="text-[11px] font-black text-[#d4a853]">
-                            {active.type === 'rank1' ? 'PERINGKAT #1' : active.type === 'streak' ? 'STREAK TERPANJANG' : 'MVP TERBARU'}
+                            {active.type === 'rank1' ? 'PERINGKAT #1' : active.type === 'performance' ? 'PERFORMA TERBAIK' : active.type === 'streak' ? 'STREAK TERPANJANG' : 'MVP TERBARU'}
                           </span>
                         </div>
                       </div>
@@ -1080,6 +1160,7 @@ export function HighlightsSection({
                             }}
                           >
                             {active.type === 'rank1' ? <Medal className="w-5 h-5 sm:w-6 sm:h-6 text-[#d4a853]" /> :
+                             active.type === 'performance' ? <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-[#d4a853]" /> :
                              active.type === 'streak' ? <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-[#d4a853]" /> :
                              active.type === 'mvp' ? <Award className="w-5 h-5 sm:w-6 sm:h-6 text-[#d4a853]" /> :
                              <Star className="w-5 h-5 sm:w-6 sm:h-6 text-[#d4a853]" />}
@@ -1406,6 +1487,8 @@ export function HighlightsSection({
                             <Flame className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
                           ) : active.type === 'mvp' ? (
                             <Award className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
+                          ) : active.type === 'performance' ? (
+                            <TrendingUp className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
                           ) : (
                             <Medal className="w-7 h-7" style={{ color: active.accentColor, opacity: 0.4 }} />
                           )}
@@ -1441,6 +1524,12 @@ export function HighlightsSection({
                                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Wins</span>
                                     <span className="text-[11px] font-bold text-white">{active.male.totalWins}</span>
                                   </div>
+                                  {active.type === 'performance' && active.male.weeklyPointsGained != null && (
+                                    <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Weekly Pts</span>
+                                      <span className="text-[11px] font-bold" style={{ color: active.maleAccentLight }}>+{active.male.weeklyPointsGained}</span>
+                                    </div>
+                                  )}
                                   {active.type === 'streak' && active.male.streak >= 2 && (
                                     <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
                                       <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Streak</span>
@@ -1481,6 +1570,12 @@ export function HighlightsSection({
                                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Wins</span>
                                     <span className="text-[11px] font-bold text-white">{active.female.totalWins}</span>
                                   </div>
+                                  {active.type === 'performance' && active.female.weeklyPointsGained != null && (
+                                    <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
+                                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Weekly Pts</span>
+                                      <span className="text-[11px] font-bold" style={{ color: active.femaleAccentLight }}>+{active.female.weeklyPointsGained}</span>
+                                    </div>
+                                  )}
                                   {active.type === 'streak' && active.female.streak >= 2 && (
                                     <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }}>
                                       <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Streak</span>

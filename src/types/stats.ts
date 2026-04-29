@@ -229,6 +229,26 @@ export interface StatsData {
   tournaments?: TournamentSummary[];
   /** Optional: enriched topDonors with tier info (landing page) */
   topDonorsEnriched?: TopDonorEnriched[];
+  /** Weekly top performers — "Bintang Minggu Ini" composite score */
+  weeklyTopPerformers: WeeklyPerformer[];
+}
+
+/** Weekly top performer — "Bintang Minggu Ini" composite score */
+export interface WeeklyPerformer {
+  id: string;
+  gamertag: string;
+  avatar?: string | null;
+  tier: string;
+  points: number;               // total season points
+  weeklyPointsGained: number;   // points earned this week
+  weeklyWins: number;           // wins this week (isWinner on participation)
+  weeklyMatches: number;        // matches played this week
+  weeklyWinRate: number;        // win rate this week (0-100)
+  streak: number;               // current active streak
+  compositeScore: number;       // calculated composite score (0-100)
+  division: 'male' | 'female';
+  weekNumber: number;           // which week this performance is from
+  club?: string | null;
 }
 
 /** Lightweight skin info returned in the skinMap for each player */

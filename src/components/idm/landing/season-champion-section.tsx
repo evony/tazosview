@@ -1,18 +1,20 @@
 'use client';
 
 import Image from 'next/image';
-import { Crown, Trophy, Medal, Flame, Calendar, Music, Shield, Swords } from 'lucide-react';
+import { Crown, Trophy, Flame, Calendar, Music, Shield, Swords, TrendingUp } from 'lucide-react';
 import { SectionHeader, AnimatedSection } from './shared';
 import { TierBadge } from '../tier-badge';
 import { getAvatarUrl, hexToRgba } from '@/lib/utils';
-import type { StatsData, SeasonChampionPlayer } from '@/types/stats';
+import type { StatsData, SeasonChampionPlayer, WeeklyPerformer } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════════════
    TARKAM IDM — SEASON CHAMPION SECTION
    Dual-avatar card: Male + Female Champion in ONE card
    - Shows completed season champions side-by-side
-   - Always renders — attractive empty state when no champions
-   - Center divider with crown ornament
+   - When no champion: "Bintang Minggu Ini" (fire/orange theme)
+   - When champion exists: Gold champion display + mini Bintang
+   - Center divider with crown/flame ornament
+   - Season progress bar below
    ═══════════════════════════════════════════════════════════════ */
 
 interface SeasonChampionSectionProps {
@@ -69,14 +71,416 @@ function buildSeasonChampions(
   return { male, female };
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SEASON PROGRESS BAR
+   Horizontal progress bar with week markers
+   ═══════════════════════════════════════════════════════════════ */
+function SeasonProgressBar({ seasonProgress }: {
+  seasonProgress: StatsData['seasonProgress'] | undefined;
+}) {
+  if (!seasonProgress) return null;
+
+  const { completedWeeks, totalWeeks, percentage } = seasonProgress;
+  const clampedPercentage = Math.min(100, Math.max(0, percentage));
+
+  return (
+    <div className="px-4 pb-4 pt-2">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <Calendar className="w-3 h-3 text-[#eab308]" />
+          <span className="text-[11px] font-bold text-[#f5f0e8]">
+            Week {completedWeeks} / {totalWeeks}
+          </span>
+        </div>
+        <span className="text-[10px] font-bold text-[#a09880]">
+          {clampedPercentage}%
+        </span>
+      </div>
+
+      {/* Progress bar track */}
+      <div className="relative h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(234,179,8,0.08)' }}>
+        {/* Filled portion */}
+        <div
+          className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out"
+          style={{
+            width: `${clampedPercentage}%`,
+            background: 'linear-gradient(90deg, #eab308, #f97316)',
+            boxShadow: '0 0 12px rgba(234,179,8,0.3), 0 0 4px rgba(249,115,22,0.2)',
+          }}
+        />
+        {/* Shimmer effect on the filled bar */}
+        <div
+          className="absolute inset-y-0 left-0 rounded-full overflow-hidden"
+          style={{ width: `${clampedPercentage}%` }}
+        >
+          <div className="absolute inset-0 animate-pulse opacity-30" style={{
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 2s infinite linear',
+          }} />
+        </div>
+      </div>
+
+      {/* Week markers */}
+      <div className="flex justify-between mt-1 px-0.5">
+        {Array.from({ length: totalWeeks }, (_, i) => (
+          <div
+            key={i}
+            className="flex flex-col items-center"
+            style={{ width: `${100 / totalWeeks}%` }}
+          >
+            <div
+              className="w-0.5 h-1.5 rounded-full"
+              style={{
+                backgroundColor: i < completedWeeks
+                  ? (i < completedWeeks - 1 ? 'rgba(234,179,8,0.4)' : '#eab308')
+                  : 'rgba(160,152,128,0.15)',
+              }}
+            />
+            <span
+              className="text-[8px] font-bold mt-0.5"
+              style={{
+                color: i < completedWeeks ? 'rgba(234,179,8,0.6)' : 'rgba(160,152,128,0.25)',
+              }}
+            >
+              {i + 1}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BINTANG MINGGU INI — Full Duo Display (No Champion State)
+   Male left + Female right with fire/orange accent theme
+   ═══════════════════════════════════════════════════════════════ */
+function BintangMingguIniDuo({
+  malePerformer,
+  femalePerformer,
+  seasonProgress,
+}: {
+  malePerformer: WeeklyPerformer | undefined;
+  femalePerformer: WeeklyPerformer | undefined;
+  seasonProgress: StatsData['seasonProgress'] | undefined;
+}) {
+  // Fire/orange accent colors
+  const maleAccent = '#eab308';   // yellow
+  const femaleAccent = '#f97316'; // orange
+  const maleAccentLight = '#facc15';
+  const femaleAccentLight = '#fb923c';
+
+  const hasMale = !!malePerformer;
+  const hasFemale = !!femalePerformer;
+  const hasAny = hasMale || hasFemale;
+
+  return (
+    <div
+      className="champion-card reveal reveal-fade-up rounded-xl overflow-hidden bg-[#0d0d1a] border transition-colors duration-500"
+      style={{ borderColor: hasAny ? 'rgba(234,179,8,0.15)' : 'rgba(234,179,8,0.08)' }}
+    >
+      {/* Fire accent line */}
+      <div className="h-0.5 bg-gradient-to-r from-transparent via-[#eab308] to-[#f97316]" />
+
+      {/* Header */}
+      <div className="relative h-14 overflow-hidden">
+        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${hexToRgba(maleAccent, 0.08)} 0%, transparent 50%, ${hexToRgba(femaleAccent, 0.08)} 100%)` }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/50 to-transparent" />
+        <div className="absolute bottom-2.5 left-4 right-4 flex items-end justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: hexToRgba(maleAccent, 0.15) }}>
+                <Music className="w-3.5 h-3.5" style={{ color: maleAccentLight }} />
+              </div>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: hexToRgba(femaleAccent, 0.15) }}>
+                <Shield className="w-3.5 h-3.5" style={{ color: femaleAccentLight }} />
+              </div>
+            </div>
+            <span className="text-xs font-black uppercase tracking-wider text-[#a09880]">Male & Female</span>
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border" style={{ color: maleAccent, backgroundColor: hexToRgba(maleAccent, 0.08), borderColor: hexToRgba(maleAccent, 0.15) }}>
+            <Swords className="w-2.5 h-2.5 inline mr-1" />Berlangsung
+          </span>
+        </div>
+      </div>
+
+      {/* Bintang badge */}
+      <div className="px-4 pt-3 pb-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ backgroundColor: hexToRgba(maleAccent, 0.15) }}>
+            <Flame className="w-3 h-3" style={{ color: maleAccent }} />
+          </div>
+          <span className="text-sm sm:text-base font-black uppercase tracking-wide" style={{ color: maleAccentLight }}>
+            Bintang Minggu Ini
+          </span>
+        </div>
+      </div>
+
+      {/* Fire divider */}
+      <div className="h-px mx-4" style={{ background: `linear-gradient(to right, transparent, ${hexToRgba(maleAccent, 0.25)}, ${hexToRgba(femaleAccent, 0.25)}, transparent)` }} />
+
+      {/* ═══ DUO BINTANG DISPLAY ═══ */}
+      <div className="relative flex m-4 rounded-xl overflow-hidden border" style={{ minHeight: '360px', borderColor: hexToRgba(maleAccent, 0.10) }}>
+        {/* BINTANG watermark */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" aria-hidden="true">
+          <span className="text-xl font-black uppercase tracking-widest select-none" style={{ color: hexToRgba(maleAccent, 0.03), WebkitTextStroke: `1px ${hexToRgba(maleAccent, 0.05)}` }}>BINTANG</span>
+        </div>
+
+        {/* Male side */}
+        <div className="relative flex-1">
+          {hasMale ? (
+            <>
+              <Image
+                src={getAvatarUrl(malePerformer.gamertag, 'male', malePerformer.avatar)}
+                alt={malePerformer.gamertag}
+                fill
+                sizes="50vw"
+                className="object-cover object-top"
+                style={{ transform: 'scale(1.0) translateX(2%)' }}
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0d0d1a]/50" />
+              {/* Male fire glow */}
+              <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 40% 80%, ${hexToRgba(maleAccent, 0.08)}, transparent 50%)` }} />
+            </>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${hexToRgba(maleAccent, 0.1)}, rgba(13,13,26,0.9))` }}>
+              <div className="flex flex-col items-center gap-2 opacity-25">
+                <Music className="w-10 h-10" style={{ color: maleAccent }} />
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: maleAccentLight }}>Male</span>
+              </div>
+            </div>
+          )}
+          {/* Male info at bottom */}
+          {hasMale && (
+            <div className="absolute bottom-0 inset-x-0 px-3 pb-3 pt-8 z-10" style={{ background: 'linear-gradient(to top, rgba(13,13,26,0.95) 0%, transparent 100%)' }}>
+              <div className="flex items-center gap-1 mb-0.5">
+                <span className="text-[10px] font-black" style={{ color: maleAccentLight }}>♂</span>
+                <p className="text-sm sm:text-base font-black text-[#f5f0e8] truncate drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                  {malePerformer.gamertag}
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <TierBadge tier={malePerformer.tier} />
+                <span className="text-[9px] font-bold text-green-400">+{malePerformer.weeklyPointsGained}pts</span>
+                {malePerformer.streak > 0 && (
+                  <span className="text-[9px] font-bold flex items-center gap-0.5" style={{ color: maleAccent }}>
+                    <Flame className="w-2 h-2" />{malePerformer.streak}
+                  </span>
+                )}
+                <span className="text-[9px] font-bold" style={{ color: maleAccentLight }}>
+                  <TrendingUp className="w-2 h-2 inline mr-0.5" />{malePerformer.compositeScore}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ═══ Center Divider — Fire line ═══ */}
+        <div className="relative flex flex-col items-center justify-center shrink-0 z-10" style={{ width: '3px' }}>
+          {/* Full-height fire gradient line */}
+          <div className="absolute inset-0" style={{
+            background: `linear-gradient(to bottom, transparent 5%, ${hexToRgba(maleAccent, 0.6)} 20%, ${maleAccent} 50%, ${hexToRgba(femaleAccent, 0.6)} 80%, transparent 95%)`,
+            boxShadow: `0 0 12px ${hexToRgba(maleAccent, 0.3)}, 0 0 24px ${hexToRgba(femaleAccent, 0.15)}`,
+          }} />
+          {/* Flame ornament */}
+          <div
+            className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center z-10"
+            style={{
+              backgroundColor: '#0d0d1a',
+              border: `2px solid ${maleAccent}`,
+              boxShadow: `0 0 16px ${hexToRgba(maleAccent, 0.35)}, inset 0 0 6px ${hexToRgba(maleAccent, 0.1)}`,
+            }}
+          >
+            <Flame className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: maleAccent }} />
+          </div>
+          {/* Accent color dots */}
+          <div className="absolute top-[20%] w-2 h-2 rounded-full z-10" style={{ backgroundColor: maleAccent, boxShadow: `0 0 6px ${hexToRgba(maleAccent, 0.5)}` }} />
+          <div className="absolute bottom-[20%] w-2 h-2 rounded-full z-10" style={{ backgroundColor: femaleAccent, boxShadow: `0 0 6px ${hexToRgba(femaleAccent, 0.5)}` }} />
+        </div>
+
+        {/* Female side */}
+        <div className="relative flex-1">
+          {hasFemale ? (
+            <>
+              <Image
+                src={getAvatarUrl(femalePerformer.gamertag, 'female', femalePerformer.avatar)}
+                alt={femalePerformer.gamertag}
+                fill
+                sizes="50vw"
+                className="object-cover object-top"
+                style={{ transform: 'scale(1.0) translateX(-2%)' }}
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#0d0d1a]/50" />
+              {/* Female fire glow */}
+              <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 60% 80%, ${hexToRgba(femaleAccent, 0.08)}, transparent 50%)` }} />
+            </>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(225deg, ${hexToRgba(femaleAccent, 0.1)}, rgba(13,13,26,0.9))` }}>
+              <div className="flex flex-col items-center gap-2 opacity-25">
+                <Shield className="w-10 h-10" style={{ color: femaleAccent }} />
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: femaleAccentLight }}>Female</span>
+              </div>
+            </div>
+          )}
+          {/* Female info at bottom */}
+          {hasFemale && (
+            <div className="absolute bottom-0 inset-x-0 px-3 pb-3 pt-8 z-10" style={{ background: 'linear-gradient(to top, rgba(13,13,26,0.95) 0%, transparent 100%)' }}>
+              <div className="flex items-center gap-1 mb-0.5">
+                <span className="text-[10px] font-black" style={{ color: femaleAccentLight }}>♀</span>
+                <p className="text-sm sm:text-base font-black text-[#f5f0e8] truncate drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                  {femalePerformer.gamertag}
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <TierBadge tier={femalePerformer.tier} />
+                <span className="text-[9px] font-bold text-green-400">+{femalePerformer.weeklyPointsGained}pts</span>
+                {femalePerformer.streak > 0 && (
+                  <span className="text-[9px] font-bold flex items-center gap-0.5" style={{ color: femaleAccent }}>
+                    <Flame className="w-2 h-2" />{femalePerformer.streak}
+                  </span>
+                )}
+                <span className="text-[9px] font-bold" style={{ color: femaleAccentLight }}>
+                  <TrendingUp className="w-2 h-2 inline mr-0.5" />{femalePerformer.compositeScore}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Flame badge floating at top */}
+        <div className="champion-crown-float absolute top-2 left-1/2 -translate-x-1/2 z-20 w-6 h-6 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: maleAccent, boxShadow: `0 4px 12px ${hexToRgba(maleAccent, 0.4)}` }}>
+          <Flame className="w-3 h-3 text-[#0d0d1a]" />
+        </div>
+      </div>
+
+      {/* Subtitle */}
+      <div className="px-4 pb-3 text-center">
+        <p className="text-[10px] text-[#a09880] italic">
+          Performa terbaik minggu berjalan — menuju Season Champion
+        </p>
+      </div>
+
+      {/* Season Progress Bar */}
+      <SeasonProgressBar seasonProgress={seasonProgress} />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BINTANG MINGGU INI — Mini Version (below Champion card)
+   Compact row showing current week's top performers
+   ═══════════════════════════════════════════════════════════════ */
+function BintangMingguIniMini({
+  malePerformer,
+  femalePerformer,
+}: {
+  malePerformer: WeeklyPerformer | undefined;
+  femalePerformer: WeeklyPerformer | undefined;
+}) {
+  const maleAccent = '#eab308';
+  const femaleAccent = '#f97316';
+  const hasMale = !!malePerformer;
+  const hasFemale = !!femalePerformer;
+
+  if (!hasMale && !hasFemale) return null;
+
+  return (
+    <div className="px-4 pb-4 pt-3">
+      {/* Divider */}
+      <div className="h-px mb-3" style={{ background: `linear-gradient(to right, transparent, ${hexToRgba(maleAccent, 0.15)}, ${hexToRgba(femaleAccent, 0.15)}, transparent)` }} />
+
+      {/* Mini header */}
+      <div className="flex items-center gap-1.5 mb-2">
+        <Flame className="w-3 h-3" style={{ color: maleAccent }} />
+        <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: maleAccent }}>
+          Bintang Minggu Ini
+        </span>
+      </div>
+
+      <div className="flex gap-2">
+        {/* Male performer mini */}
+        {hasMale && (
+          <div className="flex-1 flex items-center gap-2 px-2.5 py-2 rounded-lg border" style={{ borderColor: hexToRgba(maleAccent, 0.1), backgroundColor: hexToRgba(maleAccent, 0.03) }}>
+            <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0" style={{ border: `1.5px solid ${hexToRgba(maleAccent, 0.3)}` }}>
+              <Image
+                src={getAvatarUrl(malePerformer.gamertag, 'male', malePerformer.avatar)}
+                alt={malePerformer.gamertag}
+                fill
+                sizes="32px"
+                className="object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1">
+                <span className="text-[9px] font-black" style={{ color: maleAccent }}>♂</span>
+                <p className="text-xs font-bold text-[#f5f0e8] truncate">{malePerformer.gamertag}</p>
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="text-[8px] font-bold text-green-400">+{malePerformer.weeklyPointsGained}pts</span>
+                {malePerformer.streak > 0 && (
+                  <span className="text-[8px] font-bold flex items-center gap-0.5" style={{ color: maleAccent }}>
+                    <Flame className="w-1.5 h-1.5" />{malePerformer.streak}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Female performer mini */}
+        {hasFemale && (
+          <div className="flex-1 flex items-center gap-2 px-2.5 py-2 rounded-lg border" style={{ borderColor: hexToRgba(femaleAccent, 0.1), backgroundColor: hexToRgba(femaleAccent, 0.03) }}>
+            <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0" style={{ border: `1.5px solid ${hexToRgba(femaleAccent, 0.3)}` }}>
+              <Image
+                src={getAvatarUrl(femalePerformer.gamertag, 'female', femalePerformer.avatar)}
+                alt={femalePerformer.gamertag}
+                fill
+                sizes="32px"
+                className="object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1">
+                <span className="text-[9px] font-black" style={{ color: femaleAccent }}>♀</span>
+                <p className="text-xs font-bold text-[#f5f0e8] truncate">{femalePerformer.gamertag}</p>
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="text-[8px] font-bold text-green-400">+{femalePerformer.weeklyPointsGained}pts</span>
+                {femalePerformer.streak > 0 && (
+                  <span className="text-[8px] font-bold flex items-center gap-0.5" style={{ color: femaleAccent }}>
+                    <Flame className="w-1.5 h-1.5" />{femalePerformer.streak}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Duo Champion Card — Male + Female in one card ─── */
 function DuoChampionCard({
   maleChampions,
   femaleChampions,
+  maleWeeklyPerformer,
+  femaleWeeklyPerformer,
+  seasonProgress,
   setSelectedPlayer,
 }: {
   maleChampions: ChampionData[];
   femaleChampions: ChampionData[];
+  maleWeeklyPerformer: WeeklyPerformer | undefined;
+  femaleWeeklyPerformer: WeeklyPerformer | undefined;
+  seasonProgress: StatsData['seasonProgress'] | undefined;
   setSelectedPlayer: (player: StatsData['topPlayers'][0] & { division?: string } | null) => void;
 }) {
   const maleAccent = '#06b6d4';
@@ -101,53 +505,13 @@ function DuoChampionCard({
   const hasPreviousChampions = previousMaleChamps.length > 0 || previousFemaleChamps.length > 0;
 
   if (!hasAny) {
+    // No champion — show Bintang Minggu Ini (full duo display)
     return (
-      <div
-        className="champion-card reveal reveal-fade-up rounded-xl overflow-hidden bg-[#0d0d1a] border transition-colors duration-500 hover:border-[rgba(212,168,83,0.2)]"
-        style={{ borderColor: 'rgba(212,168,83,0.10)' }}
-      >
-        {/* Gold accent line */}
-        <div className="h-0.5 bg-gradient-to-r from-transparent via-[#d4a853] to-transparent" />
-
-        {/* Header */}
-        <div className="relative h-14 overflow-hidden">
-          <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${hexToRgba(maleAccent, 0.08)} 0%, transparent 50%, ${hexToRgba(femaleAccent, 0.08)} 100%)` }} />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/50 to-transparent" />
-          <div className="absolute bottom-2.5 left-4 right-4 flex items-end justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: hexToRgba(maleAccent, 0.15) }}>
-                  <Music className="w-3.5 h-3.5" style={{ color: maleAccentLight }} />
-                </div>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: hexToRgba(femaleAccent, 0.15) }}>
-                  <Shield className="w-3.5 h-3.5" style={{ color: femaleAccentLight }} />
-                </div>
-              </div>
-              <span className="text-xs font-black uppercase tracking-wider text-[#a09880]">Male & Female</span>
-            </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border" style={{ color: '#a09880', backgroundColor: 'rgba(160,152,128,0.08)', borderColor: 'rgba(160,152,128,0.15)' }}>
-              <Swords className="w-2.5 h-2.5 inline mr-1" />Berlangsung
-            </span>
-          </div>
-        </div>
-
-        {/* Empty state */}
-        <div className="relative flex flex-col items-center justify-center py-10 px-6 text-center">
-          <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 30% 50%, ${hexToRgba(maleAccent, 0.03)}, transparent 50%), radial-gradient(ellipse at 70% 50%, ${hexToRgba(femaleAccent, 0.03)}, transparent 50%)` }} />
-          <div className="champion-crown-float relative mb-4">
-            <Crown className="w-12 h-12 opacity-20 text-[#d4a853]" />
-          </div>
-          <p className="relative text-sm font-bold text-[#f5f0e8]/80 mb-1">Belum Ada Champion</p>
-          <p className="relative text-xs text-[#a09880] max-w-[220px]">
-            Juara Male & Female akan dinobatkan setelah season berakhir
-          </p>
-          <div className="relative flex items-center gap-2 mt-4">
-            <div className="w-8 h-px bg-gradient-to-r from-transparent to-[#d4a853]/30" />
-            <Trophy className="w-3 h-3 text-[#d4a853]/30" />
-            <div className="w-8 h-px bg-gradient-to-l from-transparent to-[#d4a853]/30" />
-          </div>
-        </div>
-      </div>
+      <BintangMingguIniDuo
+        malePerformer={maleWeeklyPerformer}
+        femalePerformer={femaleWeeklyPerformer}
+        seasonProgress={seasonProgress}
+      />
     );
   }
 
@@ -374,6 +738,15 @@ function DuoChampionCard({
         </div>
       </div>
 
+      {/* Mini Bintang Minggu Ini (only if weekly performers exist) */}
+      <BintangMingguIniMini
+        malePerformer={maleWeeklyPerformer}
+        femalePerformer={femaleWeeklyPerformer}
+      />
+
+      {/* Season Progress Bar */}
+      <SeasonProgressBar seasonProgress={seasonProgress} />
+
       {/* Previous season champions */}
       {hasPreviousChampions && (
         <div className="px-4 pb-4">
@@ -443,6 +816,7 @@ function DuoChampionCard({
 /* ═══════════════════════════════════════════════════════════════
    MAIN SEASON CHAMPION SECTION COMPONENT
    Single card with Male + Female champion side-by-side
+   Dynamic subtitle based on champion state
    ═══════════════════════════════════════════════════════════════ */
 export function SeasonChampionSection({
   maleData,
@@ -451,6 +825,21 @@ export function SeasonChampionSection({
   setSelectedPlayer,
 }: SeasonChampionSectionProps) {
   const { male: maleChampions, female: femaleChampions } = buildSeasonChampions(maleData, femaleData);
+
+  // Determine if champion exists
+  const hasChampion = maleChampions.length > 0 || femaleChampions.length > 0;
+
+  // Get weekly top performers (first entry = top performer for each division)
+  const maleWeeklyPerformer = maleData?.weeklyTopPerformers?.[0];
+  const femaleWeeklyPerformer = femaleData?.weeklyTopPerformers?.[0];
+
+  // Season progress
+  const seasonProgress = maleData?.seasonProgress;
+
+  // Dynamic subtitle
+  const subtitle = hasChampion
+    ? 'Juara season Tarkam IDM — pemain peringkat #1 saat season ditutup'
+    : 'Belum ada juara musim ini — Bintang Minggu Ini: performa terbaik minggu berjalan';
 
   return (
     <section id="season-champion" role="region" aria-label="Season Champion" className="landing-section relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
@@ -463,13 +852,13 @@ export function SeasonChampionSection({
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[rgba(212,168,83,0.12)] to-transparent" />
 
       <div className="relative z-10 max-w-3xl mx-auto">
-        {/* Section Header */}
+        {/* Section Header — dynamic subtitle */}
         <AnimatedSection>
           <SectionHeader
-            icon={Crown}
-            label="SEASON CHAMPION"
-            title="Season Champion"
-            subtitle="Juara season Tarkam IDM — pemain peringkat #1 saat season ditutup"
+            icon={hasChampion ? Crown : Flame}
+            label={hasChampion ? 'SEASON CHAMPION' : 'BINTANG MINGGU INI'}
+            title={hasChampion ? 'Season Champion' : 'Bintang Minggu Ini'}
+            subtitle={subtitle}
           />
         </AnimatedSection>
 
@@ -481,6 +870,9 @@ export function SeasonChampionSection({
             <DuoChampionCard
               maleChampions={maleChampions}
               femaleChampions={femaleChampions}
+              maleWeeklyPerformer={maleWeeklyPerformer}
+              femaleWeeklyPerformer={femaleWeeklyPerformer}
+              seasonProgress={seasonProgress}
               setSelectedPlayer={setSelectedPlayer}
             />
           )}
