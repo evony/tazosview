@@ -59,6 +59,14 @@ export function proxy(request: NextRequest) {
 
   const response = NextResponse.next();
 
+  // Anti-cache headers for API routes — prevent browser serving stale data
+  // When users revisit the app, they always get fresh data from the server
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+  }
+
   // Content Security Policy
   const cspHeader = `
     default-src 'self';

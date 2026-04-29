@@ -8,9 +8,40 @@ import { SplashScreen } from '@/components/idm/splash-screen';
 export default function Home() {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
-      queries: { staleTime: 30000, refetchOnWindowFocus: false },
+      queries: {
+        staleTime: 30_000,
+        refetchOnWindowFocus: true,
+        refetchOnMount: 'always',
+        refetchOnReconnect: true,
+      },
     },
   }));
+
+  // Version check: invalidate all queries if server version changed
+  useEffect(() => {
+    let lastVersion: string | null = null;
+
+    async function checkVersion() {
+      try {
+        const res = await fetch('/api/version', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (lastVersion !== null && data.version !== lastVersion) {
+          // Server was updated — force refresh all data
+          queryClient.invalidateQueries();
+        }
+        lastVersion = data.version;
+      } catch {
+        // Silently fail — don't block the app
+      }
+    }
+
+    // Check immediately on mount
+    checkVersion();
+    // Then check every 60 seconds
+    const interval = setInterval(checkVersion, 60_000);
+    return () => clearInterval(interval);
+  }, [queryClient]);
   const [seeded, setSeeded] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
 
