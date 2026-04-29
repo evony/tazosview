@@ -736,7 +736,7 @@ export function AppShell() {
       {currentView !== 'bantuan' && currentView !== 'landing' && (
         <button
           onClick={() => { hapticTap(); setCurrentView('bantuan'); }}
-          className="lg:hidden fixed right-4 bottom-20 z-50 w-12 h-12 rounded-full bg-idm-gold-warm shadow-lg shadow-idm-gold-warm/30 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+          className="lg:hidden fixed right-4 bottom-20 z-40 w-12 h-12 rounded-full bg-idm-gold-warm shadow-lg shadow-idm-gold-warm/30 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
           title="Bantuan"
         >
           <HelpCircle className="w-5 h-5 text-black" />
