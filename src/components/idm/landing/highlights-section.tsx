@@ -1778,10 +1778,10 @@ export function HighlightsSection({
                   <span
                     className="rounded-full block transition-all duration-300"
                     style={{
-                      width: idx === activeIdx ? '6px' : '4px',
-                      height: idx === activeIdx ? '6px' : '4px',
-                      backgroundColor: idx === activeIdx ? item.accentColor : 'rgba(255,255,255,0.2)',
-                      boxShadow: idx === activeIdx ? `0 0 4px ${hexToRgba(item.accentColor, 0.4)}` : 'none',
+                      width: idx === activeIdx ? '8px' : '5px',
+                      height: idx === activeIdx ? '8px' : '5px',
+                      backgroundColor: idx === activeIdx ? item.accentColor : 'rgba(255,255,255,0.25)',
+                      boxShadow: idx === activeIdx ? `0 0 6px ${hexToRgba(item.accentColor, 0.4)}` : 'none',
                     }}
                   />
                 </button>
