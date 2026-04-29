@@ -242,16 +242,16 @@ export function LandingPage() {
             ))}
           </div>
 
-          {/* Masuk Arena Button */}
+          {/* Masuk Arena Button — compact on mobile, full on desktop */}
           <button
             onClick={enterCommunity}
             aria-label="Masuk Arena"
-            className="btn-press relative flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-200 bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.4)] active:scale-95 cursor-pointer"
+            className="btn-press relative flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all duration-200 bg-gradient-to-r from-idm-gold-warm to-[#e8d5a3] text-black hover:shadow-[0_0_20px_rgba(229,190,74,0.4)] active:scale-95 cursor-pointer"
           >
-            <Flame className="w-4 h-4" />
-            <span>Masuk Arena</span>
-            {/* Pulsing arrow */}
-            <span className="relative flex items-center justify-center">
+            <Flame className="w-3.5 h-3.5 hidden sm:block" />
+            <span>Masuk&nbsp;Arena</span>
+            {/* Pulsing arrow — desktop only */}
+            <span className="relative items-center justify-center hidden sm:flex">
               <ChevronRight className="w-4 h-4 animate-pulse" />
               <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" />
             </span>

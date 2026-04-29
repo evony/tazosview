@@ -126,3 +126,71 @@ Stage Summary:
 - /api/stats now returns weeklyTopPerformers per division with composite scores
 - Tier tie-breaker implemented: lower tier wins when scores are equal (B > A > S)
 - Composite score formula: 40% points + 25% win rate + 15% streak + 10% winner bonus + 10% underdog bonus
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Implement WhatsApp Bot mini-service with command-based interaction
+
+Work Log:
+- Added `waNumber` field to Player model (unique, for WA-registered players)
+- Added `WaRegistration` model to Prisma schema for WA bot registration flow
+- Created mini-services/wa-bot/ with:
+  - `index.ts` — Main entry point with HTTP server + WhatsApp connection (resilient architecture)
+  - `wa-connection.ts` — Separate WA connection script for forked process mode
+  - `lib/commands.ts` — Command router with all handlers:
+    - Player commands: /daftar, /ranking, /profil, /jadwal, /streak, /help
+    - Admin commands: /approve, /reject, /pending, /ban, /unban, /announce
+  - `lib/db.ts` — Prisma client (shared Neon PostgreSQL)
+  - `lib/utils.ts` — Utilities (WA number parsing, rate limiting, tier/division normalization, unique gamertag generation)
+  - `prisma/schema.prisma` — Local schema copy for Prisma client generation
+  - `run.sh` — Keep-alive runner script
+- Registration flow (as agreed):
+  - Required: Name, Division (M/F), WA number (auto-detected)
+  - Optional: City, Club
+  - Tier: Assigned by admin during approval (anti-manipulation)
+  - 4-digit verification code for admin approval
+  - 24-hour expiry on registrations
+- Approval flow: /approve CODE TIER → creates Player + assigns tier + adds to club
+- HTTP endpoints: /health, /status, /qr, /qr-html, /commands, /restart, /shutdown
+- Added /api/wa-bot route in Next.js app to proxy bot status
+- Pushed schema changes (db:push)
+- Installed dependencies: @whiskeysockets/baileys, pino, qrcode-terminal, tsx
+
+Stage Summary:
+- Complete WhatsApp bot mini-service with command-based interaction
+- Full registration flow: /daftar → admin /approve CODE TIER
+- Uses same Neon PostgreSQL database as main app
+- Bot runs on port 3004 as separate mini-service
+- Next.js proxy API at /api/wa-bot for status checking
+- Note: Bot process needs stable server (VPS) for persistent WA connection — sandbox environment kills long-running WebSocket processes
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Prepare WA Bot for Railway deployment and push to GitHub
+
+Work Log:
+- Researched free hosting platforms for WhatsApp bot (no credit card)
+- Compared: Oracle Cloud, Railway, Render, Koyeb, Zeabur, Fly.io
+- User chose Railway for WA bot hosting
+- Updated wa-bot code for Railway compatibility:
+  - Updated package.json (v1.1.0, added @hapi/boom, postinstall prisma generate)
+  - Fixed tsconfig.json (removed bun-types)
+  - Rewrote index.ts with PORT from env (Railway auto-sets), @hapi/boom import, test API endpoint
+  - Removed hardcoded DB credentials from run.sh (security fix)
+- Created Railway deployment files:
+  - Dockerfile (node:20-slim, OpenSSL for Prisma, healthcheck)
+  - railway.json (DOCKERFILE builder, health check config)
+  - .env.example (documentation for required env vars)
+  - .dockerignore and .gitignore
+- Created separate GitHub repo: evony/idm-wa-bot (private)
+- Committed and pushed all code to https://github.com/evony/idm-wa-bot
+- GitHub token configured in repo
+
+Stage Summary:
+- WA Bot ready for Railway deployment at https://github.com/evony/idm-wa-bot
+- Key Railway env vars needed: DATABASE_URL, DIRECT_DATABASE_URL, ADMIN_WA_NUMBERS, ADMIN_WA_NAMES
+- Railway will auto-detect Dockerfile and build
+- Health check at /health endpoint
+- Test endpoint: POST /test { command: "/help", waNumber: "6281234567890" }

@@ -29,7 +29,8 @@ model Player {
 
   // Registration fields
   phone              String?  // WhatsApp number (optional)
-  city               String   @default("") // Kota (required at registration)
+  waNumber           String?  @unique // WhatsApp number for WA-registered players (unique identifier)
+  city               String   @default("") // Kota (optional)
   joki               String?  // Name of joki if player is played by someone else (optional)
   registrationStatus String   @default("approved") // "pending" | "approved" | "rejected"
 
@@ -668,4 +669,30 @@ model MarketplaceItem {
   @@index([status])
   @@index([playerId])
   @@index([createdAt])
+}
+
+// ============================================
+// IDM LEAGUE - WHATSAPP BOT REGISTRATION
+// ============================================
+
+model WaRegistration {
+  id               String   @id @default(cuid())
+  waNumber         String   // Auto-detected WhatsApp number (e.g. "6281234567890")
+  name             String   // Player name
+  division         String   // "M" | "F"
+  city             String   @default("") // Kota (optional)
+  clubName         String?  // Club name (optional)
+  verificationCode String   @unique // 4-digit code for admin approval
+  status           String   @default("pending") // "pending" | "approved" | "rejected" | "expired"
+  approvedBy       String?  // Admin username who approved
+  assignedTier     String?  // Tier assigned by admin during approval (S/A/B)
+  playerId         String?  // Created Player ID after approval
+  expiresAt        DateTime // Registration expires after 24 hours
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([waNumber])
+  @@index([verificationCode])
+  @@index([status])
+  @@index([expiresAt])
 }

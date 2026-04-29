@@ -40,6 +40,8 @@ import { DonationModal } from '../donation-modal';
 
 /* ═══════════════════════════════════════════
    Internal Tab Bar — reusable within sections
+   Desktop: Segmented control with larger targets
+   Mobile: Horizontal scroll, no wrapping
    ═══════════════════════════════════════════ */
 function SectionTabBar<T extends string>({
   tabs,
@@ -51,25 +53,27 @@ function SectionTabBar<T extends string>({
   onTabChange: (tab: T) => void;
 }) {
   return (
-    <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/10">
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
-        const Icon = tab.icon;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              isActive
-                ? 'bg-idm-gold-warm/15 text-idm-gold-warm shadow-sm border border-idm-gold-warm/20'
-                : 'text-muted-foreground hover:text-foreground border border-transparent'
-            }`}
-          >
-            {Icon && <Icon className="w-3 h-3" />}
-            {tab.label}
-          </button>
-        );
-      })}
+    <div className="overflow-x-auto scrollbar-none -mx-1 px-1">
+      <div className="flex items-center gap-0.5 p-1 rounded-lg bg-muted/30 border border-border/10 min-w-max lg:min-w-0">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all whitespace-nowrap lg:px-4 lg:py-2 lg:text-xs ${
+                isActive
+                  ? 'bg-idm-gold-warm/20 text-idm-gold-warm shadow-sm border border-idm-gold-warm/25'
+                  : 'text-muted-foreground hover:text-foreground border border-transparent hover:bg-muted/40'
+              }`}
+            >
+              {Icon && <Icon className="w-3 h-3 lg:w-3.5 lg:h-3.5" />}
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -99,13 +103,15 @@ function ChampionsMvpSection({
 
   return (
     <div className="space-y-4">
-      {/* Header with tabs */}
-      <div className="flex items-center gap-2.5 flex-wrap">
-        <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
-          <Crown className={`w-3 h-3 ${dt.neonText}`} />
+      {/* Header with tabs — stacked on mobile, inline on desktop */}
+      <div className="space-y-2 lg:flex lg:items-center lg:gap-2.5 lg:space-y-0">
+        <div className="flex items-center gap-2.5">
+          <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
+            <Crown className={`w-3 h-3 ${dt.neonText}`} />
+          </div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider shrink-0">Champion</h3>
         </div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider shrink-0">Champion</h3>
-        <div className="ml-auto">
+        <div className="lg:ml-auto">
           <SectionTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
       </div>
@@ -156,13 +162,15 @@ function MatchesSection({
 
   return (
     <div className="space-y-4">
-      {/* Header with tabs */}
-      <div className="flex items-center gap-2.5 flex-wrap">
-        <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
-          <Radio className={`w-3 h-3 ${dt.neonText}`} />
+      {/* Header with tabs — stacked on mobile, inline on desktop */}
+      <div className="space-y-2 lg:flex lg:items-center lg:gap-2.5 lg:space-y-0">
+        <div className="flex items-center gap-2.5">
+          <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
+            <Radio className={`w-3 h-3 ${dt.neonText}`} />
+          </div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider shrink-0">Pertandingan</h3>
         </div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider shrink-0">Pertandingan</h3>
-        <div className="ml-auto">
+        <div className="lg:ml-auto">
           <SectionTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
       </div>
@@ -210,13 +218,15 @@ function SeasonProgressSection({
 
   return (
     <div className="space-y-4">
-      {/* Header with tabs */}
-      <div className="flex items-center gap-2.5 flex-wrap">
-        <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
-          <Calendar className={`w-3 h-3 ${dt.neonText}`} />
+      {/* Header with tabs — stacked on mobile, inline on desktop */}
+      <div className="space-y-2 lg:flex lg:items-center lg:gap-2.5 lg:space-y-0">
+        <div className="flex items-center gap-2.5">
+          <div className={`w-5 h-5 rounded ${dt.iconBg} flex items-center justify-center shrink-0`}>
+            <Calendar className={`w-3 h-3 ${dt.neonText}`} />
+          </div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider shrink-0">Season</h3>
         </div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider shrink-0">Season</h3>
-        <div className="ml-auto">
+        <div className="lg:ml-auto">
           <SectionTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
       </div>

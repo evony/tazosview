@@ -104,50 +104,52 @@ export function CommunityLeaderboard({
 
   return (
     <div className="space-y-4">
-      {/* Filter bar: Player/Club toggle + Division filter */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {/* Player/Club toggle */}
-        <div className={`flex items-center gap-1 p-1 rounded-lg ${dt.bgSubtle} ${dt.border}`}>
-          <button
-            onClick={() => setLeaderboardSort('players')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${leaderboardSort === 'players' ? `${dt.bg} ${dt.text} shadow-sm` : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            <Users className="w-3 h-3" /> Pemain
-          </button>
-          <button
-            onClick={() => setLeaderboardSort('clubs')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${leaderboardSort === 'clubs' ? `${dt.bg} ${dt.text} shadow-sm` : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            <Shield className="w-3 h-3" /> Klub
-          </button>
-        </div>
-
-        {/* Division filter pills — only shown for players */}
-        {leaderboardSort === 'players' && (
-          <div className={`flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/10`}>
-            {([
-              { key: 'all', label: 'Semua' },
-              { key: 'male', label: '🕺 Male' },
-              { key: 'female', label: '💃 Female' },
-            ] as const).map(f => (
-              <button
-                key={f.key}
-                onClick={() => setDivisionFilter(f.key)}
-                className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all ${
-                  divisionFilter === f.key
-                    ? f.key === 'male'
-                      ? 'bg-idm-male text-white shadow-sm'
-                      : f.key === 'female'
-                      ? 'bg-idm-female text-white shadow-sm'
-                      : `${dt.bg} ${dt.text} shadow-sm`
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
+      {/* Filter bar: Player/Club toggle + Division filter — single scrollable row on mobile */}
+      <div className="overflow-x-auto scrollbar-none -mx-1 px-1">
+        <div className="flex items-center gap-2 min-w-max lg:min-w-0">
+          {/* Player/Club toggle */}
+          <div className={`flex items-center gap-1 p-1 rounded-lg ${dt.bgSubtle} ${dt.border}`}>
+            <button
+              onClick={() => setLeaderboardSort('players')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${leaderboardSort === 'players' ? `${dt.bg} ${dt.text} shadow-sm` : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              <Users className="w-3 h-3" /> Pemain
+            </button>
+            <button
+              onClick={() => setLeaderboardSort('clubs')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${leaderboardSort === 'clubs' ? `${dt.bg} ${dt.text} shadow-sm` : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              <Shield className="w-3 h-3" /> Klub
+            </button>
           </div>
-        )}
+
+          {/* Division filter pills — only shown for players */}
+          {leaderboardSort === 'players' && (
+            <div className={`flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/10`}>
+              {([
+                { key: 'all', label: 'Semua' },
+                { key: 'male', label: '🕺 Male' },
+                { key: 'female', label: '💃 Female' },
+              ] as const).map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setDivisionFilter(f.key)}
+                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all whitespace-nowrap ${
+                    divisionFilter === f.key
+                      ? f.key === 'male'
+                        ? 'bg-idm-male text-white shadow-sm'
+                        : f.key === 'female'
+                        ? 'bg-idm-female text-white shadow-sm'
+                        : `${dt.bg} ${dt.text} shadow-sm`
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ═══ Player Leaderboard — Toornament clean table ═══ */}
