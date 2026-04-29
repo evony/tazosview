@@ -240,7 +240,7 @@ export function HeroSection({
         </div>
 
         {/* ═══════════════ HERO CONTENT ═══════════════ */}
-        <div className="relative z-10 text-center px-4 sm:px-6 max-w-5xl mx-auto w-full flex-1 flex flex-col items-center justify-center py-20 sm:py-24">
+        <div className="relative z-10 text-center px-4 sm:px-6 max-w-5xl mx-auto w-full flex-1 flex flex-col items-center justify-center pt-[12vh] sm:pt-[18vh] pb-20 sm:pb-24">
 
           {/* ── Decorative top accent ── */}
           <div className="hero-enter-1 mb-5 sm:mb-7">
