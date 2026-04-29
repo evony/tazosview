@@ -1767,20 +1767,24 @@ export function HighlightsSection({
             </div>
 
             {/* Progress dots — minimal mobile dots */}
-            <div className="flex items-center justify-center gap-[5px] mt-3">
+            <div className="flex items-center justify-center gap-1 mt-3">
               {highlights.map((item, idx) => (
                 <button
                   key={item.id}
                   onClick={() => handleThumbClick(idx)}
-                  className="rounded-full transition-all duration-300 cursor-pointer p-1"
-                  style={{
-                    width: idx === activeIdx ? '6px' : '4px',
-                    height: idx === activeIdx ? '6px' : '4px',
-                    backgroundColor: idx === activeIdx ? item.accentColor : 'rgba(255,255,255,0.2)',
-                    boxShadow: idx === activeIdx ? `0 0 4px ${hexToRgba(item.accentColor, 0.4)}` : 'none',
-                  }}
+                  className="rounded-full transition-all duration-300 cursor-pointer flex items-center justify-center p-1"
                   aria-label={`Go to highlight ${idx + 1}`}
-                />
+                >
+                  <span
+                    className="rounded-full block transition-all duration-300"
+                    style={{
+                      width: idx === activeIdx ? '6px' : '4px',
+                      height: idx === activeIdx ? '6px' : '4px',
+                      backgroundColor: idx === activeIdx ? item.accentColor : 'rgba(255,255,255,0.2)',
+                      boxShadow: idx === activeIdx ? `0 0 4px ${hexToRgba(item.accentColor, 0.4)}` : 'none',
+                    }}
+                  />
+                </button>
               ))}
             </div>
           </div>
