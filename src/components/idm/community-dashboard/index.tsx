@@ -393,43 +393,61 @@ export function CommunityDashboard() {
   });
 
 
-  // Male stats
-const { data: maleData } = useQuery<StatsData>({
-  queryKey: ['stats', 'male'],
-  queryFn: async () => {
-    const res = await fetch('/api/stats?division=male');
-    return res.json();
-  },
-  staleTime: 2 * 60 * 1000,       // 2 menit (dari 15 detik)
-  refetchInterval: false,          // matikan auto-refetch
-  refetchOnWindowFocus: false,     // matikan refetch on focus
-});
+  // Fetch male stats — optimized cache: 2 min stale, no auto-refetch
+  const { data: maleData } = useQuery<StatsData>({
+    queryKey: ['stats', 'male'],
+    queryFn: async () => {
+      const res = await fetch('/api/stats?division=male');
+      return res.json();
+    },
+    staleTime: 2 * 60 * 1000,
+  });
 
-  // Female stats
-const { data: femaleData } = useQuery<StatsData>({
-  queryKey: ['stats', 'female'],
-  queryFn: async () => {
-    const res = await fetch('/api/stats?division=female');
-    return res.json();
-  },
-  staleTime: 2 * 60 * 1000,       // 2 menit
-  refetchInterval: false,
-  refetchOnWindowFocus: false,
-});
+  // Fetch female stats — optimized cache: 2 min stale, no auto-refetch
+  const { data: femaleData } = useQuery<StatsData>({
+    queryKey: ['stats', 'female'],
+    queryFn: async () => {
+      const res = await fetch('/api/stats?division=female');
+      return res.json();
+    },
+    staleTime: 2 * 60 * 1000,
+  });
 
-  // League data
-const { data: leagueData } = useQuery({
-  queryKey: ['league-community'],
-  queryFn: async () => {
-    const res = await fetch('/api/league');
-    return res.json();
-  },
-  staleTime: 2 * 60 * 1000,       // 2 menit
-  refetchInterval: false,
-  refetchOnWindowFocus: false,
-});
-
-  const isLoading = isMaleLoading || isFemaleLoading || isLeagueLoading;
+  // Fetch league data — optimized cache: 2 min stale, no auto-refetch
+  const { data: leagueData } = useQuery<{
+    hasData: boolean;
+    stats?: { totalClubs: number; totalMatches: number; completedMatches: number; liveMatches: number };
+    clubs?: Array<{
+      id: string;
+      name: string;
+      logo?: string | null;
+      wins: number;
+      losses: number;
+      points: number;
+      malePoints: number;
+      femalePoints: number;
+      gameDiff: number;
+      memberCount: number;
+      maleMemberCount: number;
+      femaleMemberCount: number;
+    }>;
+    tarkamChampion?: {
+      id: string;
+      name: string;
+      logo?: string | null;
+      seasonNumber: number;
+      malePoints: number;
+      femalePoints: number;
+      totalPoints: number;
+    } | null;
+  }>({
+    queryKey: ['league-community'],
+    queryFn: async () => {
+      const res = await fetch('/api/league');
+      return res.json();
+    },
+    staleTime: 2 * 60 * 1000,
+  });
 
   // Player click handler — normalize player data for shared PlayerProfile
   const handlePlayerClick = (player: TopPlayer & { division?: string }, division: 'male' | 'female') => {
@@ -440,9 +458,10 @@ const { data: leagueData } = useQuery({
     });
   };
 
-  if (isLoading) {
-    return <CommunityDashboardSkeleton />;
-  }
+  // No blocking skeleton — render progressively, each section handles its own loading
+  // if (!maleData && !femaleData && !leagueData) {
+  //   return <CommunityDashboardSkeleton />;
+  // }
 
   return (
     <div className="space-y-6 lg:space-y-8">
