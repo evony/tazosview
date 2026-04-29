@@ -420,7 +420,7 @@ function isClubType(type: HighlightItem['type']): boolean {
   return type === 'rank1-club';
 }
 
-/* ─── Duo Avatar Half — Full-bleed background for one side of duo card ─── */
+/* ─── Duo Avatar Half — Full-bleed cover for one side of duo card ─── */
 function DuoAvatarHalf({
   player,
   accent,
@@ -440,80 +440,85 @@ function DuoAvatarHalf({
 
   return (
     <div className="relative flex-1 h-full overflow-hidden">
-      {/* Full-bleed avatar background */}
+      {/* Full-bleed avatar — object-cover fills space completely */}
       {player.imageUrl && !isEmpty ? (
         <Image
           src={player.imageUrl}
           alt={player.gamertag}
           fill
           sizes="30vw"
-          className="object-contain object-center bg-[#0d0d1a]"
-          style={{ 
-            opacity: 0.85,
-            transform: side === 'left' ? 'translateX(8%)' : 'translateX(-8%)', 
+          className="object-cover object-top transition-transform duration-700 group-hover/featured:scale-105"
+          style={{
+            transform: side === 'left' ? 'scale(1.15) translateX(6%)' : 'scale(1.15) translateX(-6%)',
           }}
         />
       ) : (
         <div
           className="absolute inset-0 flex items-center justify-center"
           style={{
-            background: `linear-gradient(${side === 'left' ? '135' : '225'}deg, ${hexToRgba(accent, 0.15)} 0%, rgba(13,13,26,0.9) 70%)`,
+            background: `linear-gradient(${side === 'left' ? '135' : '225'}deg, ${hexToRgba(accent, 0.2)} 0%, rgba(13,13,26,0.95) 70%)`,
           }}
         >
-          <div className="flex flex-col items-center gap-2 opacity-25">
-            {type === 'rank1' ? <Medal className="w-12 h-12" style={{ color: accent }} /> :
-             type === 'streak' ? <Flame className="w-12 h-12" style={{ color: accent }} /> :
-             type === 'mvp' ? <Award className="w-12 h-12" style={{ color: accent }} /> :
-             <Star className="w-12 h-12" style={{ color: accent }} />}
-            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+          <div className="flex flex-col items-center gap-3 opacity-30">
+            {type === 'rank1' ? <Medal className="w-14 h-14" style={{ color: accent }} /> :
+             type === 'streak' ? <Flame className="w-14 h-14" style={{ color: accent }} /> :
+             type === 'mvp' ? <Award className="w-14 h-14" style={{ color: accent }} /> :
+             <Star className="w-14 h-14" style={{ color: accent }} />}
+            <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: accent }}>
               {divisionLabel}
             </span>
           </div>
         </div>
       )}
 
-      {/* Multi-layer overlays for depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/20 to-transparent" />
-      {/* Fade toward center divider */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: side === 'left' 
-            ? 'linear-gradient(to left, rgba(13,13,26,0.6) 0%, transparent 25%)'
-            : 'linear-gradient(to right, rgba(13,13,26,0.6) 0%, transparent 25%)',
-        }}
-      />
-      {/* Top fade */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d1a]/40 via-transparent to-transparent" />
-      {/* Accent glow */}
+      {/* ═══ Multi-layer dramatic overlays ═══ */}
+      {/* Heavy bottom fade for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/30 to-transparent" />
+      {/* Strong fade toward center divider */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: side === 'left'
-            ? `radial-gradient(ellipse at 30% 70%, ${hexToRgba(accent, 0.08)}, transparent 55%)`
-            : `radial-gradient(ellipse at 70% 70%, ${hexToRgba(accent, 0.08)}, transparent 55%)`,
+            ? 'linear-gradient(to left, rgba(13,13,26,0.8) 0%, transparent 30%)'
+            : 'linear-gradient(to right, rgba(13,13,26,0.8) 0%, transparent 30%)',
+        }}
+      />
+      {/* Top vignette */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d1a]/50 via-transparent to-transparent" />
+      {/* Colored accent glow — dramatic */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: side === 'left'
+            ? `radial-gradient(ellipse at 25% 60%, ${hexToRgba(accent, 0.12)}, transparent 55%)`
+            : `radial-gradient(ellipse at 75% 60%, ${hexToRgba(accent, 0.12)}, transparent 55%)`,
         }}
       />
 
-      {/* Player info at bottom — overlapping the avatar */}
+      {/* ═══ Player info at bottom ═══ */}
       {!isEmpty && (
-        <div className="absolute bottom-0 inset-x-0 px-3 pb-3 pt-10 z-10" style={{ background: 'linear-gradient(to top, rgba(13,13,26,0.95) 0%, transparent 100%)' }}>
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-[12px] font-black" style={{ color: accentLight }}>{divisionIcon}</span>
-            <span className="text-base sm:text-lg font-black text-white truncate max-w-[140px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+        <div className="absolute bottom-0 inset-x-0 px-4 pb-4 pt-14 z-10" style={{ background: 'linear-gradient(to top, rgba(13,13,26,0.97) 0%, rgba(13,13,26,0.7) 50%, transparent 100%)' }}>
+          <div className="flex items-center gap-2 mb-1.5">
+            <div
+              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+              style={{ backgroundColor: hexToRgba(accent, 0.25), border: `1px solid ${hexToRgba(accent, 0.4)}` }}
+            >
+              <span className="text-[11px] font-black" style={{ color: accentLight }}>{divisionIcon}</span>
+            </div>
+            <span className="text-lg sm:text-xl font-black text-white truncate max-w-[150px] drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
               {player.gamertag}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold" style={{ color: accentLight }}>
+          <div className="flex items-center gap-3 ml-8">
+            <span className="text-[12px] font-bold" style={{ color: accentLight }}>
               {player.points}pts
             </span>
-            <span className="text-[11px] font-bold text-green-400">
+            <span className="text-[12px] font-bold text-green-400">
               {player.totalWins}W
             </span>
             {player.streak >= 2 && (
-              <span className="text-[11px] font-bold text-orange-400 flex items-center gap-0.5">
-                <Flame className="w-3 h-3" />{player.streak}
+              <span className="text-[12px] font-bold text-orange-400 flex items-center gap-0.5">
+                <Flame className="w-3.5 h-3.5" />{player.streak}
               </span>
             )}
           </div>
@@ -567,8 +572,8 @@ function ThumbnailCard({
                   alt={item.male.gamertag}
                   fill
                   sizes="56px"
-                  className="object-contain object-center bg-[#0d0d1a]"
-                  style={{ opacity: isActive ? 0.65 : 0.3 }}
+                  className="object-cover object-top"
+                  style={{ opacity: isActive ? 0.8 : 0.35 }}
                 />
               ) : null}
               {/* Dark overlay for inactive */}
@@ -582,8 +587,8 @@ function ThumbnailCard({
                   alt={item.female.gamertag}
                   fill
                   sizes="56px"
-                  className="object-contain object-center bg-[#0d0d1a]"
-                  style={{ opacity: isActive ? 0.65 : 0.3 }}
+                  className="object-cover object-top"
+                  style={{ opacity: isActive ? 0.8 : 0.35 }}
                 />
               ) : null}
               {!isActive && <div className="absolute inset-0 bg-[#0d0d1a]/50" />}
@@ -918,7 +923,7 @@ export function HighlightsSection({
                   className="perspective-card relative rounded-2xl overflow-hidden border transition-all duration-500 group/featured"
                   style={{
                     borderColor: hexToRgba(active.accentColor, 0.2),
-                    minHeight: '440px',
+                    minHeight: '480px',
                     height: '100%',
                     transition: 'transform 0.15s ease-out, border-color 0.3s, box-shadow 0.3s',
                   }}
@@ -959,7 +964,7 @@ export function HighlightsSection({
                         </span>
                       </div>
 
-                      {/* ═══ DUO AVATAR LAYOUT — Full-bleed each side ═══ */}
+                      {/* ═══ DUO AVATAR LAYOUT — Full-bleed cover each side ═══ */}
                       <div className="absolute inset-0 z-10 flex">
                         {/* Male side — full-bleed avatar */}
                         <DuoAvatarHalf
@@ -970,24 +975,27 @@ export function HighlightsSection({
                           type={active.type}
                         />
 
-                        {/* ═══ Center Divider ═══ */}
-                        <div className="relative flex flex-col items-center justify-center w-6 sm:w-8 shrink-0 z-20">
-                          {/* Vertical gradient line */}
-                          <div className="absolute top-12 bottom-12 w-px" style={{ background: `linear-gradient(to bottom, transparent, ${hexToRgba('#d4a853', 0.4)}, ${hexToRgba('#d4a853', 0.2)}, transparent)` }} />
-                          {/* Center ornament — Crown */}
+                        {/* ═══ Center Divider — Bold gold line ═══ */}
+                        <div className="relative flex flex-col items-center justify-center shrink-0 z-20" style={{ width: '3px' }}>
+                          {/* Full-height gold line */}
+                          <div className="absolute inset-0" style={{
+                            background: `linear-gradient(to bottom, transparent 5%, ${hexToRgba('#d4a853', 0.6)} 20%, #d4a853 50%, ${hexToRgba('#d4a853', 0.6)} 80%, transparent 95%)`,
+                            boxShadow: `0 0 12px ${hexToRgba('#d4a853', 0.4)}, 0 0 24px ${hexToRgba('#d4a853', 0.15)}`,
+                          }} />
+                          {/* Center Crown ornament */}
                           <div
-                            className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center z-10"
+                            className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center z-10"
                             style={{
-                              backgroundColor: 'rgba(13,13,26,0.95)',
-                              border: `1px solid ${hexToRgba('#d4a853', 0.35)}`,
-                              boxShadow: `0 0 16px ${hexToRgba('#d4a853', 0.2)}`,
+                              backgroundColor: '#0d0d1a',
+                              border: '2px solid #d4a853',
+                              boxShadow: `0 0 20px ${hexToRgba('#d4a853', 0.4)}, inset 0 0 8px ${hexToRgba('#d4a853', 0.1)}`,
                             }}
                           >
-                            <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d4a853]" />
+                            <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-[#d4a853]" />
                           </div>
-                          {/* Small accent dots above and below */}
-                          <div className="absolute top-10 w-2 h-2 rounded-full" style={{ backgroundColor: hexToRgba(active.maleAccent, 0.5), boxShadow: `0 0 6px ${hexToRgba(active.maleAccent, 0.3)}` }} />
-                          <div className="absolute bottom-10 w-2 h-2 rounded-full" style={{ backgroundColor: hexToRgba(active.femaleAccent, 0.5), boxShadow: `0 0 6px ${hexToRgba(active.femaleAccent, 0.3)}` }} />
+                          {/* Accent dots above and below crown */}
+                          <div className="absolute top-[22%] w-2.5 h-2.5 rounded-full z-10" style={{ backgroundColor: active.maleAccent, boxShadow: `0 0 8px ${hexToRgba(active.maleAccent, 0.6)}` }} />
+                          <div className="absolute bottom-[22%] w-2.5 h-2.5 rounded-full z-10" style={{ backgroundColor: active.femaleAccent, boxShadow: `0 0 8px ${hexToRgba(active.femaleAccent, 0.6)}` }} />
                         </div>
 
                         {/* Female side — full-bleed avatar */}

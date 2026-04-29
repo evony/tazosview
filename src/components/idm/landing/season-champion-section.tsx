@@ -197,7 +197,7 @@ function DuoChampionCard({
       <div className="h-px mx-4 bg-gradient-to-r from-transparent via-[rgba(212,168,83,0.20)] to-transparent" />
 
       {/* ═══ DUO CHAMPION DISPLAY ═══ */}
-      <div className="relative flex m-4 rounded-xl overflow-hidden border" style={{ minHeight: '300px', borderColor: 'rgba(212,168,83,0.10)' }}>
+      <div className="relative flex m-4 rounded-xl overflow-hidden border" style={{ minHeight: '360px', borderColor: 'rgba(212,168,83,0.10)' }}>
         {/* CHAMPION watermark */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" aria-hidden="true">
           <span className="text-2xl font-black uppercase tracking-widest select-none" style={{ color: 'rgba(212,168,83,0.03)', WebkitTextStroke: '1px rgba(212,168,83,0.05)' }}>CHAMPION</span>
@@ -234,8 +234,8 @@ function DuoChampionCard({
                 alt={latestMale.player.gamertag}
                 fill
                 sizes="50vw"
-                className="object-contain object-center transition-transform duration-500 group-hover/male:scale-105 bg-[#0d0d1a]"
-                style={{ opacity: 0.9, transform: 'translateX(8%)' }}
+                className="object-cover object-top transition-transform duration-500 group-hover/male:scale-105"
+                style={{ transform: 'scale(1.1) translateX(5%)' }}
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/10 to-transparent" />
@@ -274,21 +274,27 @@ function DuoChampionCard({
           )}
         </div>
 
-        {/* ═══ Center Divider with Crown ═══ */}
-        <div className="relative flex flex-col items-center justify-center w-5 sm:w-6 shrink-0 z-10">
-          {/* Vertical gradient line */}
-          <div className="absolute top-4 bottom-4 w-px" style={{ background: `linear-gradient(to bottom, transparent, ${hexToRgba('#d4a853', 0.35)}, ${hexToRgba('#d4a853', 0.15)}, transparent)` }} />
+        {/* ═══ Center Divider — Bold gold line ═══ */}
+        <div className="relative flex flex-col items-center justify-center shrink-0 z-10" style={{ width: '3px' }}>
+          {/* Full-height gold line */}
+          <div className="absolute inset-0" style={{
+            background: `linear-gradient(to bottom, transparent 5%, ${hexToRgba('#d4a853', 0.6)} 20%, #d4a853 50%, ${hexToRgba('#d4a853', 0.6)} 80%, transparent 95%)`,
+            boxShadow: `0 0 12px ${hexToRgba('#d4a853', 0.4)}, 0 0 24px ${hexToRgba('#d4a853', 0.15)}`,
+          }} />
           {/* Crown ornament */}
           <div
-            className="relative w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center z-10"
+            className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center z-10"
             style={{
-              backgroundColor: 'rgba(13,13,26,0.95)',
-              border: '1px solid rgba(212,168,83,0.3)',
-              boxShadow: '0 0 12px rgba(212,168,83,0.15)',
+              backgroundColor: '#0d0d1a',
+              border: '2px solid #d4a853',
+              boxShadow: `0 0 16px ${hexToRgba('#d4a853', 0.35)}, inset 0 0 6px ${hexToRgba('#d4a853', 0.1)}`,
             }}
           >
-            <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#d4a853]" />
+            <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#d4a853]" />
           </div>
+          {/* Accent color dots */}
+          <div className="absolute top-[20%] w-2 h-2 rounded-full z-10" style={{ backgroundColor: maleAccent, boxShadow: `0 0 6px ${hexToRgba(maleAccent, 0.5)}` }} />
+          <div className="absolute bottom-[20%] w-2 h-2 rounded-full z-10" style={{ backgroundColor: femaleAccent, boxShadow: `0 0 6px ${hexToRgba(femaleAccent, 0.5)}` }} />
         </div>
 
         {/* Female side */}
@@ -322,8 +328,8 @@ function DuoChampionCard({
                 alt={latestFemale.player.gamertag}
                 fill
                 sizes="50vw"
-                className="object-contain object-center transition-transform duration-500 group-hover/female:scale-105 bg-[#0d0d1a]"
-                style={{ opacity: 0.9, transform: 'translateX(-8%)' }}
+                className="object-cover object-top transition-transform duration-500 group-hover/female:scale-105"
+                style={{ transform: 'scale(1.1) translateX(-5%)' }}
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/10 to-transparent" />
