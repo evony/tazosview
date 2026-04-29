@@ -1,7 +1,7 @@
 {
-  "name": "IDM League — Tournament Hub",
-  "short_name": "IDM League",
-  "description": "Fan Made Tournament Hub untuk komunitas IDM — live scores, prediksi, klasemen, dan lebih banyak!",
+  "name": "TARKAM — Idol Meta",
+  "short_name": "TARKAM",
+  "description": "Komunitas Tarkam Idol Meta — kompetisi, klasemen, marketplace, dan lebih banyak!",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

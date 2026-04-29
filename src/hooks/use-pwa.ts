@@ -12,9 +12,34 @@ export function usePWA() {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Register service worker
+    // Register service worker with update handling
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
+      navigator.serviceWorker.register('/sw.js').then((registration) => {
+        // Check for updates on load
+        registration.update().catch(() => {});
+
+        // When a new service worker is activated, reload to get fresh code
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'activated') {
+                // New SW activated — reload page to get fresh HTML/JS
+                // Only reload if this isn't the first install
+                if (navigator.serviceWorker.controller) {
+                  window.location.reload();
+                }
+              }
+            });
+          }
+        });
+
+        // Also listen for controller change (SW took over)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          // New controller means new SW — reload for fresh content
+          window.location.reload();
+        });
+      }).catch(() => {
         // SW registration failed — non-critical
       });
     }

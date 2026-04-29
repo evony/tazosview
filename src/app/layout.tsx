@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo1.webp",
   },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
