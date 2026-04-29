@@ -235,7 +235,7 @@ function DuoChampionCard({
                 fill
                 sizes="50vw"
                 className="object-cover object-top transition-transform duration-500 group-hover/male:scale-105"
-                style={{ transform: 'scale(1.1) translateX(5%)' }}
+                style={{ transform: 'scale(1.0) translateX(2%)' }}
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/10 to-transparent" />
@@ -329,7 +329,7 @@ function DuoChampionCard({
                 fill
                 sizes="50vw"
                 className="object-cover object-top transition-transform duration-500 group-hover/female:scale-105"
-                style={{ transform: 'scale(1.1) translateX(-5%)' }}
+                style={{ transform: 'scale(1.0) translateX(-2%)' }}
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a] via-[#0d0d1a]/10 to-transparent" />

@@ -449,7 +449,7 @@ function DuoAvatarHalf({
           sizes="30vw"
           className="object-cover object-top transition-transform duration-700 group-hover/featured:scale-105"
           style={{
-            transform: side === 'left' ? 'scale(1.15) translateX(6%)' : 'scale(1.15) translateX(-6%)',
+            transform: side === 'left' ? 'scale(1.0) translateX(2%)' : 'scale(1.0) translateX(-2%)',
           }}
         />
       ) : (
