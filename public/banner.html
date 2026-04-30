@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TARKAM — Idol Meta | Web App & Bot WhatsApp</title>
+<meta property="og:title" content="TARKAM — Idol Meta | Web App & Bot WhatsApp">
+<meta property="og:description" content="Sekarang TARKAM punya Aplikasi Web & Bot WhatsApp! Dashboard, Bracket, Ranking, Daftar & Lainnya.">
+<meta property="og:type" content="website">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --green:#10B981;--green-light:#34D399;--green-dark:#059669;
+  --gold:#F59E0B;--gold-light:#FBBF24;
+  --dark:#0a0a0a;--dark2:#111111;--dark3:#1a1a1a;--dark4:#222222;
+  --white:#ffffff;--gray:#9CA3AF;--gray2:#6B7280;
+}
+
+html,body{
+  width:100%;min-height:100vh;
+  background:var(--dark);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  color:var(--white);
+  overflow-x:hidden;
+}
+
+/* ── BACKGROUND PATTERN ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16,185,129,.15), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(245,158,11,.08), transparent),
+    repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,255,255,.015) 49px,rgba(255,255,255,.015) 50px),
+    repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,255,255,.015) 49px,rgba(255,255,255,.015) 50px);
+}
+
+/* ── PARTICLES ── */
+.particles{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.particle{
+  position:absolute;width:2px;height:2px;background:var(--green);border-radius:50%;
+  animation:floatUp linear infinite;opacity:0;
+}
+@keyframes floatUp{
+  0%{transform:translateY(100vh) scale(0);opacity:0}
+  10%{opacity:.6}
+  90%{opacity:.6}
+  100%{transform:translateY(-10vh) scale(1);opacity:0}
+}
+
+/* ── MAIN CONTAINER ── */
+.container{
+  position:relative;z-index:1;
+  max-width:480px;margin:0 auto;
+  padding:24px 20px 32px;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+
+/* ── TOP BADGE ── */
+.top-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  margin:0 auto 20px;padding:6px 16px;
+  background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.05));
+  border:1px solid rgba(245,158,11,.3);
+  border-radius:100px;font-size:11px;font-weight:700;
+  color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;
+  animation:badgePulse 2s ease-in-out infinite;
+}
+.top-badge .dot{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:blink 1.5s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 10px rgba(245,158,11,.1)}50%{box-shadow:0 0 20px rgba(245,158,11,.2)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── LOGO AREA ── */
+.logo-area{text-align:center;margin-bottom:8px}
+.logo-main{
+  font-family:'Orbitron',monospace;
+  font-size:42px;font-weight:900;
+  letter-spacing:6px;
+  background:linear-gradient(135deg,var(--green-light),var(--green),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  filter:drop-shadow(0 0 30px rgba(16,185,129,.4));
+  animation:logoGlow 3s ease-in-out infinite alternate;
+}
+@keyframes logoGlow{
+  0%{filter:drop-shadow(0 0 20px rgba(16,185,129,.3))}
+  100%{filter:drop-shadow(0 0 40px rgba(16,185,129,.5))}
+}
+.logo-sub{
+  font-family:'Orbitron',monospace;
+  font-size:13px;font-weight:600;letter-spacing:8px;
+  color:var(--gold);margin-top:2px;opacity:.8;
+}
+
+/* ── DIVIDER ── */
+.divider{
+  height:1px;margin:20px 0;
+  background:linear-gradient(90deg,transparent,var(--green),var(--gold),var(--green),transparent);
+  opacity:.4;
+}
+
+/* ── ANNOUNCEMENT ── */
+.announce{text-align:center;margin-bottom:24px}
+.announce-label{
+  font-size:12px;font-weight:600;letter-spacing:3px;
+  color:var(--gray);text-transform:uppercase;margin-bottom:10px;
+}
+.announce-title{
+  font-family:'Orbitron',monospace;
+  font-size:20px;font-weight:800;line-height:1.4;
+  color:var(--white);
+}
+.announce-title .highlight{
+  background:linear-gradient(135deg,var(--green-light),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+/* ── FEATURE CARDS ── */
+.cards{display:flex;gap:12px;margin-bottom:24px}
+.card{
+  flex:1;padding:20px 14px;
+  background:linear-gradient(160deg,rgba(16,185,129,.06),rgba(16,185,129,.02));
+  border:1px solid rgba(16,185,129,.15);
+  border-radius:16px;text-align:center;
+  position:relative;overflow:hidden;
+  transition:all .3s ease;
+}
+.card:active{transform:scale(.97)}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--green),var(--gold));
+}
+.card-icon{
+  font-size:36px;margin-bottom:10px;
+  filter:drop-shadow(0 0 12px rgba(16,185,129,.3));
+}
+.card-title{
+  font-family:'Orbitron',monospace;
+  font-size:13px;font-weight:700;letter-spacing:1px;
+  color:var(--white);margin-bottom:8px;
+}
+.card-desc{
+  font-size:11px;color:var(--gray);line-height:1.5;margin-bottom:10px;
+}
+.card-url{
+  font-size:10px;font-weight:700;color:var(--green);
+  background:rgba(16,185,129,.1);padding:4px 10px;
+  border-radius:6px;display:inline-block;
+  letter-spacing:.5px;
+}
+
+/* ── DIAGONAL STRIPE ── */
+.stripe{
+  position:relative;margin:0 -20px;padding:20px 24px;
+  background:repeating-linear-gradient(
+    -45deg,transparent,transparent 8px,
+    rgba(16,185,129,.04) 8px,rgba(16,185,129,.04) 9px
+  );
+  border-top:1px solid rgba(16,185,129,.1);
+  border-bottom:1px solid rgba(16,185,129,.1);
+}
+
+/* ── HOW TO ── */
+.howto{margin-bottom:24px}
+.howto-title{
+  font-family:'Orbitron',monospace;
+  font-size:11px;font-weight:700;letter-spacing:3px;
+  color:var(--gold);text-transform:uppercase;
+  text-align:center;margin-bottom:16px;
+}
+.howto-step{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;margin-bottom:8px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;
+  transition:all .3s;
+}
+.howto-step:active{background:rgba(16,185,129,.05)}
+.step-num{
+  width:32px;height:32px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;font-size:13px;font-weight:800;
+  color:var(--dark);
+  background:linear-gradient(135deg,var(--green),var(--green-light));
+  border-radius:8px;
+  box-shadow:0 0 12px rgba(16,185,129,.3);
+}
+.step-content{flex:1}
+.step-label{font-size:13px;font-weight:600;color:var(--white)}
+.step-detail{font-size:11px;color:var(--gray);margin-top:2px}
+.step-arrow{color:var(--green);font-size:18px;opacity:.5}
+
+/* ── CTA BUTTON ── */
+.cta-wrap{text-align:center;margin-bottom:24px}
+.cta{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:16px 36px;
+  font-family:'Orbitron',monospace;font-size:15px;font-weight:800;
+  letter-spacing:2px;text-decoration:none;
+  color:var(--dark);
+  background:linear-gradient(135deg,var(--green-light),var(--green),var(--green-dark));
+  border-radius:14px;
+  box-shadow:
+    0 0 20px rgba(16,185,129,.3),
+    0 0 60px rgba(16,185,129,.1),
+    inset 0 1px 0 rgba(255,255,255,.2);
+  transition:all .3s ease;
+  animation:ctaPulse 2.5s ease-in-out infinite;
+}
+.cta:active{transform:scale(.95)}
+.cta .arrow{font-size:20px;transition:transform .3s}
+.cta:hover .arrow{transform:translateX(4px)}
+@keyframes ctaPulse{
+  0%,100%{box-shadow:0 0 20px rgba(16,185,129,.3),0 0 60px rgba(16,185,129,.1)}
+  50%{box-shadow:0 0 30px rgba(16,185,129,.4),0 0 80px rgba(16,185,129,.15)}
+}
+
+/* ── FEATURES LIST ── */
+.features{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin-bottom:24px;
+}
+.feat{
+  padding:10px 12px;
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:10px;
+  font-size:11px;color:var(--gray);
+  display:flex;align-items:center;gap:8px;
+}
+.feat-icon{font-size:16px;flex-shrink:0}
+.feat-text{font-weight:500;color:rgba(255,255,255,.8)}
+
+/* ── FOOTER ── */
+.footer{text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,.05)}
+.footer-logo{
+  font-family:'Orbitron',monospace;font-size:14px;font-weight:700;
+  letter-spacing:4px;color:var(--gray2);
+}
+.footer-copy{font-size:10px;color:var(--gray2);margin-top:4px;letter-spacing:1px}
+.footer-deco{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:10px;font-size:9px;color:rgba(255,255,255,.15);letter-spacing:2px;
+}
+.footer-deco span{
+  display:inline-block;width:20px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+}
+
+/* ── SCAN LINE EFFECT ── */
+.scanline{
+  position:fixed;top:0;left:0;right:0;height:2px;z-index:999;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);
+  opacity:.08;animation:scanMove 4s linear infinite;
+  pointer-events:none;
+}
+@keyframes scanMove{0%{top:0}100%{top:100vh}}
+
+/* ── CORNER DECORATIONS ── */
+.corner{position:fixed;z-index:2;pointer-events:none}
+.corner-tl{top:12px;left:12px;width:20px;height:20px;border-top:2px solid var(--green);border-left:2px solid var(--green);opacity:.3}
+.corner-tr{top:12px;right:12px;width:20px;height:20px;border-top:2px solid var(--green);border-right:2px solid var(--green);opacity:.3}
+.corner-bl{bottom:12px;left:12px;width:20px;height:20px;border-bottom:2px solid var(--green);border-left:2px solid var(--green);opacity:.3}
+.corner-br{bottom:12px;right:12px;width:20px;height:20px;border-bottom:2px solid var(--green);border-right:2px solid var(--green);opacity:.3}
+</style>
+</head>
+<body>
+
+<!-- SCAN LINE -->
+<div class="scanline"></div>
+
+<!-- CORNER DECORATIONS -->
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<!-- PARTICLES -->
+<div class="particles" id="particles"></div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- TOP BADGE -->
+  <div class="top-badge">
+    <span class="dot"></span>
+    LAUNCH ANNOUNCEMENT
+  </div>
+
+  <!-- LOGO -->
+  <div class="logo-area">
+    <div class="logo-main">TARKAM</div>
+    <div class="logo-sub">IDOL META</div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="divider"></div>
+
+  <!-- ANNOUNCEMENT -->
+  <div class="announce">
+    <div class="announce-label">pengumuman resmi</div>
+    <div class="announce-title">
+      SEKARANG ADA<br>
+      <span class="highlight">APLIKASI WEB</span> &amp;<br>
+      <span class="highlight">BOT WHATSAPP!</span>
+    </div>
+  </div>
+
+  <!-- FEATURE CARDS -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <div class="card-title">WEB APP</div>
+      <div class="card-desc">Dashboard, Bracket,<br>Ranking & Lainnya</div>
+      <div class="card-url">tarkam.vercel.app</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">WA BOT</div>
+      <div class="card-desc">Daftar, Ranking,<br>Profil & Lainnya</div>
+      <div class="card-url">Ketik /help</div>
+    </div>
+  </div>
+
+  <!-- STRIPE -->
+  <div class="stripe">
+    <div class="howto">
+      <div class="howto-title">⚡ Cara Mulai</div>
+
+      <div class="howto-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-label">Buka Aplikasi Web</div>
+          <div class="step-detail">Klik tombol di bawah atau buka tarkam.vercel.app</div>
+        </div>
+        <div class="step-arrow">›</div>
+      </div>
+
+      <div class="howto-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-label">Save Nomor Bot</div>
+          <div class="step-detail">Tambah nomor bot WA ke kontak kamu</div>
+        </div>
+        <div class="step-arrow">›</div>
+      </div>
+
+      <div class="howto-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-label">Ketik /help</div>
+          <div class="step-detail">Lihat semua perintah yang tersedia</div>
+        </div>
+        <div class="step-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA BUTTON -->
+  <div class="cta-wrap">
+    <a href="/" class="cta">
+      MASUK ARENA <span class="arrow">→</span>
+    </a>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="features">
+    <div class="feat"><span class="feat-icon">🏆</span><span class="feat-text">Live Ranking</span></div>
+    <div class="feat"><span class="feat-icon">📊</span><span class="feat-text">Bracket System</span></div>
+    <div class="feat"><span class="feat-icon">👥</span><span class="feat-text">Tim & Club</span></div>
+    <div class="feat"><span class="feat-icon">🔥</span><span class="feat-text">Win Streak</span></div>
+    <div class="feat"><span class="feat-icon">📋</span><span class="feat-icon">📝</span><span class="feat-text">Daftar via WA</span></div>
+    <div class="feat"><span class="feat-icon">⭐</span><span class="feat-text">MVP System</span></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-logo">TARKAM</div>
+    <div class="footer-copy">IDOL META &copy; 2025</div>
+    <div class="footer-deco">
+      <span></span>COMPETITIVE DANCE COMMUNITY<span></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Generate particles
+const pc=document.getElementById('particles');
+for(let i=0;i<30;i++){
+  const p=document.createElement('div');
+  p.className='particle';
+  p.style.left=Math.random()*100+'%';
+  p.style.animationDuration=(6+Math.random()*8)+'s';
+  p.style.animationDelay=Math.random()*8+'s';
+  p.style.width=p.style.height=(1+Math.random()*2)+'px';
+  if(Math.random()>.7)p.style.background='var(--gold)';
+  pc.appendChild(p);
+}
+</script>
+
+</body>
+</html>
