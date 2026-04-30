@@ -3,29 +3,21 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/idm/app-shell';
+import { ErrorBoundary } from '@/components/idm/error-boundary';
 
 export function ClientApp() {
   const [queryClient] = useState(
-    () => {
-      // ★ On hard refresh (Ctrl+Shift+R), React Query in-memory cache is already empty.
-      // But on soft refresh or SPA navigation, stale CMS data can cause "flash of old content".
-      // We remove CMS cache on mount to always get fresh data from the server.
-      const qc = new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 60_000, // 1 minute cache
-            refetchOnWindowFocus: false,
-            refetchOnMount: false, // Use cache if available
-            refetchOnReconnect: true,
-            retry: 1,
-          },
+    () => new QueryClient({
+      defaultOptions: {
+        queries: {
+          staleTime: 60_000, // 1 minute cache
+          refetchOnWindowFocus: false,
+          refetchOnMount: false, // Use cache if available
+          refetchOnReconnect: true,
+          retry: 1,
         },
-      });
-      // ★ Invalidate CMS cache on every new QueryClient instance (page load)
-      // This ensures the hero banner always shows the latest CMS content
-      qc.invalidateQueries({ queryKey: ['cms-content'] });
-      return qc;
-    }
+      },
+    })
   );
 
   // ★ Non-blocking: seed & init deferred until after page render
@@ -77,7 +69,9 @@ export function ClientApp() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AppShell />
+      <ErrorBoundary>
+        <AppShell />
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }

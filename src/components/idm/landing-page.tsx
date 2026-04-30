@@ -87,13 +87,11 @@ export function LandingPage() {
   const { data: cmsData } = useQuery({
     queryKey: ['cms-content'],
     queryFn: async () => {
-      // ★ Always fetch fresh CMS data — bypass browser/CDN cache
-      // This prevents the "stale flash" where old title shows then flickers to new title
-      const res = await fetch('/api/cms/content', { cache: 'no-store' });
+      const res = await fetch('/api/cms/content');
       if (!res.ok) return { settings: {}, sections: {} };
       return res.json();
     },
-    staleTime: 0, // ★ Always stale — always refetch on mount to get latest CMS data
+    staleTime: 120000, // CMS changes rarely — 2min stale is fine
     refetchInterval: 300000, // 5min polling — CMS data barely changes
     refetchOnWindowFocus: true,
     gcTime: 300000,

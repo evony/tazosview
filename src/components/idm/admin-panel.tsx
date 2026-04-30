@@ -24,6 +24,7 @@ import { AdminPlayersTab } from './admin/tabs/admin-players-tab';
 import { AdminKeuanganTab } from './admin/tabs/admin-keuangan-tab';
 import { AdminLigaSkorTab } from './admin/tabs/admin-liga-skor-tab';
 import { CmsPanel } from './cms-panel';
+import { ErrorBoundary } from './error-boundary';
 import { TournamentManager } from './tournament-manager';
 import { RankingPanel } from './ranking-panel';
 import { ClubManagement } from './club-management';
@@ -909,7 +910,9 @@ export function AdminPanel() {
         {/* ====== KONTEN TAB ====== */}
         <TabsContent value="konten" className="admin-tab-enter">
           <div className="space-y-4">
-            <CmsPanel />
+            <ErrorBoundary>
+              <CmsPanel />
+            </ErrorBoundary>
           </div>
         </TabsContent>
 
