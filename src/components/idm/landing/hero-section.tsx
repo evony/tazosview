@@ -266,7 +266,7 @@ export function HeroSection({
             />
 
             <h1
-              className="hero-title-entrance relative text-5xl sm:text-6xl md:text-7xl font-black uppercase leading-[1.05]"
+              className="hero-title-entrance relative text-5xl sm:text-6xl md:text-7xl font-black uppercase leading-[1.05] min-h-[3.5rem]"
               style={{
                 background: 'linear-gradient(135deg, #f5e6c8 0%, #d4a853 30%, #e5be4a 50%, #f5d77a 70%, #d4a853 100%)',
                 WebkitBackgroundClip: 'text',
@@ -283,7 +283,7 @@ export function HeroSection({
           </div>
 
           {/* ── Subtitle ── */}
-          <p className="hero-enter-3 text-base sm:text-xl lg:text-2xl text-[#e8d5a3]/80 font-light tracking-widest uppercase mb-2">
+          <p className="hero-enter-3 text-base sm:text-xl lg:text-2xl text-[#e8d5a3]/80 font-light tracking-widest uppercase mb-2 min-h-[1.5rem] leading-normal">
             {heroSubtitle}
           </p>
 
@@ -337,8 +337,12 @@ export function HeroSection({
           </div>
 
           {/* ═══════════════ BRACKET DIVISION PICKER ═══════════════ */}
-          {showBracketPicker && (
-            <div className="w-full max-w-sm mx-auto mb-8 sm:mb-10" style={{ animation: 'reveal-fade-up 0.25s cubic-bezier(0.16,1,0.3,1) both' }}>
+          <div className="relative w-full max-w-sm mx-auto" style={{ minHeight: 0 }}>
+            <div
+              className={`${showBracketPicker ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0'} overflow-hidden transition-all duration-300 ease-out`}
+              aria-hidden={!showBracketPicker}
+            >
+            <div className="mb-8 sm:mb-10" style={{ animation: 'reveal-fade-up 0.25s cubic-bezier(0.16,1,0.3,1) both' }}>
               <div className="relative rounded-2xl border border-idm-gold-warm/20 bg-[#0d0d1a]/95 p-4 shadow-2xl">
                   {/* Close hint */}
                   <button
@@ -382,7 +386,8 @@ export function HeroSection({
                   </div>
               </div>
             </div>
-          )}
+            </div>
+          </div>
 
 
         </div>
