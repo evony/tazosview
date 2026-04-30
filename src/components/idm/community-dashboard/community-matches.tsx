@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -61,12 +60,10 @@ export function CommunityMatches({ maleData, femaleData }: CommunityMatchesProps
         const isCompleted = t.status === 'completed';
 
         return (
-          <motion.div
+          <div
             key={t.id}
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.08, duration: 0.4 }}
+            className="animate-fade-enter-sm"
+            style={{ animationDelay: `${i * 80}ms` }}
           >
             <Card className={`${dt.cardPremium} border ${dt.borderSubtle} overflow-hidden group hover:shadow-md transition-all duration-300`}>
               <CardContent className="p-4">
@@ -118,7 +115,7 @@ export function CommunityMatches({ maleData, femaleData }: CommunityMatchesProps
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         );
       })}
     </div>

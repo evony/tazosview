@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, MessageCircle, ChevronDown, ChevronRight,
   UserPlus, Gamepad2, Trophy, ShoppingBag, Zap, Shield,
@@ -156,21 +155,15 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
         <ChevronRight className={`w-4 h-4 mt-0.5 shrink-0 text-idm-gold-warm/60 transition-transform duration-200 ${open ? 'rotate-90' : ''}`} />
         <span className="flex-1 text-sm font-medium text-foreground">{question}</span>
       </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden"
+      {open && (
+          <div
+            className="overflow-hidden transition-all duration-300 ease-in-out animate-fade-in"
           >
             <div className="px-4 pb-4 pl-11 text-sm text-muted-foreground leading-relaxed">
               {answer}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }

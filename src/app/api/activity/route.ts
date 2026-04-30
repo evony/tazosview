@@ -137,7 +137,9 @@ export async function GET() {
     { activities: limited },
     {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
+        'Surrogate-Key': 'activity',
+        'Vary': 'Accept-Encoding',
       },
     }
   );

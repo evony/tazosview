@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!username || !password) {
       return NextResponse.json(
         { error: 'Username dan password harus diisi' },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     if (!admin) {
       return NextResponse.json(
         { error: 'Username atau password salah' },
-        { status: 401 }
+        { status: 401, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       admin: { id: admin.id, username: admin.username, role: admin.role },
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
 
     // Set httpOnly cookie
     response.cookies.set('idm-admin-session', token, {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     console.error('Login error:', error);
     return NextResponse.json(
       { error: 'Terjadi kesalahan server' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

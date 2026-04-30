@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!validated.success) {
       return NextResponse.json(
         { success: false, error: 'Input tidak valid', details: validated.error.flatten() },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     if (existingPlayer) {
       return NextResponse.json(
         { success: false, error: 'Gamertag sudah terdaftar' },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       if (existingEmail) {
         return NextResponse.json(
           { success: false, error: 'Email sudah terdaftar' },
-          { status: 400 }
+          { status: 400, headers: { 'Cache-Control': 'no-store' } }
         );
       }
     }
@@ -93,12 +93,12 @@ export async function POST(request: NextRequest) {
           username: account.username,
         },
       },
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('Register error:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan server' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

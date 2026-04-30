@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -370,10 +371,13 @@ export function CloudinaryPicker({ open, onClose, onSelect, currentImage, upload
                         style={{ animationDelay: `${i * 20}ms` }}
                         onClick={() => setSelectedImage(img)}
                       >
-                        <img
+                        <Image
                           src={img.url}
                           alt={img.public_id}
+                          fill
                           className="w-full h-full object-cover"
+                          sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
+                          unoptimized
                         />
                         {selectedImage?.public_id === img.public_id && (
                           <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
@@ -413,10 +417,13 @@ export function CloudinaryPicker({ open, onClose, onSelect, currentImage, upload
                 {uploadPreview ? (
                   <div className="flex flex-col items-center gap-3">
                     <div className="relative w-40 h-40 rounded-xl overflow-hidden border-2 border-primary/30 shadow-lg">
-                      <img
+                      <Image
                         src={uploadPreview}
                         alt="Preview"
+                        fill
                         className="w-full h-full object-cover"
+                        sizes="160px"
+                        unoptimized
                       />
                       <button
                         onClick={clearFile}

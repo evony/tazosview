@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Image from 'next/image';
 import {
   Image as ImageIcon, Type, Layout, Save, Plus, Trash2, ChevronDown,
   ChevronUp, Eye, EyeOff, Edit3, X, Loader2, Palette,
@@ -100,7 +101,7 @@ function CloudinaryImageField({
       </div>
       {value && (
         <div className="relative w-24 h-16 rounded-lg overflow-hidden border border-border/50 bg-muted/20 group">
-          <img src={value} alt="Preview" className="w-full h-full object-cover" />
+          <Image src={value} alt="Preview" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
           <button
             className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={() => setPickerOpen(true)}
@@ -227,7 +228,7 @@ function CardEditor({
             {/* Card Preview */}
             <div className="w-12 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/30 shrink-0">
               {card.imageUrl ? (
-                <img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover" />
+                <Image src={card.imageUrl} alt={card.title} fill className="w-full h-full object-cover" sizes="48px" unoptimized />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon className="w-4 h-4 text-muted-foreground/30" />
@@ -657,7 +658,7 @@ function MarketplaceManager() {
               return (
                 <div key={item.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-border/10 hover:border-border/20 transition-colors">
                   <div className="w-10 h-10 rounded-lg bg-muted/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {item.imageUrl ? <img src={item.imageUrl} alt="" className="w-full h-full object-cover" /> : <ShoppingBag className="w-4 h-4 text-muted-foreground/30" />}
+                    {item.imageUrl ? <Image src={item.imageUrl} alt="" fill className="w-full h-full object-cover" sizes="40px" unoptimized /> : <ShoppingBag className="w-4 h-4 text-muted-foreground/30" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
@@ -1818,17 +1819,17 @@ export function CmsPanel() {
                         <div className="col-span-2 flex gap-2">
                           {settingsForm.bg_male && (
                             <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
-                              <img src={settingsForm.bg_male} alt="Male BG" className="w-full h-full object-cover" />
+                              <Image src={settingsForm.bg_male} alt="Male BG" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
                             </div>
                           )}
                           {settingsForm.bg_female && (
                             <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
-                              <img src={settingsForm.bg_female} alt="Female BG" className="w-full h-full object-cover" />
+                              <Image src={settingsForm.bg_female} alt="Female BG" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
                             </div>
                           )}
                           {settingsForm.hero_banner_dashboard && (
                             <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
-                              <img src={settingsForm.hero_banner_dashboard} alt="Hero Banner" className="w-full h-full object-cover" />
+                              <Image src={settingsForm.hero_banner_dashboard} alt="Hero Banner" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
                             </div>
                           )}
                         </div>

@@ -87,7 +87,7 @@ export async function GET(request: Request) {
     }));
 
     const response = NextResponse.json({ matches: recentMatches });
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=60');
     response.headers.set('Surrogate-Key', 'league-data');
     return response;
   } catch (e: unknown) {

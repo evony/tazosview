@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, Search, MessageCircle, Crown, Sparkles,
   Shirt, Gamepad2, UserCheck, Wand2, Package, ChevronRight,
   Flame, Tag, Plus, ShieldCheck, User, Box, Briefcase, Ellipsis
 } from 'lucide-react';
+import Image from 'next/image';
 import { SubmitMarketplaceModal } from './submit-marketplace-modal';
 import { MarketplaceDetailModal } from './marketplace-detail-modal';
 
@@ -227,10 +227,8 @@ export function CommunityMarketplace() {
 
       {/* ── Empty State ── */}
       {!loading && items.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center justify-center py-10 text-center"
+        <div
+          className="flex flex-col items-center justify-center py-10 text-center animate-fade-enter-sm"
         >
           <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-3">
             <ShoppingBag className="w-7 h-7 text-orange-400/40" />
@@ -248,7 +246,7 @@ export function CommunityMarketplace() {
             <Plus className="w-3 h-3" />
             Jadilah yang pertama menjual!
           </button>
-        </motion.div>
+        </div>
       )}
 
       {/* ── Submit Modal ── */}
@@ -278,11 +276,9 @@ function MarketplaceCard({ item, isPremium = false, onClick }: { item: Marketpla
   const firstImage = images[0];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       onClick={onClick}
-      className={`relative rounded-xl border overflow-hidden transition-all duration-200 hover:scale-[1.01] cursor-pointer ${
+      className={`relative rounded-xl border overflow-hidden transition-all duration-200 hover:scale-[1.01] cursor-pointer animate-fade-enter-sm ${
         isPremium
           ? 'bg-gradient-to-br from-orange-500/10 via-transparent to-orange-500/5 border-orange-500/25 shadow-[0_0_20px_rgba(249,115,22,0.06)]'
           : 'bg-white/[0.02] border-border/15 hover:border-orange-500/15'
@@ -299,7 +295,7 @@ function MarketplaceCard({ item, isPremium = false, onClick }: { item: Marketpla
       {/* Image preview area */}
       {firstImage ? (
         <div className="w-full h-28 sm:h-32 overflow-hidden">
-          <img src={firstImage} alt={item.title} className="w-full h-full object-cover" />
+          <Image src={firstImage} alt={item.title} fill className="w-full h-full object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" unoptimized />
           {images.length > 1 && (
             <div className="absolute bottom-12 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
               <Package className="w-2.5 h-2.5 text-white/80" />
@@ -348,7 +344,7 @@ function MarketplaceCard({ item, isPremium = false, onClick }: { item: Marketpla
           {/* Seller mini */}
           <div className="flex items-center gap-1">
             {item.sellerAvatar ? (
-              <img src={item.sellerAvatar} alt="" className="w-4 h-4 rounded-full" />
+              <Image src={item.sellerAvatar} alt="" width={16} height={16} className="w-4 h-4 rounded-full" unoptimized />
             ) : (
               <div className="w-4 h-4 rounded-full bg-orange-500/10 flex items-center justify-center">
                 <span className="text-[7px] font-bold text-orange-400/60">{item.sellerName.charAt(0)}</span>
@@ -361,6 +357,6 @@ function MarketplaceCard({ item, isPremium = false, onClick }: { item: Marketpla
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

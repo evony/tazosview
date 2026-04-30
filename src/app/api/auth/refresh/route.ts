@@ -11,12 +11,12 @@ export async function POST() {
     // No server-side refresh needed — tokens are valid until expiry
     return NextResponse.json({
       message: 'Session is valid (stateless token)',
-    })
+    }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('Refresh error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     )
   }
 }

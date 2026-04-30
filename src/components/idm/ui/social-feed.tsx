@@ -2,6 +2,7 @@
 
 import { Heart, MessageCircle, Share2, TrendingUp, Flame, Clock, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface FeedItem {
   id: string;
@@ -65,10 +66,13 @@ function FeedCard({ item, index }: { item: FeedItem; index: number }) {
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
         {item.author?.avatar && (
-          <img
+          <Image
             src={item.author.avatar}
             alt={item.author.name}
+            width={40}
+            height={40}
             className="w-10 h-10 rounded-full object-cover"
+            unoptimized
           />
         )}
         <div className="flex-1">
@@ -91,7 +95,7 @@ function FeedCard({ item, index }: { item: FeedItem; index: number }) {
       {/* Image */}
       {item.image && (
         <div className="rounded-lg overflow-hidden mb-3">
-          <img src={item.image} alt="" className="w-full h-auto object-cover" />
+          <Image src={item.image} alt="" width={800} height={400} className="w-full h-auto object-cover" unoptimized />
         </div>
       )}
 
@@ -168,7 +172,7 @@ export function LiveMatchBanner({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {team1.logo && (
-            <img src={team1.logo} alt={team1.name} className="w-8 h-8 rounded-full" />
+            <Image src={team1.logo} alt={team1.name} width={32} height={32} className="w-8 h-8 rounded-full" unoptimized />
           )}
           <span className="font-bold">{team1.name}</span>
         </div>
@@ -182,7 +186,7 @@ export function LiveMatchBanner({
         <div className="flex items-center gap-2">
           <span className="font-bold">{team2.name}</span>
           {team2.logo && (
-            <img src={team2.logo} alt={team2.name} className="w-8 h-8 rounded-full" />
+            <Image src={team2.logo} alt={team2.name} width={32} height={32} className="w-8 h-8 rounded-full" unoptimized />
           )}
         </div>
       </div>

@@ -2,7 +2,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { Activity, Clock, Loader2, ArrowUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -75,27 +74,15 @@ const typeStyles = {
   },
 };
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06 },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, x: -16 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.35, ease: 'easeOut' } },
-};
+/* framer-motion variants removed — replaced with CSS animations */
 
 function ActivityItem({ activity }: { activity: Activity }) {
   const style = typeStyles[activity.type];
   const ageOpacity = getAgeOpacity(activity.timestamp);
 
   return (
-    <motion.div
-      variants={itemVariants}
-      className={`activity-card-glass group relative flex gap-3 p-3 rounded-lg ${style.bg} ${style.border} border transition-all hover:shadow-md ${style.glow} ${ageOpacity}`}
+    <div
+      className={`activity-card-glass group relative flex gap-3 p-3 rounded-lg ${style.bg} ${style.border} border transition-all hover:shadow-md ${style.glow} ${ageOpacity} animate-fade-enter-sm`}
     >
       {/* Timeline dot & line */}
       <div className="flex flex-col items-center shrink-0 pt-0.5">
@@ -124,23 +111,21 @@ function ActivityItem({ activity }: { activity: Activity }) {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 function EmptyState() {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center justify-center py-12 text-center"
+    <div
+      className="flex flex-col items-center justify-center py-12 text-center animate-fade-enter"
     >
       <div className="animate-float-subtle mb-4">
         <Activity className="w-10 h-10 text-muted-foreground/30" />
       </div>
       <p className="text-sm text-muted-foreground/60 font-medium">Belum ada aktivitas</p>
       <p className="text-xs text-muted-foreground/40 mt-1">Aktivitas terbaru akan muncul di sini</p>
-    </motion.div>
+    </div>
   );
 }
 
@@ -224,19 +209,14 @@ export function ActivityFeed() {
         ) : (
           <div className="relative">
             <div ref={scrollRef} className="max-h-80 lg:max-h-64 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activities.map(a => a.id).join(',')}
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="show"
-                  className="flex flex-col gap-2"
-                >
-                  {activities.map((activity) => (
-                    <ActivityItem key={activity.id} activity={activity} />
-                  ))}
-                </motion.div>
-              </AnimatePresence>
+              <div
+                key={activities.map(a => a.id).join(',')}
+                className="flex flex-col gap-2"
+              >
+                {activities.map((activity) => (
+                  <ActivityItem key={activity.id} activity={activity} />
+                ))}
+              </div>
             </div>
 
             {/* Scroll to top button — appears when feed is scrolled down */}

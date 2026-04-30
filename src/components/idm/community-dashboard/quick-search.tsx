@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Users, Building2, ChevronRight, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -214,15 +213,10 @@ export function QuickSearch({ onPlayerClick }: QuickSearchProps) {
           </div>
 
           {/* Dropdown results */}
-          <AnimatePresence>
-            {showDropdown && (
-              <motion.div
-                initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                transition={{ duration: 0.15 }}
-                className="absolute top-full left-0 right-0 z-40 mt-1.5 rounded-xl border border-border/20 bg-background/95 backdrop-blur-xl shadow-xl overflow-hidden"
-              >
+          {showDropdown && (
+            <div
+              className="absolute top-full left-0 right-0 z-40 mt-1.5 rounded-xl border border-border/20 bg-background/95 backdrop-blur-xl shadow-xl overflow-hidden animate-fade-enter-sm"
+            >
                 {!hasResults && !isSearching && (
                   <div className="p-4 text-center">
                     <p className="text-[10px] text-muted-foreground/50">Tidak ada hasil untuk &quot;{query}&quot;</p>
@@ -321,9 +315,8 @@ export function QuickSearch({ onPlayerClick }: QuickSearchProps) {
                     ))}
                   </div>
                 )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

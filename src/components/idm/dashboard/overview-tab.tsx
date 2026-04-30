@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 
 import {
   Radio, Music, Swords,
@@ -9,9 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { SectionCard, MatchRow } from './shared';
 import { AnimatedEmptyState } from '../ui/animated-empty-state';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
-import { PlayerComparison } from '../player-comparison';
 import { SeasonTimeline } from './season-timeline';
 import type { StatsData } from '@/types/stats';
+
+/* Lazy-load PlayerComparison — defers ~80KB recharts bundle until comparison modal is opened */
+const PlayerComparison = dynamic(() => import('../player-comparison').then(m => ({ default: m.PlayerComparison })), {
+  ssr: false,
+  loading: () => <div className="h-64 flex items-center justify-center text-muted-foreground text-sm">Loading comparison...</div>,
+});
 
 interface OverviewTabProps {
   data: StatsData;

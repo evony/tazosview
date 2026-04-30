@@ -5,7 +5,7 @@ import { Division } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   const headers = new Headers();
-  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  headers.set('Cache-Control', 'public, s-maxage=15, stale-while-revalidate=120');
 
   try {
     const { searchParams } = new URL(request.url);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import Image from 'next/image';
 
 interface SponsorBannerProps {
   placement: 'bracket_top' | 'bracket_side' | 'stream_overlay' | 'landing_page' | 'dashboard';
@@ -50,19 +51,25 @@ export function SponsorBanner({ placement, className = '' }: SponsorBannerProps)
               rel="noopener noreferrer"
               className="sponsor-banner"
             >
-              <img
+              <Image
                 src={banner.imageUrl}
                 alt={banner.sponsor.name}
+                width={120}
+                height={40}
                 className="sponsor-logo"
+                unoptimized
               />
               <span className="text-xs text-muted-foreground">{banner.sponsor.name}</span>
             </a>
           ) : (
             <div className="sponsor-banner">
-              <img
+              <Image
                 src={banner.imageUrl}
                 alt={banner.sponsor.name}
+                width={120}
+                height={40}
                 className="sponsor-logo"
+                unoptimized
               />
               <span className="text-xs text-muted-foreground">{banner.sponsor.name}</span>
             </div>
@@ -98,7 +105,7 @@ export function PresentedBy({ tournamentId, className = '' }: PresentedByProps) 
     <div className={`presented-by ${className}`}>
       <span className="opacity-60">Presented by</span>
       {sponsor.logo && (
-        <img src={sponsor.logo} alt={sponsor.name} className="h-5 w-auto" />
+        <Image src={sponsor.logo} alt={sponsor.name} width={20} height={20} className="h-5 w-auto" unoptimized />
       )}
       <span className="font-semibold">{sponsor.name}</span>
     </div>
@@ -154,10 +161,13 @@ export function SponsoredPrizes({ tournamentId, className = '' }: SponsoredPrize
           >
             <div className="flex items-center gap-3">
               {prize.imageUrl && (
-                <img
+                <Image
                   src={prize.imageUrl}
                   alt={prize.name}
+                  width={48}
+                  height={48}
                   className="w-12 h-12 object-cover rounded-lg"
+                  unoptimized
                 />
               )}
               <div className="flex-1">
@@ -172,10 +182,13 @@ export function SponsoredPrizes({ tournamentId, className = '' }: SponsoredPrize
                 )}
               </div>
               {prize.sponsor?.logo && (
-                <img
+                <Image
                   src={prize.sponsor.logo}
                   alt={prize.sponsor.name}
+                  width={32}
+                  height={32}
                   className="w-8 h-8 object-contain opacity-60"
+                  unoptimized
                 />
               )}
             </div>
@@ -204,10 +217,13 @@ export function StreamOverlaySponsor({ tournamentId }: { tournamentId: string })
 
   return (
     <div className="stream-overlay-sponsor">
-      <img
+      <Image
         src={mainSponsor.sponsor.logo}
         alt={mainSponsor.sponsor.name}
+        width={120}
+        height={40}
         className="stream-overlay-logo"
+        unoptimized
       />
     </div>
   );

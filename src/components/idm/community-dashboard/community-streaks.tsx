@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
 import { Flame, Crown, Trophy, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -248,13 +247,10 @@ export function CommunityStreaks() {
               const fireEmoji = player.streak > 5 ? '🔥🔥' : player.streak >= 3 ? '🔥' : '';
 
               return (
-                <motion.div
+                <div
                   key={player.id}
-                  initial={{ opacity: 0, x: -12 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: (i + 1) * 0.06, duration: 0.3 }}
-                  className={`flex items-center gap-2 p-2 rounded-lg ${i % 2 === 0 ? playerDt.bgSubtle : ''} transition-colors`}
+                  className={`flex items-center gap-2 p-2 rounded-lg ${i % 2 === 0 ? playerDt.bgSubtle : ''} transition-colors animate-fade-enter-sm`}
+                  style={{ animationDelay: `${(i + 1) * 60}ms` }}
                 >
                   {/* Rank number */}
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
@@ -300,7 +296,7 @@ export function CommunityStreaks() {
                     <FlameIcon streak={player.streak} className="w-3 h-3" />
                     <span className={`text-[11px] font-bold tabular-nums ${getStreakColor(player.streak)}`}>{player.streak}</span>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>

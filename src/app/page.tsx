@@ -13,14 +13,12 @@ export const metadata = {
 export default function Home() {
   return (
     <>
-      {/* Preconnect to Cloudinary for faster image loading */}
-      <link rel="preconnect" href="https://res.cloudinary.com" />
-      <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       {/* Preload hero background — browser starts downloading before JS loads */}
       <link
         rel="preload"
         as="image"
         href="https://res.cloudinary.com/dagoryri5/image/upload/f_auto,q_auto:eco,w_1920/v1777405283/cms/backgrounds/WhatsApp_Image_2026-04-29_at_02_25_43.jpg"
+        fetchPriority="high"
       />
       <ClientApp />
     </>

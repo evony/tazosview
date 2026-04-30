@@ -8,8 +8,14 @@ import { NextResponse } from 'next/server';
  * The client polls this endpoint to detect when the server data has been updated
  * (e.g., admin updated banners, avatars, scores, etc.) and forces a cache refresh.
  *
- * Uses Cache-Control: no-store to prevent browser/CDN caching.
+ * Uses short CDN cache with stale-while-revalidate to reduce origin load
+ * while still providing reasonably fresh version checks.
  */
+const VERSION_CACHE_HEADERS = {
+  'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30',
+  'Vary': 'Accept-Encoding',
+};
+
 export async function GET() {
   try {
     // Get the most recent update timestamp across key tables
@@ -42,25 +48,13 @@ export async function GET() {
 
     return NextResponse.json(
       { version: timestamps },
-      {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-        },
-      }
+      { headers: VERSION_CACHE_HEADERS }
     );
   } catch {
     // Fallback: use current time so client always gets a response
     return NextResponse.json(
       { version: Date.now().toString() },
-      {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-        },
-      }
+      { headers: VERSION_CACHE_HEADERS }
     );
   }
 }

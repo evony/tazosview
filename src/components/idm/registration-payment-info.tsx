@@ -5,6 +5,7 @@ import {
   Wallet, Phone, MessageCircle, Copy, CheckCircle2, ExternalLink
 } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface PaymentMethodInfo {
   key: string;
@@ -120,7 +121,7 @@ export function RegistrationPaymentInfo() {
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">QRIS (Universal)</p>
           <div className="flex justify-center">
             <div className="w-32 h-32 rounded-lg overflow-hidden border border-border/30 bg-white/5">
-              <img src={qrisImage} alt="QRIS Code" className="w-full h-full object-contain" />
+              <Image src={qrisImage} alt="QRIS Code" width={128} height={128} className="w-full h-full object-contain" unoptimized />
             </div>
           </div>
         </div>

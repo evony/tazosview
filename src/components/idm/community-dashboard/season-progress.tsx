@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Calendar, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,12 +33,9 @@ function ProgressRow({
   const pct = Math.min(Math.max(progress.percentage, 0), 100);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay, duration: 0.45, ease: 'easeOut' }}
-      className="space-y-2"
+    <div
+      className="space-y-2 animate-fade-enter-sm"
+      style={{ animationDelay: `${delay * 1000}ms` }}
     >
       {/* Label row */}
       <div className="flex items-center justify-between">
@@ -54,13 +50,9 @@ function ProgressRow({
 
       {/* Progress bar */}
       <div className="relative h-3 rounded-full bg-muted/30 overflow-hidden border border-border/10">
-        <motion.div
-          initial={{ width: 0 }}
-          whileInView={{ width: `${pct}%` }}
-          viewport={{ once: true }}
-          transition={{ delay: delay + 0.2, duration: 0.8, ease: 'easeOut' }}
+        <div
           className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${gradientFrom} ${gradientTo}`}
-          style={{ boxShadow: `0 0 12px ${gradientFrom.includes('cyan') ? '#22d3ee55' : gradientFrom.includes('purple') ? '#c084fc55' : '#d4a85355'}` }}
+          style={{ width: `${pct}%`, boxShadow: `0 0 12px ${gradientFrom.includes('cyan') ? '#22d3ee55' : gradientFrom.includes('purple') ? '#c084fc55' : '#d4a85355'}` }}
         />
         {/* Percentage text on bar */}
         <div className="absolute inset-0 flex items-center justify-center">
@@ -69,7 +61,7 @@ function ProgressRow({
           </span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -136,12 +128,8 @@ export function SeasonProgressTracker({ maleData, femaleData }: SeasonProgressPr
 
         {/* Combined community progress */}
         {combinedProgress && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.25, duration: 0.4 }}
-            className="pt-2 border-t border-border/10 space-y-2"
+          <div
+            className="pt-2 border-t border-border/10 space-y-2 animate-fade-enter"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -154,13 +142,9 @@ export function SeasonProgressTracker({ maleData, femaleData }: SeasonProgressPr
             </div>
 
             <div className="relative h-4 rounded-full bg-muted/30 overflow-hidden border border-idm-gold-warm/15">
-              <motion.div
-                initial={{ width: 0 }}
-                whileInView={{ width: `${combinedProgress.percentage}%` }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5, duration: 1, ease: 'easeOut' }}
+              <div
                 className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500"
-                style={{ boxShadow: '0 0 16px #d4a85355' }}
+                style={{ width: `${combinedProgress.percentage}%`, boxShadow: '0 0 16px #d4a85355' }}
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-[9px] font-bold text-white drop-shadow-sm">
@@ -168,7 +152,7 @@ export function SeasonProgressTracker({ maleData, femaleData }: SeasonProgressPr
                 </span>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -138,12 +137,7 @@ export function CommunityAchievements({ maleData, femaleData, leagueData }: Comm
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="animate-fade-enter">
       <Card className={`${dt.casinoCard} overflow-hidden`}>
         <div className={dt.casinoBar} />
 
@@ -161,30 +155,20 @@ export function CommunityAchievements({ maleData, femaleData, leagueData }: Comm
         <CardContent className="p-3 lg:p-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
             {achievements.map((ach, i) => (
-              <motion.div
-                key={ach.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05, duration: 0.35 }}
-                className={`relative p-3 rounded-xl border transition-all duration-300 ${
-                  ach.unlocked
-                    ? `${dt.bgSubtle} ${dt.borderSubtle} border-idm-gold-warm/20`
-                    : 'bg-muted/5 border-border/10 opacity-60'
-                }`}
-              >
+                <div
+                  key={ach.id}
+                  className={`relative p-3 rounded-xl border transition-all duration-300 animate-fade-enter-sm ${
+                    ach.unlocked
+                      ? `${dt.bgSubtle} ${dt.borderSubtle} border-idm-gold-warm/20`
+                      : 'bg-muted/5 border-border/10 opacity-60'
+                  }`}
+                  style={{ animationDelay: `${i * 50}ms` }}
+                >
                 {/* Glow effect for unlocked */}
                 {ach.unlocked && (
-                  <motion.div
-                    className="absolute inset-0 rounded-xl pointer-events-none"
-                    animate={{
-                      boxShadow: [
-                        '0 0 0px rgba(212,168,83,0)',
-                        '0 0 8px rgba(212,168,83,0.15)',
-                        '0 0 0px rgba(212,168,83,0)',
-                      ],
-                    }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  <div
+                    className="absolute inset-0 rounded-xl pointer-events-none animate-pulse-scale"
+                    style={{ boxShadow: '0 0 8px rgba(212,168,83,0.15)' }}
                   />
                 )}
 
@@ -219,12 +203,9 @@ export function CommunityAchievements({ maleData, femaleData, leagueData }: Comm
                 {/* Progress bar */}
                 {!ach.unlocked && ach.progress > 0 && (
                   <div className="h-1 rounded-full bg-muted/20 overflow-hidden">
-                    <motion.div
+                    <div
                       className="h-full rounded-full bg-idm-gold-warm/40"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${ach.progress}%` }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.3 + i * 0.05, duration: 0.5, ease: 'easeOut' }}
+                      style={{ width: `${ach.progress}%` }}
                     />
                   </div>
                 )}
@@ -233,11 +214,11 @@ export function CommunityAchievements({ maleData, femaleData, leagueData }: Comm
                     <div className="h-full w-full rounded-full bg-gradient-to-r from-idm-gold-warm to-amber-500" />
                   </div>
                 )}
-              </motion.div>
+                </div>
             ))}
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

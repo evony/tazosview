@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { Users, Radio, Trophy, Zap, ArrowRight, UserPlus, Eye, Gift } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
@@ -136,11 +136,15 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
 
       {/* Hero banner background image (from CMS) — fills container with proper aspect ratio */}
       {heroBannerDashboard && (
-        <img
+        <Image
           src={heroBannerDashboard}
           alt=""
+          fill
+          sizes="100vw"
           className="absolute inset-0 w-full h-full object-cover object-center opacity-45 pointer-events-none"
           aria-hidden="true"
+          priority={false}
+          quality={75}
         />
       )}
 
@@ -194,28 +198,20 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
         }}
       />
 
-      {/* ═══ Floating Particles ═══ */}
+      {/* ═══ Floating Particles (CSS-only — no framer-motion) ═══ */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         {particles.map((p) => (
-          <motion.div
+          <div
             key={p.id}
-            className="absolute rounded-full"
+            className="absolute rounded-full animate-float-up"
             style={{
               left: `${p.x}%`,
               width: p.size,
               height: p.size,
               background: `radial-gradient(circle, rgba(212,168,83,${p.opacity}) 0%, rgba(212,168,83,${p.opacity * 0.3}) 60%, transparent 100%)`,
               boxShadow: `0 0 ${p.size * 3}px rgba(212,168,83,${p.opacity * 0.3})`,
-            }}
-            animate={{
-              y: ['100%', '-10%'],
-              opacity: [0, p.opacity, p.opacity, 0],
-            }}
-            transition={{
-              duration: p.duration,
-              delay: p.delay,
-              repeat: Infinity,
-              ease: 'linear',
+              animationDuration: `${p.duration}s`,
+              animationDelay: `${p.delay}s`,
             }}
           />
         ))}
@@ -225,10 +221,8 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
       <div className="absolute inset-0 z-10 p-4 sm:p-8 flex flex-col justify-center">
         {/* Live badge */}
         {hasLive && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/15 border border-red-500/30 mb-3 sm:mb-5"
+          <div
+            className="animate-fade-in-scale inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/15 border border-red-500/30 mb-3 sm:mb-5"
           >
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
@@ -238,7 +232,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
               LIVE NOW
             </span>
             <Radio className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-400" />
-          </motion.div>
+          </div>
         )}
 
         {/* Decorative top accent */}
@@ -254,12 +248,10 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
         </div>
 
         {/* Title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="text-2xl sm:text-5xl font-black tracking-tight mb-1 sm:mb-2"
+        <h1
+          className="animate-fade-in-up text-2xl sm:text-5xl font-black tracking-tight mb-1 sm:mb-2"
           style={{
+            animationDelay: '0.2s',
             background:
               'linear-gradient(135deg, #f5e6c8 0%, #d4a853 30%, #e5be4a 50%, #f5d77a 70%, #d4a853 100%)',
             WebkitBackgroundClip: 'text',
@@ -268,43 +260,35 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
           }}
         >
           KOMUNITAS
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, letterSpacing: '0.3em' }}
-          animate={{ opacity: 1, letterSpacing: '0.12em' }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="text-[10px] sm:text-base text-idm-gold-warm/85 uppercase tracking-widest mb-0.5 sm:mb-1"
+        <p
+          className="animate-fade-in text-[10px] sm:text-base text-idm-gold-warm/85 uppercase tracking-widest mb-0.5 sm:mb-1"
+          style={{ animationDelay: '0.4s' }}
         >
           Komunitas Idol Meta
-        </motion.p>
+        </p>
 
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="text-[10px] sm:text-sm text-muted-foreground/80 max-w-xs sm:max-w-md mb-3 sm:mb-6"
+        <p
+          className="animate-fade-in-up text-[10px] sm:text-sm text-muted-foreground/80 max-w-xs sm:max-w-md mb-3 sm:mb-6"
+          style={{ animationDelay: '0.5s' }}
         >
           Tempat pemain terbaik dari seluruh kota berkompetisi. Sawer untuk menambah prize pool dan dapatkan skin eksklusif!
-        </motion.p>
+        </p>
 
         {/* Animated underline */}
-        <motion.div
-          className="h-px sm:h-[1.5px] rounded-full mb-3 sm:mb-5"
+        <div
+          className="animate-width-expand h-px sm:h-[1.5px] rounded-full mb-3 sm:mb-5"
           style={{
             background: 'linear-gradient(90deg, transparent, #d4a853, transparent)',
+            animationDelay: '0.7s',
           }}
-          initial={{ width: 0, opacity: 0 }}
-          animate={{ width: '50%', opacity: 1 }}
-          transition={{ delay: 0.7, duration: 0.8 }}
         />
 
         {/* ═══ CTA Buttons — Pendaftaran + Lihat Bracket ═══ */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-6"
+        <div
+          className="animate-fade-in-up flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-6"
+          style={{ animationDelay: '0.8s' }}
         >
           {/* Pendaftaran button — shown when registration is open */}
           {isRegistrationOpen && (
@@ -360,14 +344,12 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
               </span>
             </button>
           )}
-        </motion.div>
+        </div>
 
         {/* Quick stats row — dynamic & unique from stats section below */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="flex flex-wrap items-center gap-2.5 sm:gap-6"
+        <div
+          className="animate-fade-in-up flex flex-wrap items-center gap-2.5 sm:gap-6"
+          style={{ animationDelay: '0.6s' }}
         >
           {/* Prize Pool — MOST PROMINENT stat */}
           {combinedPrizePool > 0 && (
@@ -459,7 +441,7 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
     </div>

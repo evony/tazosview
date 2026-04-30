@@ -6,19 +6,19 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const LEAGUE_CACHE_HEADERS = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=120',
   'Surrogate-Key': 'league-data',
   'Vary': 'Accept-Encoding',
 };
 
 const LEAGUE_CACHE_HEADERS_SHORT = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=120',
   'Surrogate-Key': 'league-data',
 };
 
 export async function GET() {
   const headers = new Headers();
-  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  headers.set('Cache-Control', 'public, s-maxage=15, stale-while-revalidate=120');
 
   try {
   // Get all Tarkam seasons (active + completed) — exclude Liga seasons
@@ -184,10 +184,21 @@ export async function GET() {
     orderBy: { round: 'asc' },
   }));
 
-  // Top players
+  // Top players — select only fields needed for display
   const topPlayers = await withDbRetry(() => db.player.findMany({
     where: { isActive: true },
     orderBy: [{ points: 'desc' }, { totalWins: 'desc' }],
+    select: {
+      id: true,
+      gamertag: true,
+      division: true,
+      tier: true,
+      points: true,
+      totalWins: true,
+      totalMvp: true,
+      streak: true,
+      avatar: true,
+    },
   }));
 
   // MVP candidates

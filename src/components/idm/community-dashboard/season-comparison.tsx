@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -60,22 +59,16 @@ function ComparisonBar({
           </div>
           <div className="flex items-center gap-1.5">
             <div className="flex-1 h-2 rounded-full bg-muted/20 overflow-hidden flex justify-end">
-              <motion.div
+              <div
                 className={`h-full rounded-full bg-gradient-to-l ${colorLeft}`}
-                initial={{ width: 0 }}
-                whileInView={{ width: `${Math.max(8, (leftValue / maxVal) * 100)}%` }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3, duration: 0.6, ease: 'easeOut' }}
+                style={{ width: `${Math.max(8, (leftValue / maxVal) * 100)}%` }}
               />
             </div>
             <div className="w-px h-3 bg-border/30" />
             <div className="flex-1 h-2 rounded-full bg-muted/20 overflow-hidden">
-              <motion.div
+              <div
                 className={`h-full rounded-full bg-gradient-to-r ${colorRight}`}
-                initial={{ width: 0 }}
-                whileInView={{ width: `${Math.max(8, (rightValue / maxVal) * 100)}%` }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4, duration: 0.6, ease: 'easeOut' }}
+                style={{ width: `${Math.max(8, (rightValue / maxVal) * 100)}%` }}
               />
             </div>
           </div>
@@ -144,12 +137,7 @@ export function SeasonComparison({ maleData, femaleData }: SeasonComparisonProps
   // Only 1 season — show teaser
   if (allSeasons.length <= 1) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4 }}
-      >
+      <div className="animate-fade-enter">
         <Card className={`${dt.casinoCard} overflow-hidden`}>
           <div className={dt.casinoBar} />
           <CardContent className="p-6">
@@ -170,7 +158,7 @@ export function SeasonComparison({ maleData, femaleData }: SeasonComparisonProps
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     );
   }
 
@@ -179,12 +167,7 @@ export function SeasonComparison({ maleData, femaleData }: SeasonComparisonProps
   const s2 = seasonStats[1];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="animate-fade-enter">
       <Card className={`${dt.casinoCard} overflow-hidden`}>
         <div className={dt.casinoBar} />
 
@@ -294,6 +277,6 @@ export function SeasonComparison({ maleData, femaleData }: SeasonComparisonProps
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

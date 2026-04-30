@@ -8,6 +8,7 @@ import {
   Star,
   Activity, CheckCircle2, Timer
 } from 'lucide-react';
+import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -235,7 +236,7 @@ export function MatchDayCenter() {
           <div className="relative">
             {/* Background Image */}
             <div className="absolute inset-0">
-              <img src="/bg-default.jpg" alt="" className="w-full h-full object-cover object-[center_30%]" aria-hidden="true" />
+              <Image src="/bg-default.jpg" alt="" fill className="w-full h-full object-cover object-[center_30%]" sizes="100vw" aria-hidden="true" />
               <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95" />
             </div>
 

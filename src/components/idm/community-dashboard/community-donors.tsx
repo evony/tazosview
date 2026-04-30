@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -115,13 +114,10 @@ export function CommunityDonors({ maleData, femaleData, onSawer }: CommunityDono
             const medal = RANK_MEDALS[i] || null;
 
             return (
-              <motion.div
+              <div
                 key={donor.donorName}
-                initial={{ opacity: 0, x: -12 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05, duration: 0.35 }}
-                className={`group flex items-center gap-3 p-2.5 rounded-xl hover:${dt.hoverBgSubtle} transition-colors duration-200`}
+                className="group flex items-center gap-3 p-2.5 rounded-xl hover:${dt.hoverBgSubtle} transition-colors duration-200 animate-fade-enter-sm"
+                style={{ animationDelay: `${i * 50}ms` }}
               >
                 {/* Rank */}
                 <span className="w-6 text-center text-sm shrink-0">
@@ -168,7 +164,7 @@ export function CommunityDonors({ maleData, femaleData, onSawer }: CommunityDono
                   </div>
                   {/* Progress bar */}
                   <div className={`h-1.5 rounded-full ${dt.casinoBar} overflow-hidden`}>
-                    <motion.div
+                    <div
                       className={`h-full rounded-full bg-gradient-to-r ${
                         i === 0
                           ? 'from-yellow-500 to-amber-400'
@@ -178,10 +174,7 @@ export function CommunityDonors({ maleData, femaleData, onSawer }: CommunityDono
                           ? 'from-amber-600 to-amber-500'
                           : 'from-idm-gold-warm/60 to-idm-gold-warm/40'
                       }`}
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${progress}%` }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.3 + i * 0.05, duration: 0.6, ease: 'easeOut' }}
+                      style={{ width: `${progress}%` }}
                     />
                   </div>
                 </div>
@@ -190,7 +183,7 @@ export function CommunityDonors({ maleData, femaleData, onSawer }: CommunityDono
                 <Badge className={`text-[8px] shrink-0 ${dt.badgeBg} border`}>
                   {donor.donationCount}x
                 </Badge>
-              </motion.div>
+              </div>
             );
           })}
         </div>

@@ -13,6 +13,7 @@ import {
   Lock,
   X,
 } from 'lucide-react';
+import Image from 'next/image';
 import { AnimatedSection, SectionHeader } from './shared';
 import type { StatsData } from '@/types/stats';
 
@@ -609,10 +610,13 @@ function FeaturedBanner({
             {/* ═══ PREVIEW / THUMBNAIL MODE ═══ */}
             {hasVideo && isYouTube ? (
               /* ── YouTube thumbnail as background when video URL exists ── */
-              <img
+              <Image
                 src={`https://img.youtube.com/vi/${ytInfo!.id}/hqdefault.jpg`}
                 alt={video.title}
+                fill
                 className="absolute inset-0 w-full h-full object-cover"
+                sizes="(max-width: 1024px) 100vw, 55vw"
+                unoptimized
               />
             ) : (
               /* ── Default decorative gradient when no video ── */

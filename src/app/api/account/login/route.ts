@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     if (!username || !password) {
       return NextResponse.json(
         { error: 'Username dan password harus diisi' },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     if (!account) {
       return NextResponse.json(
         { error: 'Username atau password salah' },
-        { status: 401 }
+        { status: 401, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         skins: skinsData,
         player: account.player,
       },
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
 
     // Set httpOnly cookie for player session
     response.cookies.set(PLAYER_SESSION_COOKIE, token, {
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
     console.error('Player login error:', error);
     return NextResponse.json(
       { error: 'Terjadi kesalahan server' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

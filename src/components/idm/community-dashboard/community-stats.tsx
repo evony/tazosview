@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Users, Building2, Swords } from 'lucide-react';
 import { useCommunityTheme } from '@/hooks/use-community-theme';
 import type { StatsData } from '@/types/stats';
@@ -65,12 +64,10 @@ export function CommunityStats({ maleData, femaleData, leagueData }: CommunitySt
   return (
     <div className="grid grid-cols-3 gap-2">
       {stats.map((stat, i) => (
-        <motion.div
+        <div
           key={stat.label}
-          initial={{ opacity: 0, y: 12, scale: 0.97 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.06, duration: 0.4, ease: 'easeOut' }}
+          className="animate-fade-enter-sm"
+          style={{ animationDelay: `${i * 60}ms` }}
         >
           <div className={`${dt.cardPremium} rounded-xl border ${stat.borderColor} p-3 group hover:shadow-md transition-all duration-300`}>
             <div className={`w-7 h-7 rounded-lg ${stat.iconBg} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300`}>
@@ -86,7 +83,7 @@ export function CommunityStats({ maleData, femaleData, leagueData }: CommunitySt
               {stat.sub}
             </p>
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, MessageCircle, Crown, ShieldCheck, Tag,
   ChevronLeft, ChevronRight, ShoppingBag, Phone, Info
 } from 'lucide-react';
+import Image from 'next/image';
 
 /* ═══════════════════════════════════════════════════════
    TYPES
@@ -106,23 +106,16 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
   };
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-orange-500/15 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
+    <>
+            {open && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+                onClick={onClose}
+              >
+                <div
+                  className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-orange-500/15 shadow-2xl animate-fade-in-up"
+                  onClick={(e) => e.stopPropagation()}
+                >
             {/* Close button */}
             <button
               onClick={onClose}
@@ -135,18 +128,15 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
             {images.length > 0 ? (
               <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-orange-900/20 to-black/40 overflow-hidden">
                 {/* Main image */}
-                <AnimatePresence mode="wait">
-                  <motion.img
+              <Image
                     key={currentImageIndex}
                     src={images[currentImageIndex]}
                     alt={`${item.title} - ${currentImageIndex + 1}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="w-full h-full object-cover animate-fade-in"
+                    sizes="(max-width: 640px) 100vw, 512px"
+                    unoptimized
                   />
-                </AnimatePresence>
 
                 {/* Navigation arrows */}
                 {images.length > 1 && (
@@ -214,7 +204,7 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
                         : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <Image src={img} alt="" fill className="w-full h-full object-cover" sizes="56px" unoptimized />
                   </button>
                 ))}
               </div>
@@ -260,7 +250,7 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
                 <h3 className="text-[10px] font-semibold text-orange-400/70 uppercase tracking-wider mb-2.5">Penjual</h3>
                 <div className="flex items-center gap-3">
                   {item.sellerAvatar ? (
-                    <img src={item.sellerAvatar} alt="" className="w-10 h-10 rounded-full object-cover border border-orange-500/15" />
+                    <Image src={item.sellerAvatar} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover border border-orange-500/15" unoptimized />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/15">
                       <span className="text-sm font-bold text-orange-400">{item.sellerName.charAt(0)}</span>
@@ -270,7 +260,7 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold text-foreground truncate">{item.sellerName}</span>
                       {item.playerId && (
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" title="Penjual terverifikasi" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                       )}
                     </div>
                     {item.sellerWhatsapp && (
@@ -332,9 +322,9 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
                 )}
               </div>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            </div>
+          </div>
+        )}
+    </>
   );
 }

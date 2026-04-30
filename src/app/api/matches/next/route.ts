@@ -139,7 +139,9 @@ export async function GET(request: Request) {
       { liveCount, nextMatch, recentResults: limitedResults },
       {
         headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=15',
+          'Surrogate-Key': 'league-data',
+          'Vary': 'Accept-Encoding',
         },
       }
     );

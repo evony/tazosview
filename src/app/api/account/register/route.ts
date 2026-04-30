@@ -10,14 +10,14 @@ export async function POST(request: NextRequest) {
     if (!gamertag || !password) {
       return NextResponse.json(
         { error: 'Gamertag dan password harus diisi' },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
     if (password.length < 6) {
       return NextResponse.json(
         { error: 'Password minimal 6 karakter' },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (!player) {
       return NextResponse.json(
         { error: 'Gamertag tidak ditemukan. Pastikan kamu sudah terdaftar sebagai pemain.' },
-        { status: 404 }
+        { status: 404, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     if (existingAccount) {
       return NextResponse.json(
         { error: 'Pemain ini sudah memiliki akun. Silakan login.' },
-        { status: 409 }
+        { status: 409, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     if (existingUsername) {
       return NextResponse.json(
         { error: 'Username sudah digunakan. Hubungi admin.' },
-        { status: 409 }
+        { status: 409, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       if (existingEmail) {
         return NextResponse.json(
           { error: 'Email sudah terdaftar.' },
-          { status: 409 }
+          { status: 409, headers: { 'Cache-Control': 'no-store' } }
         );
       }
     }
@@ -109,12 +109,12 @@ export async function POST(request: NextRequest) {
         skins: [], // New accounts have no skins
         player: account.player,
       },
-    }, { status: 201 });
+    }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('Account registration error:', error);
     return NextResponse.json(
       { error: 'Terjadi kesalahan server' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

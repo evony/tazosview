@@ -1233,7 +1233,13 @@ div.group:hover .donor-rank-badge {
   .mvp-stat-bar,
   /* Admin Panel Enhancements */
   .admin-nav-indicator,
-  .admin-tab-enter {
+  .admin-tab-enter,
+  /* Community Hero CSS-only animations (replacing framer-motion) */
+  .animate-float-up,
+  .animate-fade-in-scale,
+  .animate-fade-in-up,
+  .animate-fade-in,
+  .animate-width-expand {
     animation: none;
     transform: none !important;
   }
@@ -7005,16 +7011,20 @@ html {
    This section only adds landing-specific animation helpers.
    ═══════════════════════════════════════════════════════════════ */
 
-/* Hero entrance animations — dashboard-crisp */
-.hero-enter-1 { animation: reveal-fade-up 0.35s 0.05s cubic-bezier(0.16,1,0.3,1) both; }
-.hero-enter-2 { animation: reveal-fade-up 0.35s 0.1s cubic-bezier(0.16,1,0.3,1) both; }
-.hero-enter-3 { animation: reveal-fade-up 0.35s 0.15s cubic-bezier(0.16,1,0.3,1) both; }
-.hero-enter-4 { animation: reveal-fade-up 0.35s 0.2s cubic-bezier(0.16,1,0.3,1) both; }
-.hero-enter-5 { animation: reveal-fade-up 0.35s 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+/* Hero entrance animations — LCP-optimized: no opacity:0 start, transform-only */
+@keyframes hero-lcp-enter {
+  from { transform: translateY(6px); }
+  to { transform: translateY(0); }
+}
+.hero-enter-1 { animation: hero-lcp-enter 0.25s cubic-bezier(0.16,1,0.3,1) both; will-change: transform; }
+.hero-enter-2 { animation: hero-lcp-enter 0.25s 0.02s cubic-bezier(0.16,1,0.3,1) both; will-change: transform; }
+.hero-enter-3 { animation: hero-lcp-enter 0.25s 0.04s cubic-bezier(0.16,1,0.3,1) both; will-change: transform; }
+.hero-enter-4 { animation: hero-lcp-enter 0.25s 0.06s cubic-bezier(0.16,1,0.3,1) both; will-change: transform; }
+.hero-enter-5 { animation: hero-lcp-enter 0.25s 0.1s cubic-bezier(0.16,1,0.3,1) both; will-change: transform; }
 
-/* Hero underline expand — dashboard-crisp */
+/* Hero underline expand — LCP-optimized: no delay */
 .hero-underline {
-  animation: hero-underline-expand 0.35s 0.25s cubic-bezier(0.16,1,0.3,1) both;
+  animation: hero-underline-expand 0.35s cubic-bezier(0.16,1,0.3,1) both;
 }
 @keyframes hero-underline-expand {
   from { width: 0; opacity: 0; }
@@ -7024,6 +7034,8 @@ html {
 /* Floating particle animation (CSS-only, replaces motion.animate) */
 .hero-particle {
   animation: hero-float-up var(--duration, 8s) var(--delay, 0s) linear infinite;
+  will-change: transform, opacity;
+  contain: layout style paint;
 }
 @keyframes hero-float-up {
   0% { transform: translateY(100vh); opacity: 0; }
@@ -7160,20 +7172,19 @@ html {
   50% { background-position: 0% 0; }
 }
 
-/* ─── Hero: Title entrance — dramatic letter-spacing animation ─── */
+/* ─── Hero: Title entrance — LCP-optimized: visible immediately, subtle letter-spacing animation ─── */
 .hero-title-entrance {
-  letter-spacing: 0.5em;
-  animation: hero-title-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  letter-spacing: -0.01em;
+  animation: hero-title-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: letter-spacing, transform;
 }
 @keyframes hero-title-enter {
   from {
-    letter-spacing: 0.8em;
-    opacity: 0;
-    transform: translateY(12px);
+    letter-spacing: 0.15em;
+    transform: translateY(4px);
   }
   to {
     letter-spacing: -0.01em;
-    opacity: 1;
     transform: translateY(0);
   }
 }
@@ -7329,10 +7340,16 @@ html {
 /* ─── prefers-reduced-motion: Disable all landing page infinite animations ─── */
 @media (prefers-reduced-motion: reduce) {
   .hero-top-gold-line,
+  .hero-enter-1,
+  .hero-enter-2,
+  .hero-enter-3,
+  .hero-enter-4,
+  .hero-enter-5,
   .hero-title-entrance,
   .hero-title-breath,
   .hero-cta-breath::before,
   .hero-chevron-bounce,
+  .hero-underline,
   .cta-gradient-border,
   .cta-gold-trail::after,
   .cta-btn-pulse,
@@ -7342,6 +7359,7 @@ html {
   .hero-particle {
     animation: none !important;
     transform: none !important;
+    will-change: auto !important;
   }
   .hero-title-entrance {
     letter-spacing: -0.01em !important;
@@ -7359,4 +7377,79 @@ html {
   .landing-section {
     content-visibility: visible;
   }
+}
+
+/* ============================================
+   COMMUNITY HERO — CSS-only animations replacing framer-motion
+   Performance: zero JS overhead, GPU-accelerated
+   ============================================ */
+
+@keyframes hero-particle-rise {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  15% {
+    opacity: var(--particle-opacity, 0.3);
+  }
+  85% {
+    opacity: var(--particle-opacity, 0.3);
+  }
+  100% {
+    transform: translateY(-10%);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes width-expand {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 50%;
+    opacity: 1;
+  }
+}
+
+.animate-float-up {
+  animation: hero-particle-rise linear infinite;
+}
+
+.animate-fade-in-scale {
+  animation: fade-in-scale 0.5s ease-out both;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out both;
+}
+
+.animate-fade-in {
+  animation: fade-in-up 0.6s ease-out both;
+}
+
+.animate-width-expand {
+  animation: width-expand 0.8s ease-out both;
 }

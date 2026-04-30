@@ -2,6 +2,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 import { MatchStatus, BracketType } from '@prisma/client';
 import { Trophy, Users, Clock, ChevronRight, Crown } from 'lucide-react';
 
@@ -201,7 +202,7 @@ function MatchCard({ match, onClick }: MatchCardProps) {
         >
           <div className="flex items-center gap-2">
             {match.homeTeam?.logo ? (
-              <img src={match.homeTeam.logo} alt="" className="w-6 h-6 rounded" />
+              <Image src={match.homeTeam.logo} alt="" width={24} height={24} className="w-6 h-6 rounded" unoptimized />
             ) : (
               <div
                 className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
@@ -235,7 +236,7 @@ function MatchCard({ match, onClick }: MatchCardProps) {
         >
           <div className="flex items-center gap-2">
             {match.awayTeam?.logo ? (
-              <img src={match.awayTeam.logo} alt="" className="w-6 h-6 rounded" />
+              <Image src={match.awayTeam.logo} alt="" width={24} height={24} className="w-6 h-6 rounded" unoptimized />
             ) : (
               <div
                 className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
@@ -316,7 +317,7 @@ export function GroupStageTable({ groupName, members }: GroupStageTableProps) {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     {member.team.logo ? (
-                      <img src={member.team.logo} alt="" className="w-5 h-5 rounded" />
+                      <Image src={member.team.logo} alt="" width={20} height={20} className="w-5 h-5 rounded" unoptimized />
                     ) : (
                       <div className="w-5 h-5 rounded bg-gray-700" />
                     )}

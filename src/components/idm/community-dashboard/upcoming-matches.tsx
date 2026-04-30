@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { Clock, Swords, Calendar, Timer, Inbox } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -52,11 +51,9 @@ function MatchCard({ match, index }: { match: EnrichedMatch; index: number }) {
   const countdown = match.scheduledAt ? getCountdown(match.scheduledAt) : null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12, scale: 0.97 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.06, duration: 0.4, ease: 'easeOut' }}
+    <div
+      className="animate-fade-enter-sm"
+      style={{ animationDelay: `${index * 60}ms` }}
     >
       <Card className={`${dt.casinoCard} border ${dt.borderSubtle} overflow-hidden group hover:shadow-md transition-all duration-300`}>
         <CardContent className="p-3">
@@ -93,7 +90,7 @@ function MatchCard({ match, index }: { match: EnrichedMatch; index: number }) {
           )}
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }
 

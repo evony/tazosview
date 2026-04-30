@@ -3,6 +3,7 @@
 import { useEffect, useCallback, useState } from 'react';
 
 import { X, ExternalLink, Play } from 'lucide-react';
+import Image from 'next/image';
 
 interface VideoModalProps {
   isOpen: boolean;
@@ -146,10 +147,13 @@ export function VideoModal({ isOpen, onClose, videoUrl, title }: VideoModalProps
                     {/* Fallback overlay when iframe is blocked — show thumbnail + open YouTube button */}
                     {iframeError && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90">
-                        <img
+                        <Image
                           src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
                           alt={title ?? 'Video thumbnail'}
+                          fill
                           className="absolute inset-0 w-full h-full object-cover opacity-30"
+                          sizes="(max-width: 1024px) 100vw, 896px"
+                          unoptimized
                         />
                         <div className="relative z-10 flex flex-col items-center gap-5">
                           <a

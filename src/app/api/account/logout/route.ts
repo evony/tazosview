@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 const PLAYER_SESSION_COOKIE = 'idm-player-session';
 
 export async function POST() {
-  const response = NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
 
   response.cookies.set(PLAYER_SESSION_COOKIE, '', {
     httpOnly: true,

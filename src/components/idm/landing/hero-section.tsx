@@ -410,7 +410,7 @@ export function HeroSection({
       </section>
 
       {/* ═══════════════ MARQUEE TICKER ═══════════════ */}
-      <div className="relative z-40 py-2.5 bg-background/90 border-y border-idm-gold-warm/10">
+      <div className="relative z-40 py-2.5 bg-background/90 border-y border-idm-gold-warm/10" style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 48px' }}>
         <MarqueeTicker maleData={maleData} femaleData={femaleData} leagueData={leagueData} />
       </div>
     </>

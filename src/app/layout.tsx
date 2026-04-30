@@ -2,14 +2,16 @@ import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
-
 
 export const metadata: Metadata = {
   title: "Tarkam IDM - Idol Meta Fan Made Edition",
@@ -39,6 +41,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className="dark overflow-x-hidden">
+      <head>
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://va.vercel-scripts.com" />
+      </head>
       <body
         className={`${geistSans.variable} antialiased bg-background text-foreground overflow-x-hidden`}
       >

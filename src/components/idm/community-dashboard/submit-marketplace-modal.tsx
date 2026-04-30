@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, ShoppingBag, Upload, CheckCircle, AlertCircle,
   UserCheck, Sparkles, Gamepad2, Package, Tag,
   Loader2, LogIn, ShieldCheck, Plus, Trash2, Image as ImageIcon
 } from 'lucide-react';
+import Image from 'next/image';
 import { useAppStore } from '@/lib/store';
 
 /* ═══════════════════════════════════════════════════════
@@ -172,10 +172,13 @@ function ImageUploader({
       {/* Preview thumbnail */}
       {(url || localPreview) && (
         <div className="ml-8 relative w-20 h-14 rounded-lg overflow-hidden border border-orange-500/15 bg-muted/20 group">
-          <img
+          <Image
             src={localPreview || url}
             alt={`Preview ${index + 1}`}
+            fill
             className="w-full h-full object-cover"
+            sizes="80px"
+            unoptimized
           />
           {!isUploading && url && (
             <button
@@ -318,21 +321,14 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
   const validImageCount = form.imageUrls.filter(u => u.trim()).length;
 
   return (
-    <AnimatePresence>
+    <>
       {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
           onClick={handleClose}
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-orange-500/15 shadow-2xl"
+          <div
+            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-background border border-orange-500/15 shadow-2xl animate-fade-in-up"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header — Orange theme */}
@@ -375,13 +371,11 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
             ) : submitResult === 'success' ? (
               /* Success State */
               <div className="flex flex-col items-center justify-center py-10 px-6">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="w-14 h-14 rounded-full bg-emerald-500/15 flex items-center justify-center mb-3"
-                >
-                  <CheckCircle className="w-7 h-7 text-emerald-400" />
-                </motion.div>
+              <div
+                className="w-14 h-14 rounded-full bg-emerald-500/15 flex items-center justify-center mb-3 animate-scale-in"
+              >
+                <CheckCircle className="w-7 h-7 text-emerald-400" />
+              </div>
                 <p className="text-sm font-bold text-foreground mb-1">Iklan Berhasil Diajukan!</p>
                 <p className="text-[10px] text-muted-foreground text-center max-w-[240px]">
                   Iklan kamu menunggu approval admin. Setelah disetujui, iklan akan otomatis tampil di marketplace.
@@ -394,7 +388,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
                   <div className="relative flex-shrink-0">
                     {playerAvatar ? (
-                      <img src={playerAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      <Image src={playerAvatar} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover" unoptimized />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-orange-500/15 flex items-center justify-center">
                         <span className="text-sm font-bold text-orange-400">{playerGamertag.charAt(0)}</span>
@@ -531,14 +525,12 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
 
                 {/* Error Message */}
                 {submitResult === 'error' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20"
-                  >
-                    <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                    <p className="text-[10px] text-red-400">{errorMessage}</p>
-                  </motion.div>
+                <div
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 animate-fade-enter-sm"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                  <p className="text-[10px] text-red-400">{errorMessage}</p>
+                </div>
                 )}
 
                 {/* Info Note — Orange */}
@@ -569,10 +561,10 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                 </button>
               </form>
             )}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 

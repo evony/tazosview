@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useInView, type Variants } from 'framer-motion';
+import Image from 'next/image';
 import {
   Camera, Trophy, Users, Sparkles, Film, Award,
   ChevronLeft, ChevronRight, X, ZoomIn, Calendar,
@@ -214,11 +215,12 @@ const CollectionCard = React.memo(function CollectionCard({
       `}>
         {/* Image Container */}
         <div className="relative aspect-[4/3] overflow-hidden">
-          <img
+          <Image
             src={collection.coverSrc}
             alt={collection.title}
+            fill
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 33vw"
           />
           
           {/* Gradient overlay - Subtle and clean */}
@@ -292,11 +294,12 @@ const GalleryCard = React.memo(function GalleryCard({
       ">
         {/* Image Container */}
         <div className="relative aspect-[4/3] overflow-hidden">
-          <img
+          <Image
             src={item.src}
             alt={item.alt}
+            fill
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-            loading="lazy"
+            sizes="(max-width: 768px) 50vw, 25vw"
           />
           
           {/* Gradient overlay - Dark for text readability */}
@@ -361,11 +364,12 @@ const FeaturedCard = React.memo(function FeaturedCard({
       ">
         {/* Featured Image */}
         <div className="relative aspect-[16/10] sm:aspect-[16/9] overflow-hidden">
-          <img
+          <Image
             src={item.src}
             alt={item.alt}
+            fill
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-            loading="lazy"
+            sizes="(max-width: 640px) 100vw, 50vw"
           />
           
           {/* Multi-layer overlay - Dark for readability */}
@@ -463,10 +467,12 @@ function Lightbox({ item, onClose, onPrev, onNext }: {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="relative flex-1 min-h-0 rounded-2xl overflow-hidden bg-stone-800 dark:bg-stone-900 border border-stone-700 dark:border-white/[0.06]">
-            <img
+            <Image
               src={item.src}
               alt={item.alt}
+              fill
               className="w-full h-full object-contain"
+              sizes="(max-width: 1024px) 100vw, 1024px"
             />
           </div>
           {/* Info Bar */}

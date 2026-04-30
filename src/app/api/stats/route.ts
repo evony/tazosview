@@ -10,19 +10,19 @@ export const dynamic = 'force-dynamic';
 // Admin mutations that affect standings/scores call revalidateTag('league-data').
 
 const STATS_CACHE_HEADERS = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=60',
   'Surrogate-Key': 'league-data',
   'Vary': 'Accept-Encoding',
 };
 
 const STATS_CACHE_HEADERS_SHORT = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=60',
   'Surrogate-Key': 'league-data',
 };
 
 export async function GET(request: Request) {
   const headers = new Headers();
-  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  headers.set('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=60');
 
   try {
   const { searchParams } = new URL(request.url);
@@ -107,6 +107,25 @@ export async function GET(request: Request) {
     // All active players for this division (needed for leaderboard even if no season points)
     db.player.findMany({
       where: { division, isActive: true },
+      select: {
+        id: true,
+        gamertag: true,
+        avatar: true,
+        tier: true,
+        points: true,
+        totalWins: true,
+        totalMvp: true,
+        streak: true,
+        maxStreak: true,
+        matches: true,
+        division: true,
+        isActive: true,
+        clubMembers: {
+          where: { leftAt: null },
+          include: { profile: { select: { name: true } } },
+          take: 1,
+        },
+      },
     }),
 
     // Clubs standings — use clubSeasonId (season with clubs)

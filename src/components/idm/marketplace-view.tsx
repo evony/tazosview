@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { ShoppingBag, Zap, TrendingUp, Flame, ShieldCheck, Sparkles } from 'lucide-react';
 import { CommunityMarketplace } from './community-dashboard/community-marketplace';
 
@@ -70,12 +69,9 @@ export function MarketplaceView() {
           </div>
 
           {/* Animated underline */}
-          <motion.div
-            className="h-px sm:h-[1.5px] rounded-full mt-5"
-            style={{ background: `linear-gradient(90deg, transparent, ${ORANGE.primary}, transparent)` }}
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: '60%', opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
+          <div
+            className="h-px sm:h-[1.5px] rounded-full mt-5 animate-width-expand"
+            style={{ background: `linear-gradient(90deg, transparent, ${ORANGE.primary}, transparent)`, maxWidth: '60%' }}
           />
         </div>
       </div>

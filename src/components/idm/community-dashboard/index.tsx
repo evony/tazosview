@@ -2,7 +2,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { StatsData, TopPlayer } from '@/types/stats';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Swords, Trophy, Crown, Medal,
   Flame, Radio, Star,
@@ -117,14 +116,7 @@ function ChampionsMvpSection({
       </div>
 
       {/* Tab content — child components render their own Cards */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2 }}
-        >
+      <div key={activeTab} className="animate-fade-enter-sm">
           {activeTab === 'champions' && (
             <CommunityChampions maleData={maleData} femaleData={femaleData} onPlayerClick={onPlayerClick} />
           )}
@@ -134,8 +126,7 @@ function ChampionsMvpSection({
           {activeTab === 'streak' && (
             <CommunityStreaks />
           )}
-        </motion.div>
-      </AnimatePresence>
+        </div>
     </div>
   );
 }
@@ -176,22 +167,14 @@ function MatchesSection({
       </div>
 
       {/* Tab content — child components render their own Cards */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2 }}
-        >
+      <div key={activeTab} className="animate-fade-enter-sm">
           {activeTab === 'schedule' && (
             <UpcomingMatches maleData={maleData} femaleData={femaleData} />
           )}
           {activeTab === 'results' && (
             <CommunityMatches maleData={maleData} femaleData={femaleData} />
           )}
-        </motion.div>
-      </AnimatePresence>
+        </div>
     </div>
   );
 }
@@ -232,22 +215,14 @@ function SeasonProgressSection({
       </div>
 
       {/* Tab content — child components render their own Cards */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2 }}
-        >
+      <div key={activeTab} className="animate-fade-enter-sm">
           {activeTab === 'progress' && (
             <SeasonProgressTracker maleData={maleData} femaleData={femaleData} />
           )}
           {activeTab === 'comparison' && (
             <SeasonComparison maleData={maleData} femaleData={femaleData} />
           )}
-        </motion.div>
-      </AnimatePresence>
+        </div>
     </div>
   );
 }
@@ -276,10 +251,7 @@ function LayoutRow({ children, cols = '2', className = '' }: { children: React.R
 /* ═══════════════════════════════════════════
    Section wrapper with staggered reveal
    ═══════════════════════════════════════════ */
-const sectionVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
-};
+/* sectionVariants removed — replaced with CSS animations */
 
 function Section({
   children,
@@ -297,11 +269,7 @@ function Section({
   sectionId?: string;
 }) {
   return (
-    <motion.section
-      variants={sectionVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: '-40px' }}
+    <section
       className={className}
       id={sectionId ? `section-${sectionId}` : undefined}
     >
@@ -313,7 +281,7 @@ function Section({
         </div>
       )}
       {children}
-    </motion.section>
+    </section>
   );
 }
 

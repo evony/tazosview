@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Building2, Plus, Pencil, Trash2, ExternalLink, Image as ImageIcon, Star, Loader2, X, Link
 } from 'lucide-react';
+import NextImage from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -280,7 +281,7 @@ export function AdminSponsorPanel() {
                           {/* Logo */}
                           <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center">
                             {sponsor.logo ? (
-                              <img src={sponsor.logo} alt={sponsor.name} className="w-full h-full object-cover" />
+                              <NextImage src={sponsor.logo} alt={sponsor.name} width={48} height={48} className="w-full h-full object-cover" unoptimized />
                             ) : (
                               <Building2 className="w-5 h-5 text-muted-foreground" />
                             )}
@@ -380,7 +381,7 @@ export function AdminSponsorPanel() {
               <div className="flex items-center gap-3 mt-1">
                 <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex items-center justify-center">
                   {formData.logo ? (
-                    <img src={formData.logo} alt="Logo" className="w-full h-full object-cover" />
+                    <NextImage src={formData.logo} alt="Logo" width={64} height={64} className="w-full h-full object-cover" unoptimized />
                   ) : (
                     <ImageIcon className="w-6 h-6 text-muted-foreground" />
                   )}

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Award, Plus, Pencil, Trash2, Users, Loader2, X, Star, Zap
 } from 'lucide-react';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -541,7 +542,7 @@ export function AdminAchievementPanel() {
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-muted overflow-hidden">
                         {p.avatar ? (
-                          <img src={p.avatar} alt={p.gamertag} className="w-full h-full object-cover" />
+                          <Image src={p.avatar} alt={p.gamertag} width={32} height={32} className="w-full h-full object-cover" unoptimized />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-xs">👤</div>
                         )}
