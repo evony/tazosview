@@ -39,9 +39,10 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   // API calls: network-only — never cache API responses
+  // ★ IMPORTANT: CMS content must always be fresh to prevent "stale flash"
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      fetch(request).catch(() => new Response(JSON.stringify({ error: 'Offline' }), {
+      fetch(request, { cache: 'no-store' }).catch(() => new Response(JSON.stringify({ error: 'Offline' }), {
         status: 503,
         headers: { 'Content-Type': 'application/json' }
       }))

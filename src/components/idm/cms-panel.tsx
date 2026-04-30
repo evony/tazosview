@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
+import { broadcastInvalidation } from '@/lib/cross-tab-sync';
 import {
   Image as ImageIcon, Type, Layout, Save, Plus, Trash2, ChevronDown,
   ChevronUp, Eye, EyeOff, Edit3, X, Loader2, Palette,
@@ -803,6 +804,8 @@ export function CmsPanel() {
       setSettingsForm(null);
       qc.invalidateQueries({ queryKey: ['cms-settings'] });
       qc.invalidateQueries({ queryKey: ['cms-content'] });
+      // ★ Broadcast to other tabs (landing page) to refresh CMS content immediately
+      broadcastInvalidation('cms-content', 'cms-settings');
       toast.success('Setting berhasil disimpan!');
     },
     onError: (e: Error) => { toast.error(e.message); },

@@ -6,8 +6,11 @@ import { AppShell } from '@/components/idm/app-shell';
 
 export function ClientApp() {
   const [queryClient] = useState(
-    () =>
-      new QueryClient({
+    () => {
+      // ★ On hard refresh (Ctrl+Shift+R), React Query in-memory cache is already empty.
+      // But on soft refresh or SPA navigation, stale CMS data can cause "flash of old content".
+      // We remove CMS cache on mount to always get fresh data from the server.
+      const qc = new QueryClient({
         defaultOptions: {
           queries: {
             staleTime: 60_000, // 1 minute cache
@@ -17,7 +20,12 @@ export function ClientApp() {
             retry: 1,
           },
         },
-      })
+      });
+      // ★ Invalidate CMS cache on every new QueryClient instance (page load)
+      // This ensures the hero banner always shows the latest CMS content
+      qc.invalidateQueries({ queryKey: ['cms-content'] });
+      return qc;
+    }
   );
 
   // ★ Non-blocking: seed & init deferred until after page render

@@ -34,6 +34,14 @@ export async function GET() {
 
   return NextResponse.json(
     { settings: settingsMap, sections: sectionsMap },
-    { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300', 'Surrogate-Key': 'cms-content', 'Vary': 'Accept-Encoding' } }
+    { headers: {
+      // ★ CMS data must always be fresh to prevent "stale flash" on hero banner
+      // s-maxage=5: CDN caches for only 5 seconds (for performance)
+      // stale-while-revalidate=60: serve stale while fetching fresh in background
+      // no-cache: browser must revalidate before using cached copy
+      'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=60, no-cache',
+      'Surrogate-Key': 'cms-content',
+      'Vary': 'Accept-Encoding',
+    } }
   );
 }
