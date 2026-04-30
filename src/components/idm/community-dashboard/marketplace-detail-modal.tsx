@@ -199,7 +199,7 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
                   <button
                     key={i}
                     onClick={() => setCurrentImageIndex(i)}
-                    className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all cursor-pointer flex-shrink-0 ${
+                    className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all cursor-pointer flex-shrink-0 ${
                       i === currentImageIndex
                         ? 'border-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.3)]'
                         : 'border-transparent opacity-60 hover:opacity-100'

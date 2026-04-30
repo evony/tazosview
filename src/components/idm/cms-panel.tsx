@@ -227,7 +227,7 @@ function CardEditor({
         ) : (
           <div className="flex items-start gap-3">
             {/* Card Preview */}
-            <div className="w-12 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/30 shrink-0">
+            <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/30 shrink-0">
               {card.imageUrl ? (
                 <Image src={getOptimizedCloudinaryUrl(card.imageUrl, 96)} alt={card.title} fill className="w-full h-full object-cover" sizes="48px" unoptimized />
               ) : (
@@ -658,7 +658,7 @@ function MarketplaceManager() {
               const statusBadge = STATUS_BADGE[item.status] || STATUS_BADGE.pending;
               return (
                 <div key={item.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-border/10 hover:border-border/20 transition-colors">
-                  <div className="w-10 h-10 rounded-lg bg-muted/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <div className="relative w-10 h-10 rounded-lg bg-muted/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {item.imageUrl ? <Image src={getOptimizedCloudinaryUrl(item.imageUrl, 80)} alt="" fill className="w-full h-full object-cover" sizes="40px" unoptimized /> : <ShoppingBag className="w-4 h-4 text-muted-foreground/30" />}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -1821,17 +1821,17 @@ export function CmsPanel() {
                       {(settingsForm.bg_male || settingsForm.bg_female || settingsForm.hero_banner_dashboard) && (
                         <div className="col-span-2 flex gap-2">
                           {settingsForm.bg_male && (
-                            <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
+                            <div className="relative w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
                               <Image src={getOptimizedCloudinaryUrl(settingsForm.bg_male, 200)} alt="Male BG" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
                             </div>
                           )}
                           {settingsForm.bg_female && (
-                            <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
+                            <div className="relative w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
                               <Image src={getOptimizedCloudinaryUrl(settingsForm.bg_female, 200)} alt="Female BG" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
                             </div>
                           )}
                           {settingsForm.hero_banner_dashboard && (
-                            <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
+                            <div className="relative w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
                               <Image src={getOptimizedCloudinaryUrl(settingsForm.hero_banner_dashboard, 200)} alt="Hero Banner" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
                             </div>
                           )}

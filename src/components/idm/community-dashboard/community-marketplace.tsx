@@ -295,7 +295,7 @@ function MarketplaceCard({ item, isPremium = false, onClick }: { item: Marketpla
 
       {/* Image preview area */}
       {firstImage ? (
-        <div className="w-full h-28 sm:h-32 overflow-hidden">
+        <div className="relative w-full h-28 sm:h-32 overflow-hidden">
           <Image src={getOptimizedCloudinaryUrl(firstImage, 600)} alt={item.title} fill className="w-full h-full object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" unoptimized />
           {images.length > 1 && (
             <div className="absolute bottom-12 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
