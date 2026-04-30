@@ -1822,17 +1822,17 @@ export function CmsPanel() {
                         <div className="col-span-2 flex gap-2">
                           {settingsForm.bg_male && (
                             <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
-                              <Image src={settingsForm.bg_male} alt="Male BG" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
+                              <Image src={getOptimizedCloudinaryUrl(settingsForm.bg_male, 200)} alt="Male BG" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
                             </div>
                           )}
                           {settingsForm.bg_female && (
                             <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
-                              <Image src={settingsForm.bg_female} alt="Female BG" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
+                              <Image src={getOptimizedCloudinaryUrl(settingsForm.bg_female, 200)} alt="Female BG" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
                             </div>
                           )}
                           {settingsForm.hero_banner_dashboard && (
                             <div className="w-20 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
-                              <Image src={settingsForm.hero_banner_dashboard} alt="Hero Banner" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
+                              <Image src={getOptimizedCloudinaryUrl(settingsForm.hero_banner_dashboard, 200)} alt="Hero Banner" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
                             </div>
                           )}
                         </div>
