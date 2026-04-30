@@ -5,6 +5,7 @@ import { useMemo, useState, useEffect, useRef } from 'react';
 import { Users, Radio, Trophy, Zap, ArrowRight, UserPlus, Eye, Gift } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { useBackgroundImages } from '@/hooks/use-background-images';
+import { getOptimizedCloudinaryUrl } from '@/lib/utils';
 import type { StatsData } from '@/types/stats';
 
 /* ═══════════════════════════════════════════════════════
@@ -137,14 +138,14 @@ export function CommunityHero({ maleData, femaleData, leagueData, onSawer }: Com
       {/* Hero banner background image (from CMS) — fills container with proper aspect ratio */}
       {heroBannerDashboard && (
         <Image
-          src={heroBannerDashboard}
+          src={getOptimizedCloudinaryUrl(heroBannerDashboard, 1200)}
           alt=""
           fill
           sizes="100vw"
           className="absolute inset-0 w-full h-full object-cover object-center opacity-45 pointer-events-none"
           aria-hidden="true"
           priority={false}
-          quality={75}
+          unoptimized
         />
       )}
 

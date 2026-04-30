@@ -5,6 +5,7 @@ import {
   UserPlus, MessageCircle, FileText, Trash2,
 } from 'lucide-react';
 import Image from 'next/image';
+import { getOptimizedCloudinaryUrl } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -186,7 +187,7 @@ export function AdminKeuanganTab({
               </div>
               {paymentForm.donation_qris_image && (
                 <div className="w-20 h-20 rounded-lg overflow-hidden border border-border/30 bg-muted/20">
-                  <Image src={paymentForm.donation_qris_image} alt="QRIS Preview" width={80} height={80} className="w-full h-full object-contain" unoptimized />
+                  <Image src={getOptimizedCloudinaryUrl(paymentForm.donation_qris_image, 160)} alt="QRIS Preview" width={80} height={80} className="w-full h-full object-contain" unoptimized />
                 </div>
               )}
             </div>
