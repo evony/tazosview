@@ -81,6 +81,8 @@ export function getOptimizedCloudinaryUrl(
   crop: 'limit' | 'fill' | 'scale' | 'fit' = 'limit'
 ): string {
   if (!url || !url.includes('res.cloudinary.com')) return url || '';
+  // Guard: if URL already has Cloudinary transformation params, don't double-transform
+  if (url.includes('/image/upload/f_') || url.includes('/image/upload/q_')) return url;
   const cappedWidth = Math.min(Math.max(width, 50), 1920);
   return url.replace(
     '/image/upload/',

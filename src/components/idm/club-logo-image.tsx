@@ -82,6 +82,10 @@ export function ClubLogoImage({
     );
   }
 
+  // On error stage 1, retry with the raw (non-optimized) URL in case
+  // the Cloudinary transformation URL is broken but the original works
+  const imgSrc = errorStage >= 1 && isCloudinaryUrl(rawSrc) ? rawSrc : src;
+
   // Always use unoptimized for Cloudinary URLs because:
   // 1. Data URI placeholders can't be optimized by Next.js
   // 2. Cloudinary URLs are already optimized via getOptimizedCloudinaryUrl() —
@@ -89,10 +93,6 @@ export function ClubLogoImage({
   // 3. Without unoptimized, Next.js cloudinary-loader would try to add ANOTHER
   //    layer of transformations, causing "loader does not implement width" warnings.
   const shouldUnoptimize = isPlaceholder || isCloudinaryUrl(imgSrc) || errorStage >= 1;
-
-  // On error stage 1, retry with the raw (non-optimized) URL in case
-  // the Cloudinary transformation URL is broken but the original works
-  const imgSrc = errorStage >= 1 && isCloudinaryUrl(rawSrc) ? rawSrc : src;
 
   if (fill) {
     return (
