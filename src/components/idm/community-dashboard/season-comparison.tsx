@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { GitCompareArrows, Trophy, Users, Swords, Crown } from 'lucide-react';
 import { useCommunityTheme } from '@/hooks/use-community-theme';
-import { getAvatarUrl, formatTarkamSeasonName } from '@/lib/utils';
+import { getAvatarUrl, formatTarkamSeasonName, getOptimizedCloudinaryUrl } from '@/lib/utils';
 import Image from 'next/image';
 import type { StatsData, SeasonInfo } from '@/types/stats';
 
@@ -239,7 +239,7 @@ export function SeasonComparison({ maleData, femaleData }: SeasonComparisonProps
                   <>
                     <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0 ring-1 ring-yellow-500/20">
                       <Image
-                        src={getAvatarUrl(s1.championGamertag, 'male', s1.championAvatar)}
+                        src={getOptimizedCloudinaryUrl(getAvatarUrl(s1.championGamertag, 'male', s1.championAvatar), 80)}
                         alt={s1.championName || ''}
                         width={28}
                         height={28}
@@ -260,7 +260,7 @@ export function SeasonComparison({ maleData, femaleData }: SeasonComparisonProps
                     <span className="text-[11px] font-semibold truncate">{s2.championName}</span>
                     <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0 ring-1 ring-idm-gold-warm/20">
                       <Image
-                        src={getAvatarUrl(s2.championGamertag, 'female', s2.championAvatar)}
+                        src={getOptimizedCloudinaryUrl(getAvatarUrl(s2.championGamertag, 'female', s2.championAvatar), 80)}
                         alt={s2.championName || ''}
                         width={28}
                         height={28}

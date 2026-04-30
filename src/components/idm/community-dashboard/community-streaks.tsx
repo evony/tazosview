@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TierBadge } from '../tier-badge';
 import { getDivisionTheme } from '@/hooks/use-division-theme';
-import { getAvatarUrl } from '@/lib/utils';
+import { getAvatarUrl, getOptimizedCloudinaryUrl } from '@/lib/utils';
 import Image from 'next/image';
 
 /* ═══════════════════════════════════════════
@@ -193,7 +193,7 @@ export function CommunityStreaks() {
               topStreak.streak >= 5 ? 'border-orange-400/60 shadow-[0_0_12px_rgba(249,115,22,0.2)]' : 'border-idm-gold-warm/40'
             }`}>
               <Image
-                src={getAvatarUrl(topStreak.gamertag, topStreak.division, topStreak.avatar)}
+                src={getOptimizedCloudinaryUrl(getAvatarUrl(topStreak.gamertag, topStreak.division, topStreak.avatar), 112)}
                 alt={topStreak.gamertag}
                 width={56}
                 height={56}
@@ -266,7 +266,7 @@ export function CommunityStreaks() {
                   {/* Avatar */}
                   <div className="w-7 h-7 rounded-full overflow-hidden border border-border/30 shrink-0">
                     <Image
-                      src={getAvatarUrl(player.gamertag, player.division, player.avatar)}
+                      src={getOptimizedCloudinaryUrl(getAvatarUrl(player.gamertag, player.division, player.avatar), 80)}
                       alt={player.gamertag}
                       width={28}
                       height={28}

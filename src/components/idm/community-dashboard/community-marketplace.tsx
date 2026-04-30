@@ -7,6 +7,7 @@ import {
   Flame, Tag, Plus, ShieldCheck, User, Box, Briefcase, Ellipsis
 } from 'lucide-react';
 import Image from 'next/image';
+import { getOptimizedCloudinaryUrl } from '@/lib/utils';
 import { SubmitMarketplaceModal } from './submit-marketplace-modal';
 import { MarketplaceDetailModal } from './marketplace-detail-modal';
 
@@ -295,7 +296,7 @@ function MarketplaceCard({ item, isPremium = false, onClick }: { item: Marketpla
       {/* Image preview area */}
       {firstImage ? (
         <div className="w-full h-28 sm:h-32 overflow-hidden">
-          <Image src={firstImage} alt={item.title} fill className="w-full h-full object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" unoptimized />
+          <Image src={getOptimizedCloudinaryUrl(firstImage, 600)} alt={item.title} fill className="w-full h-full object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" unoptimized />
           {images.length > 1 && (
             <div className="absolute bottom-12 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
               <Package className="w-2.5 h-2.5 text-white/80" />
@@ -344,7 +345,7 @@ function MarketplaceCard({ item, isPremium = false, onClick }: { item: Marketpla
           {/* Seller mini */}
           <div className="flex items-center gap-1">
             {item.sellerAvatar ? (
-              <Image src={item.sellerAvatar} alt="" width={16} height={16} className="w-4 h-4 rounded-full" unoptimized />
+              <Image src={getOptimizedCloudinaryUrl(item.sellerAvatar, 64)} alt="" width={16} height={16} className="w-4 h-4 rounded-full" unoptimized />
             ) : (
               <div className="w-4 h-4 rounded-full bg-orange-500/10 flex items-center justify-center">
                 <span className="text-[7px] font-bold text-orange-400/60">{item.sellerName.charAt(0)}</span>

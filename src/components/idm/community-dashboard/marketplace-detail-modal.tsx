@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight, ShoppingBag, Phone, Info
 } from 'lucide-react';
 import Image from 'next/image';
+import { getOptimizedCloudinaryUrl } from '@/lib/utils';
 
 /* ═══════════════════════════════════════════════════════
    TYPES
@@ -130,7 +131,7 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
                 {/* Main image */}
               <Image
                     key={currentImageIndex}
-                    src={images[currentImageIndex]}
+                    src={getOptimizedCloudinaryUrl(images[currentImageIndex], 800)}
                     alt={`${item.title} - ${currentImageIndex + 1}`}
                     fill
                     className="w-full h-full object-cover animate-fade-in"
@@ -204,7 +205,7 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
                         : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
-                    <Image src={img} alt="" fill className="w-full h-full object-cover" sizes="56px" unoptimized />
+                    <Image src={getOptimizedCloudinaryUrl(img, 112)} alt="" fill className="w-full h-full object-cover" sizes="56px" unoptimized />
                   </button>
                 ))}
               </div>
@@ -250,7 +251,7 @@ export function MarketplaceDetailModal({ open, onClose, item }: MarketplaceDetai
                 <h3 className="text-[10px] font-semibold text-orange-400/70 uppercase tracking-wider mb-2.5">Penjual</h3>
                 <div className="flex items-center gap-3">
                   {item.sellerAvatar ? (
-                    <Image src={item.sellerAvatar} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover border border-orange-500/15" unoptimized />
+                    <Image src={getOptimizedCloudinaryUrl(item.sellerAvatar, 80)} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover border border-orange-500/15" unoptimized />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/15">
                       <span className="text-sm font-bold text-orange-400">{item.sellerName.charAt(0)}</span>

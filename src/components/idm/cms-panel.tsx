@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { hexToRgba } from '@/lib/utils';
+import { hexToRgba, getOptimizedCloudinaryUrl } from '@/lib/utils';
 import { CloudinaryPicker } from './cloudinary-picker';
 import { Cloud } from 'lucide-react';
 
@@ -102,7 +102,7 @@ function CloudinaryImageField({
       </div>
       {value && (
         <div className="relative w-24 h-16 rounded-lg overflow-hidden border border-border/50 bg-muted/20 group">
-          <Image src={value} alt="Preview" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
+          <Image src={getOptimizedCloudinaryUrl(value, 200)} alt="Preview" fill className="w-full h-full object-cover" sizes="96px" unoptimized />
           <button
             className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={() => setPickerOpen(true)}
@@ -229,7 +229,7 @@ function CardEditor({
             {/* Card Preview */}
             <div className="w-12 h-12 rounded-lg overflow-hidden border border-border/30 bg-muted/30 shrink-0">
               {card.imageUrl ? (
-                <Image src={card.imageUrl} alt={card.title} fill className="w-full h-full object-cover" sizes="48px" unoptimized />
+                <Image src={getOptimizedCloudinaryUrl(card.imageUrl, 96)} alt={card.title} fill className="w-full h-full object-cover" sizes="48px" unoptimized />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon className="w-4 h-4 text-muted-foreground/30" />
@@ -659,7 +659,7 @@ function MarketplaceManager() {
               return (
                 <div key={item.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-border/10 hover:border-border/20 transition-colors">
                   <div className="w-10 h-10 rounded-lg bg-muted/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {item.imageUrl ? <Image src={item.imageUrl} alt="" fill className="w-full h-full object-cover" sizes="40px" unoptimized /> : <ShoppingBag className="w-4 h-4 text-muted-foreground/30" />}
+                    {item.imageUrl ? <Image src={getOptimizedCloudinaryUrl(item.imageUrl, 80)} alt="" fill className="w-full h-full object-cover" sizes="40px" unoptimized /> : <ShoppingBag className="w-4 h-4 text-muted-foreground/30" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">

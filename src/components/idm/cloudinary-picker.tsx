@@ -29,6 +29,7 @@ import {
   Camera,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getOptimizedCloudinaryUrl } from '@/lib/utils';
 
 interface CloudinaryImage {
   public_id: string;
@@ -372,7 +373,7 @@ export function CloudinaryPicker({ open, onClose, onSelect, currentImage, upload
                         onClick={() => setSelectedImage(img)}
                       >
                         <Image
-                          src={img.url}
+                          src={getOptimizedCloudinaryUrl(img.url, 300)}
                           alt={img.public_id}
                           fill
                           className="w-full h-full object-cover"

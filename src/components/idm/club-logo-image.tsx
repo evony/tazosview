@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { getClubLogoUrl, isClubLogoPlaceholder } from '@/lib/utils';
+import { getClubLogoUrl, isClubLogoPlaceholder, getOptimizedCloudinaryUrl, isCloudinaryUrl } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 
@@ -21,12 +21,13 @@ interface ClubLogoImageProps {
  * Club logo image component that auto-handles unoptimized for data URI placeholders.
  * Next.js Image optimizer can't process SVG data URIs, so we skip optimization for those.
  *
- * Broken image fallback: If a Cloudinary URL returns 404, we first retry with
- * `unoptimized` (bypassing Next.js image optimization). If that also fails,
- * we render a styled placeholder div with the club's first letter.
+ * Cloudinary URLs are now optimized via getOptimizedCloudinaryUrl() which injects
+ * f_auto,q_auto:eco,w_*,c_limit directly into the URL. This means even with
+ * `unoptimized` prop, the browser receives an optimized image from Cloudinary CDN.
  *
- * Cache busting: When dbLogo changes (new Cloudinary URL), React re-renders with a new src.
- * Cloudinary URLs are unique per public_id + version, so stale cache is not an issue.
+ * Broken image fallback: If a Cloudinary URL returns 404, we retry with
+ * the original URL. If that also fails, we render a styled placeholder div
+ * with the club's first letter.
  */
 export function ClubLogoImage({
   clubName,
@@ -39,10 +40,15 @@ export function ClubLogoImage({
   className,
   style,
 }: ClubLogoImageProps) {
-  const src = getClubLogoUrl(clubName, dbLogo);
-  const isPlaceholder = isClubLogoPlaceholder(src);
+  const rawSrc = getClubLogoUrl(clubName, dbLogo);
+  const isPlaceholder = isClubLogoPlaceholder(rawSrc);
 
-  // Error stage: 0 = normal, 1 = retry with unoptimized, 2 = show fallback div
+  // Optimize Cloudinary URLs — inject f_auto,q_auto:eco,w_*,c_limit
+  // For non-fill mode, use the component's width prop; for fill mode, use 128px (logo size)
+  const logoWidth = fill ? 128 : (width || 32);
+  const src = isCloudinaryUrl(rawSrc) ? getOptimizedCloudinaryUrl(rawSrc, logoWidth) : rawSrc;
+
+  // Error stage: 0 = normal, 1 = retry with original URL, 2 = show fallback div
   const [errorStage, setErrorStage] = useState(0);
 
   // Reset error state when src changes (e.g., new logo uploaded)
@@ -76,16 +82,20 @@ export function ClubLogoImage({
     );
   }
 
-  // Always use unoptimized for external URLs (Cloudinary, etc.) to avoid
-  // server-side 404 errors from Next.js image optimization proxy.
-  // Data URI placeholders also can't be optimized by Next.js.
-  const isExternalUrl = src.startsWith('http');
-  const shouldUnoptimize = isPlaceholder || isExternalUrl || errorStage >= 1;
+  // Use unoptimized for: data URI placeholders, error retry, and external URLs
+  // Cloudinary URLs are already optimized via getOptimizedCloudinaryUrl() above,
+  // so unoptimized just means "don't run through Next.js image proxy" — the
+  // URL itself already has Cloudinary optimization params baked in.
+  const shouldUnoptimize = isPlaceholder || errorStage >= 1;
+
+  // On error stage 1, retry with the raw (non-optimized) URL in case
+  // the Cloudinary transformation URL is broken but the original works
+  const imgSrc = errorStage >= 1 && isCloudinaryUrl(rawSrc) ? rawSrc : src;
 
   if (fill) {
     return (
       <Image
-        src={src}
+        src={imgSrc}
         alt={alt || clubName}
         fill
         sizes={sizes}
@@ -99,7 +109,7 @@ export function ClubLogoImage({
 
   return (
     <Image
-      src={src}
+      src={imgSrc}
       alt={alt || clubName}
       width={width || 32}
       height={height || 32}

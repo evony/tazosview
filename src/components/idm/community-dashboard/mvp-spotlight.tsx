@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TierBadge } from '../tier-badge';
 import { getDivisionTheme } from '@/hooks/use-division-theme';
-import { getAvatarUrl, clubToString } from '@/lib/utils';
+import { getAvatarUrl, clubToString, getOptimizedCloudinaryUrl } from '@/lib/utils';
 import Image from 'next/image';
 import type { StatsData, TopPlayer, MvpHallOfFameEntry } from '@/types/stats';
 
@@ -112,7 +112,7 @@ function MvpDivisionCard({
           }`} style={{ aspectRatio: '3/4' }}>
             {/* Full-cover avatar */}
             <Image
-              src={getAvatarUrl(featuredPlayer.gamertag, division, featuredPlayer.avatar)}
+              src={getOptimizedCloudinaryUrl(getAvatarUrl(featuredPlayer.gamertag, division, featuredPlayer.avatar), 320)}
               alt={featuredPlayer.gamertag}
               width={128}
               height={200}

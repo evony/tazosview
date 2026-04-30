@@ -7,6 +7,7 @@ import {
   Loader2, LogIn, ShieldCheck, Plus, Trash2, Image as ImageIcon
 } from 'lucide-react';
 import Image from 'next/image';
+import { getOptimizedCloudinaryUrl } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
 
 /* ═══════════════════════════════════════════════════════
@@ -173,7 +174,7 @@ function ImageUploader({
       {(url || localPreview) && (
         <div className="ml-8 relative w-20 h-14 rounded-lg overflow-hidden border border-orange-500/15 bg-muted/20 group">
           <Image
-            src={localPreview || url}
+            src={getOptimizedCloudinaryUrl(localPreview || url, 160)}
             alt={`Preview ${index + 1}`}
             fill
             className="w-full h-full object-cover"
@@ -388,7 +389,7 @@ export function SubmitMarketplaceModal({ open, onClose, onSuccess }: SubmitMarke
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
                   <div className="relative flex-shrink-0">
                     {playerAvatar ? (
-                      <Image src={playerAvatar} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover" unoptimized />
+                      <Image src={getOptimizedCloudinaryUrl(playerAvatar, 80)} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover" unoptimized />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-orange-500/15 flex items-center justify-center">
                         <span className="text-sm font-bold text-orange-400">{playerGamertag.charAt(0)}</span>

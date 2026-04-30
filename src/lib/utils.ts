@@ -63,6 +63,39 @@ export function isClubLogoPlaceholder(url: string): boolean {
 }
 
 /**
+ * Optimize a Cloudinary URL by injecting transformation parameters.
+ * Adds f_auto (format auto → WebP/AVIF), q_auto:eco (eco quality), and width constraints.
+ * Optionally adds c_limit (resize only if larger than specified width) to save bandwidth.
+ *
+ * Before: https://res.cloudinary.com/.../image/upload/v123/cms/photo.jpg  (2-5MB)
+ * After:  https://res.cloudinary.com/.../image/upload/f_auto,q_auto:eco,w_200,c_limit/v123/cms/photo.jpg  (5-30KB)
+ *
+ * @param url    Original Cloudinary URL
+ * @param width  Target width in pixels (default: 200, capped at 1920)
+ * @param crop   Cloudinary crop mode (default: 'limit' = only resize if larger)
+ * @returns      Optimized Cloudinary URL, or original URL if not a Cloudinary URL
+ */
+export function getOptimizedCloudinaryUrl(
+  url: string | null | undefined,
+  width: number = 200,
+  crop: 'limit' | 'fill' | 'scale' | 'fit' = 'limit'
+): string {
+  if (!url || !url.includes('res.cloudinary.com')) return url || '';
+  const cappedWidth = Math.min(Math.max(width, 50), 1920);
+  return url.replace(
+    '/image/upload/',
+    `/image/upload/f_auto,q_auto:eco,w_${cappedWidth},c_${crop}/`
+  );
+}
+
+/**
+ * Check if a URL is a Cloudinary URL (for conditional optimization)
+ */
+export function isCloudinaryUrl(url: string | null | undefined): boolean {
+  return !!url && url.includes('res.cloudinary.com');
+}
+
+/**
  * Convert hex color + alpha to rgba() string.
  * Avoids 8-digit hex (#rrggbbaa) which is invalid in some browsers.
  *
