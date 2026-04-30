@@ -9,14 +9,14 @@ interface BackgroundImages {
 }
 
 const DEFAULTS: BackgroundImages = {
-  bgMale: '/bg-male.jpg',
-  bgFemale: '/bg-female.jpg',
+  bgMale: '',
+  bgFemale: '',
   heroBannerDashboard: '',
 };
 
 /**
  * Lightweight hook that fetches background image URLs from CMS settings.
- * Falls back to default static paths (/bg-male.jpg, /bg-female.jpg, /bg-section.jpg)
+ * Falls back to empty strings if settings haven't been configured yet
  * if settings haven't been configured yet.
  *
  * Uses React Query with 60s staleTime — cached across all components,

@@ -2,7 +2,7 @@ const CACHE_NAME = 'tarkam-v2';
 const STATIC_ASSETS = [
   '/logo1.webp',
   '/logo.webp',
-  '/bg-default.jpg',
+  '/logo.png',
 ];
 
 // Install: precache only image assets (NOT HTML or JS bundles)

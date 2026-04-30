@@ -1843,8 +1843,8 @@ export function CmsPanel() {
                           className="text-[10px] bg-idm-gold-warm hover:bg-[#b8912e] text-black"
                           onClick={() => {
                             saveSettingsBatch.mutate([
-                              { key: 'bg_male', value: settingsForm.bg_male || '/bg-male.jpg', type: 'image' },
-                              { key: 'bg_female', value: settingsForm.bg_female || '/bg-female.jpg', type: 'image' },
+                              { key: 'bg_male', value: settingsForm.bg_male || '', type: 'image' },
+                              { key: 'bg_female', value: settingsForm.bg_female || '', type: 'image' },
                               { key: 'hero_banner_dashboard', value: settingsForm.hero_banner_dashboard || '', type: 'image' },
                             ]);
                           }}

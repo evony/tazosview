@@ -13,13 +13,13 @@ export function Hero() {
       title: 'IDOL META',
       subtitle: 'FAN MADE EDITION',
       description: 'Platform Turnamen Esports Profesional untuk Komunitas Gaming Indonesia',
-      image: '/hero-1.jpg'
+      image: ''
     },
     {
       title: 'WEEKLY TOURNAMENT',
       subtitle: 'SEASON 2024',
       description: 'Bergabung dan tunjukkan skill gaming terbaikmu!',
-      image: '/hero-2.jpg'
+      image: ''
     }
   ];
 
@@ -32,14 +32,18 @@ export function Hero() {
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
+      {/* Background */}
       <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
-          style={{
-            backgroundImage: `url(${slides[currentSlide].image})`,
-          }}
-        />
+        {slides[currentSlide].image ? (
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
+            style={{
+              backgroundImage: `url(${slides[currentSlide].image})`,
+            }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900" />
+        )}
         {/* Dark overlay for both themes - ensures text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-stone-900/70 via-stone-900/60 to-stone-900/80 dark:from-background dark:via-background/90 dark:to-background" />
         {/* Gold haze effect */}

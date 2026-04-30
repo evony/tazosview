@@ -8,7 +8,6 @@ import {
   Star,
   Activity, CheckCircle2, Timer
 } from 'lucide-react';
-import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -234,11 +233,8 @@ export function MatchDayCenter() {
         <Card className={`${dt.casinoCard} ${dt.casinoGlow} casino-shimmer overflow-hidden`}>
           <div className={dt.casinoBar} />
           <div className="relative">
-            {/* Background Image */}
-            <div className="absolute inset-0">
-              <Image src="/bg-default.jpg" alt="" fill className="w-full h-full object-cover object-[center_30%]" sizes="100vw" aria-hidden="true" />
-              <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95" />
-            </div>
+            {/* Background Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95" />
 
             <div className="relative z-10 p-4 lg:p-6">
               {/* Top Bar: Tournament Info + Live Indicator */}

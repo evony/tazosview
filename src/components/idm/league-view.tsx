@@ -6,7 +6,6 @@ import {
   BookOpen, Swords, Scale,
   Loader2,
 } from 'lucide-react';
-import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { useDivisionTheme } from '@/hooks/use-division-theme';
 import { useQuery } from '@tanstack/react-query';
@@ -131,10 +130,7 @@ export function LeagueView() {
       <Card className={`${dt.casinoCard} ${dt.casinoGlow} casino-shimmer overflow-hidden`}>
         <div className={dt.casinoBar} />
         <div className="relative">
-          <div className="absolute inset-0">
-            <Image src="/bg-default.jpg" alt="" fill className="w-full h-full object-cover object-[center_30%]" sizes="100vw" aria-hidden="true" />
-            <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95" />
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95" />
           <div className="relative z-10 p-4 lg:p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className={`w-10 h-10 rounded-xl ${dt.iconBg} flex items-center justify-center`}>

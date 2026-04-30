@@ -15,8 +15,8 @@ export async function POST(request: Request) {
       { key: 'hero_title', value: 'Idol Meta', type: 'text' },
       { key: 'hero_subtitle', value: 'Fan Made Edition', type: 'text' },
       { key: 'hero_tagline', value: 'Tempat dancer terbaik berkompetisi. Tournament mingguan, tarkam profesional, dan podium yang menunggu.', type: 'text' },
-      { key: 'hero_bg_desktop', value: '/bg-default.jpg', type: 'image' },
-      { key: 'hero_bg_mobile', value: '/bg-mobiledefault.jpg', type: 'image' },
+      { key: 'hero_bg_desktop', value: '', type: 'image' },
+      { key: 'hero_bg_mobile', value: '', type: 'image' },
       { key: 'nav_cta_male_text', value: 'MALE DIVISION', type: 'text' },
       { key: 'nav_cta_female_text', value: 'FEMALE DIVISION', type: 'text' },
       { key: 'footer_text', value: '© 2026 IDM League — Idol Meta Fan Made Edition. All rights reserved.', type: 'text' },
@@ -61,8 +61,8 @@ export async function POST(request: Request) {
       { key: 'cta_badge_3_value', value: '2', type: 'text' },
       { key: 'cta_badge_3_label', value: 'Season', type: 'text' },
       // Background images — managed via admin CMS
-      { key: 'bg_male', value: '/bg-male.jpg', type: 'image' },
-      { key: 'bg_female', value: '/bg-female.jpg', type: 'image' },
+      { key: 'bg_male', value: '', type: 'image' },
+      { key: 'bg_female', value: '', type: 'image' },
       { key: 'hero_banner_dashboard', value: '', type: 'image' },
     ];
 
